@@ -1,0 +1,58 @@
+<?php
+
+namespace App\Exports;
+
+use App\Models\Order;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+
+class OrderExport implements FromCollection, WithHeadings, WithMapping, WithStyles
+{
+    /**
+     * @return \Illuminate\Support\Collection
+     */
+    public function collection()
+    {
+        return Order::with('produk')->orderBy('created_at', 'desc')->get();
+    }
+
+    public function map($order): array
+    {
+        return [
+            $order->no_pesanan,
+            $order->produk->nama_produk,
+            $order->produk->nama_variasi,
+            $order->jumlah,
+            $order->returned_quantity,
+            $order->pesananselesai ? $order->pesananselesai->format('d/m/Y H:i') : '-',
+            $order->total_harga_produk, // ✅ TAMBAH INI
+        ];
+    }
+
+    public function headings(): array
+    {
+        return [
+            'no_pesanan',
+            'nama_produk',
+            'nama_variasi',
+            'jumlah',
+            'returned_quantity',
+            'pesananselesai',
+            'total_harga_produk', // ✅ TAMBAH INI
+        ];
+    }
+
+    /**
+     * Apply styles to the Excel sheet
+     */
+    public function styles(Worksheet $sheet)
+    {
+        return [
+            // Style the first row as bold text
+            1 => ['font' => ['bold' => true]],
+        ];
+    }
+}
