@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Toko;
 use App\Models\Order;
 use App\Models\Income;
 use Illuminate\Http\Request;
@@ -15,14 +16,15 @@ class IncomeController extends Controller
 {
     public function index()
     {
-        $incomes = Income::with(['orders.produk'])->orderBy('created_at', 'desc')->get();
+        $incomes = Income::with(['orders.produk', 'toko'])->orderBy('created_at', 'desc')->get();
         return view('incomes.index', compact('incomes'));
     }
 
     public function create()
     {
         $orders = Order::select('no_pesanan')->distinct()->get();
-        return view('incomes.create', compact('orders'));
+        $tokos = Toko::all();
+        return view('incomes.create', compact('orders', 'tokos'));
     }
 
     public function store(Request $request)
@@ -31,6 +33,7 @@ class IncomeController extends Controller
             'no_pesanan' => 'required|string|max:100|unique:incomes,no_pesanan',
             'no_pengajuan' => 'nullable|string|max:100',
             'total_penghasilan' => 'required|integer',
+            'toko_id' => 'required|exists:tokos,id',
         ]);
 
         try {
@@ -46,14 +49,15 @@ class IncomeController extends Controller
 
     public function show(Income $income)
     {
-        $income->load(['orders.produk']);
+        $income->load(['orders.produk', 'toko']);
         return view('incomes.show', compact('income'));
     }
 
     public function edit(Income $income)
     {
         $orders = Order::select('no_pesanan')->distinct()->get();
-        return view('incomes.edit', compact('income', 'orders'));
+        $tokos = Toko::all();
+        return view('incomes.edit', compact('income', 'orders', 'tokos'));
     }
 
     public function update(Request $request, Income $income)
@@ -62,6 +66,7 @@ class IncomeController extends Controller
             'no_pesanan' => 'required|string|max:100|unique:incomes,no_pesanan,' . $income->id,
             'no_pengajuan' => 'nullable|string|max:100',
             'total_penghasilan' => 'required|integer',
+            'toko_id' => 'required|exists:tokos,id',
         ]);
 
         try {
@@ -132,11 +137,18 @@ class IncomeController extends Controller
             });
 
             $noPengajuan = 'SUB-' . $noPesanan . '-' . date('YmdHis');
+            // Ambil toko_id dari order pertama atau default ke toko pertama
+            $toko_id = $orders->first()->toko_id ?? Toko::first()->id ?? null;
 
+            if (!$toko_id) {
+                return redirect()->back()
+                    ->with('error', 'Tidak ada toko yang tersedia. Silahkan buat toko terlebih dahulu.');
+            }
             $income = Income::create([
                 'no_pesanan' => $noPesanan,
                 'no_pengajuan' => $noPengajuan,
                 'total_penghasilan' => $total,
+                'toko_id' => $toko_id,
             ]);
 
             return redirect()->route('incomes.show', $income)
@@ -154,17 +166,19 @@ class IncomeController extends Controller
 
     public function importForm()
     {
-        return view('incomes.import');
+        $tokos = Toko::all();
+        return view('incomes.import', compact('tokos'));
     }
 
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv|max:5120'
+            'file' => 'required|mimes:xlsx,xls,csv|max:5120',
+            'default_toko_id' => 'nullable|exists:tokos,id'
         ]);
 
         try {
-            $import = new IncomeImport;
+            $import = new IncomeImport($request->default_toko_id);
             Excel::import($import, $request->file('file'));
 
             $failures = $import->getFailedOrders();
@@ -222,7 +236,7 @@ class IncomeController extends Controller
 
     public function hasil()
     {
-        $incomes = Income::with(['orders.produk'])
+        $incomes = Income::with(['orders.produk', 'toko'])
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($income) {

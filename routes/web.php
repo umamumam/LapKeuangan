@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TokoController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\ProdukController;
@@ -49,6 +50,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/monthly-finances/rekap', [MonthlyFinanceController::class, 'rekap'])->name('monthly-finances.rekap');
     Route::get('/monthly-finances/export', [MonthlyFinanceController::class, 'export'])->name('monthly-finances.export');
     Route::resource('monthly-finances', MonthlyFinanceController::class);
+    Route::resource('toko', TokoController::class);
 });
 
 require __DIR__ . '/auth.php';

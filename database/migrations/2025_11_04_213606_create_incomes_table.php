@@ -16,9 +16,11 @@ return new class extends Migration
             $table->string('no_pesanan', 100)->unique();
             $table->string('no_pengajuan', 100)->nullable();
             $table->integer('total_penghasilan');
+            $table->foreignId('toko_id')->constrained('tokos')->onDelete('cascade');
             $table->timestamps();
             $table->index('no_pesanan');
             $table->index('no_pengajuan');
+            $table->index('toko_id');
         });
     }
 

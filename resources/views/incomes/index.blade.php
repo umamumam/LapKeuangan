@@ -56,6 +56,7 @@
                                     <th>No. Pengajuan</th>
                                     <th>Total Penghasilan</th>
                                     <th>Jumlah Item</th>
+                                    <th>Toko</th>
                                     <th>Tanggal Dibuat</th>
                                     <th>Aksi</th>
                                 </tr>
@@ -72,6 +73,7 @@
                                     <td>
                                         <span class="badge bg-info">{{ $income->orders->count() }} item</span>
                                     </td>
+                                    <td>{{ $income->nama_toko }}</td>
                                     <td>{{ $income->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
                                         <div class="d-flex gap-2">

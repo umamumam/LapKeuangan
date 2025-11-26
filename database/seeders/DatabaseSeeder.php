@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Toko;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -20,7 +21,21 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Umam',
             'email' => 'umam@gmail.com',
-            'password' => bcrypt('12345678'),
+            'password' => bcrypt('umamumam'),
         ]);
+
+        // Seed data toko
+        $tokos = [
+            ['nama' => 'Lidya Fashion'],
+            ['nama' => 'Lova Jeans'],
+        ];
+
+        foreach ($tokos as $toko) {
+            Toko::create($toko);
+        }
+
+        $this->command->info('Data toko berhasil ditambahkan:');
+        $this->command->info('- Lidya Fashion');
+        $this->command->info('- Lova Jeans');
     }
 }

@@ -42,7 +42,47 @@
                                             <li><strong>No Pesanan</strong>: Text (wajib, unique)</li>
                                             <li><strong>No Pengajuan</strong>: Text (opsional)</li>
                                             <li><strong>Total Penghasilan</strong>: Number (wajib)</li>
+                                            <li><strong>Toko ID</strong>: Number (opsional, gunakan default jika kosong)</li>
                                         </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informasi Daftar Toko -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0"><i class="fas fa-store"></i> Daftar Toko yang Tersedia</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-bordered">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>ID Toko</th>
+                                                        <th>Nama Toko</th>
+                                                        <th>Jumlah Income</th>
+                                                        <th>Dibuat</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($tokos as $toko)
+                                                    <tr>
+                                                        <td><strong>{{ $toko->id }}</strong></td>
+                                                        <td>{{ $toko->nama }}</td>
+                                                        <td>{{ $toko->incomes->count() }}</td>
+                                                        <td>{{ $toko->created_at->format('d/m/Y') }}</td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <small class="text-muted">
+                                            <i class="fas fa-info-circle"></i>
+                                            Gunakan ID toko di atas pada kolom "Toko ID" di file Excel
+                                        </small>
                                     </div>
                                 </div>
                             </div>
@@ -51,14 +91,40 @@
                         <div class="mt-4">
                             <form action="{{ route('incomes.import') }}" method="POST" enctype="multipart/form-data">
                                 @csrf
-                                <div class="mb-3">
-                                    <label for="file" class="form-label">Pilih File Excel</label>
-                                    <input type="file" class="form-control @error('file') is-invalid @enderror"
-                                        id="file" name="file" accept=".xlsx,.xls,.csv" required>
-                                    @error('file')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                    <div class="form-text">Format file: .xlsx, .xls, .csv (maksimal 5MB)</div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="file" class="form-label">Pilih File Excel <span class="text-danger">*</span></label>
+                                            <input type="file" class="form-control @error('file') is-invalid @enderror"
+                                                id="file" name="file" accept=".xlsx,.xls,.csv" required>
+                                            @error('file')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                            <div class="form-text">Format file: .xlsx, .xls, .csv (maksimal 5MB)</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="default_toko_id" class="form-label">Default Toko (Opsional)</label>
+                                            <select class="form-control @error('default_toko_id') is-invalid @enderror"
+                                                id="default_toko_id" name="default_toko_id">
+                                                <option value="">Pilih Default Toko</option>
+                                                @foreach($tokos as $toko)
+                                                    <option value="{{ $toko->id }}"
+                                                        {{ old('default_toko_id') == $toko->id ? 'selected' : '' }}>
+                                                        {{ $toko->nama }} (ID: {{ $toko->id }})
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @error('default_toko_id')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                            <div class="form-text">
+                                                Jika kolom "Toko ID" kosong di Excel, akan menggunakan toko ini
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="d-flex gap-2">
@@ -76,8 +142,7 @@
                         <div class="mt-4">
                             <div class="alert alert-warning alert-dismissible fade show" role="alert">
                                 <h6 class="alert-heading">Import Notice:</h6>
-                                <p class="mb-2">{{ session('success') ?? 'Proses import selesai dengan beberapa
-                                    kegagalan.' }}</p>
+                                <p class="mb-2">{{ session('success') ?? 'Proses import selesai dengan beberapa kegagalan.' }}</p>
                                 <p class="mb-0">
                                     <strong>{{ count(session('failures')) }} data</strong> gagal diimport.
                                     <button type="button" class="btn btn-sm btn-outline-warning ms-1"
@@ -86,7 +151,6 @@
                                         Lihat Detail
                                     </button>
                                 </p>
-                                <!-- Pindah tombol close ke sini -->
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"
                                     style="top: 1rem; right: 1rem;"></button>
                             </div>
@@ -100,6 +164,7 @@
                                                 <tr>
                                                     <th>Baris</th>
                                                     <th>No Pesanan</th>
+                                                    <th>Toko ID</th>
                                                     <th>Alasan</th>
                                                 </tr>
                                             </thead>
@@ -108,6 +173,7 @@
                                                 <tr>
                                                     <td>{{ $failure['row'] }}</td>
                                                     <td>{{ $failure['no_pesanan'] }}</td>
+                                                    <td>{{ $failure['toko_id'] ?? '-' }}</td>
                                                     <td class="text-danger small">{{ $failure['reason'] }}</td>
                                                 </tr>
                                                 @endforeach

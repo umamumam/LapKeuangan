@@ -12,7 +12,8 @@ class Income extends Model
     protected $fillable = [
         'no_pesanan',
         'no_pengajuan',
-        'total_penghasilan'
+        'total_penghasilan',
+        'toko_id'
     ];
 
     protected $casts = [
@@ -26,6 +27,10 @@ class Income extends Model
     public function orders()
     {
         return $this->hasMany(Order::class, 'no_pesanan', 'no_pesanan');
+    }
+    public function toko()
+    {
+        return $this->belongsTo(Toko::class);
     }
 
     /**
@@ -49,6 +54,12 @@ class Income extends Model
             ->whereMonth('created_at', $month);
     }
 
+    // Scope untuk toko tertentu
+    public function scopeByToko($query, $toko_id)
+    {
+        return $query->where('toko_id', $toko_id);
+    }
+
     // Accessor untuk total HPP income ini
     public function getTotalHppAttribute()
     {
@@ -62,5 +73,10 @@ class Income extends Model
     public function getLabaAttribute()
     {
         return $this->total_penghasilan - $this->total_hpp;
+    }
+
+    public function getNamaTokoAttribute()
+    {
+        return $this->toko->nama ?? '-';
     }
 }

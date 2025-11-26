@@ -41,6 +41,25 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
+                                        <label for="toko_id" class="form-label">Toko <span
+                                                class="text-danger">*</span></label>
+                                        <select class="form-control @error('toko_id') is-invalid @enderror"
+                                            id="toko_id" name="toko_id" required>
+                                            <option value="">Pilih Toko</option>
+                                            @foreach($tokos as $toko)
+                                                <option value="{{ $toko->id }}"
+                                                    {{ old('toko_id') == $toko->id ? 'selected' : '' }}>
+                                                    {{ $toko->nama }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('toko_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
                                         <label for="total_penghasilan" class="form-label">Total Penghasilan <span
                                                 class="text-danger">*</span></label>
                                         <input type="number"

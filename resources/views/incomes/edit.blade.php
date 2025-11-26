@@ -32,7 +32,7 @@
                                         <input type="text"
                                             class="form-control @error('no_pengajuan') is-invalid @enderror"
                                             id="no_pengajuan" name="no_pengajuan"
-                                            value="{{ old('no_pengajuan', $income->no_pengajuan ?? null) }}"
+                                            value="{{ old('no_pengajuan', $income->no_pengajuan) }}"
                                             placeholder="Masukkan no pengajuan">
                                         @error('no_pengajuan')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -42,6 +42,25 @@
                             </div>
 
                             <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="toko_id" class="form-label">Toko <span
+                                                class="text-danger">*</span></label>
+                                        <select class="form-control @error('toko_id') is-invalid @enderror"
+                                            id="toko_id" name="toko_id" required>
+                                            <option value="">Pilih Toko</option>
+                                            @foreach($tokos as $toko)
+                                                <option value="{{ $toko->id }}"
+                                                    {{ old('toko_id', $income->toko_id) == $toko->id ? 'selected' : '' }}>
+                                                    {{ $toko->nama }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('toko_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="total_penghasilan" class="form-label">Total Penghasilan <span
@@ -59,8 +78,8 @@
                             </div>
 
                             <div class="d-flex gap-2 justify-content-end">
-                                <a href="{{ route('incomes.show', $income->id) }}" class="btn btn-secondary">
-                                    <i class="fas fa-times"></i> Batal
+                                <a href="{{ route('incomes.index') }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Kembali
                                 </a>
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-save"></i> Update

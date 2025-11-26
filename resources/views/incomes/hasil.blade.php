@@ -87,6 +87,7 @@
                                         <th>HPP</th>
                                         <th>Laba/Rugi</th>
                                         <th>Persentase</th>
+                                        <th>Toko</th>
                                         <th>Tanggal</th>
                                         <th>Aksi</th>
                                     </tr>
@@ -111,6 +112,7 @@
                                                     {{ number_format($income->persentase_laba, 1) }}%
                                                 </span>
                                             </td>
+                                            <td>{{ $income->nama_toko }}</td>
                                             <td>{{ $income->created_at->format('d/m/Y H:i') }}</td>
                                             <td>
                                                 <a href="{{ route('incomes.show', $income->id) }}"
@@ -137,7 +139,7 @@
                                                 {{ number_format($totalPersentase, 1) }}%
                                             </span>
                                         </th>
-                                        <th colspan="2"></th>
+                                        <th colspan="3"></th>
                                     </tr>
                                 </tfoot>
                             </table>

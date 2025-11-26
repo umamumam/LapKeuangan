@@ -15,6 +15,12 @@
                     </a>
                 </li>
                 <li class="pc-item">
+                    <a href="/toko" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-building-store"></i></span>
+                        <span class="pc-mtext">Daftar Toko</span>
+                    </a>
+                </li>
+                <li class="pc-item">
                     <a href="/produks" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-package"></i></span>
                         <span class="pc-mtext">Daftar Produk</span>
