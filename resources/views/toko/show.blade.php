@@ -47,7 +47,7 @@
                             <div class="card-body">
                                 @if($incomes->count() > 0)
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-hover">
+                                    <table id="res-config" class="table table-striped table-hover">
                                         <thead class="table-light">
                                             <tr>
                                                 <th>#</th>
@@ -71,10 +71,6 @@
                                     </table>
                                 </div>
 
-                                <!-- Pagination -->
-                                <div class="d-flex justify-content-center mt-3">
-                                    {{ $incomes->links() }}
-                                </div>
                                 @else
                                 <div class="text-center py-4">
                                     <i class="fas fa-receipt fa-2x text-muted mb-3"></i>
@@ -84,7 +80,7 @@
                             </div>
                         </div>
 
-                        <div class="d-flex gap-2 mt-4">
+                        {{-- <div class="d-flex gap-2 mt-4">
                             <a href="{{ route('toko.edit', $toko->id) }}" class="btn btn-warning">
                                 <i class="fas fa-edit"></i> Edit
                             </a>
@@ -96,7 +92,7 @@
                                     <i class="fas fa-trash"></i> Hapus
                                 </button>
                             </form>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>
