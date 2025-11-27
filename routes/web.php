@@ -25,12 +25,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/produks/import', [ProdukController::class, 'importForm'])->name('produks.import.form');
     Route::post('/produks/import', [ProdukController::class, 'import'])->name('produks.import');
     Route::get('/produks/download-template', [ProdukController::class, 'downloadTemplate'])->name('produks.download.template');
+    Route::delete('/produks/delete-all', [ProdukController::class, 'deleteAll'])->name('produks.deleteAll');
     Route::resource('produks', ProdukController::class);
 
     Route::get('/orders/export', [OrderController::class, 'export'])->name('orders.export');
     Route::get('/orders/import', [OrderController::class, 'importForm'])->name('orders.import.form');
     Route::post('/orders/import', [OrderController::class, 'import'])->name('orders.import');
     Route::get('/orders/download-template', [OrderController::class, 'downloadTemplate'])->name('orders.download.template');
+    Route::delete('/orders/delete-all', [OrderController::class, 'deleteAll'])->name('orders.deleteAll');
     Route::resource('orders', OrderController::class);
 
     Route::get('/incomes/calculate/{income}', [IncomeController::class, 'calculateTotal'])
@@ -44,6 +46,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/incomes/import/form', [IncomeController::class, 'importForm'])->name('incomes.import.form');
     Route::post('/incomes/import', [IncomeController::class, 'import'])->name('incomes.import');
     Route::get('/incomes/download-template', [IncomeController::class, 'downloadTemplate'])->name('incomes.download-template');
+    Route::delete('/incomes/delete-all', [IncomeController::class, 'deleteAll'])->name('incomes.deleteAll');
     Route::resource('incomes', IncomeController::class);
 
     Route::get('/monthly-finances/{monthlyFinance}/calculate', [MonthlyFinanceController::class, 'calculate'])->name('monthly-finances.calculate');

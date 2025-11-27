@@ -219,4 +219,29 @@ class OrderController extends Controller
     {
         return Excel::download(new OrderExport, 'template-import-order.xlsx');
     }
+    public function deleteAll()
+    {
+        try {
+            $orderCount = Order::count();
+
+            if ($orderCount === 0) {
+                return redirect()->route('orders.index')
+                    ->with('warning', 'Tidak ada data order untuk dihapus.');
+            }
+
+            // Gunakan transaction untuk memastikan konsistensi data
+            DB::transaction(function () {
+                Order::truncate(); // Menghapus semua data dan reset auto increment
+            });
+
+            return redirect()->route('orders.index')
+                ->with('success', "Semua data order ($orderCount data) berhasil dihapus!");
+
+        } catch (\Exception $e) {
+            \Log::error('Delete All Orders Error: ' . $e->getMessage());
+
+            return redirect()->route('orders.index')
+                ->with('error', 'Gagal menghapus semua data order: ' . $e->getMessage());
+        }
+    }
 }

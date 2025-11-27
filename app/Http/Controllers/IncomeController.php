@@ -281,4 +281,31 @@ class IncomeController extends Controller
     {
         return Excel::download(new IncomeResultExport, 'hasil-income-' . date('Y-m-d-H-i-s') . '.xlsx');
     }
+
+    public function deleteAll()
+    {
+        try {
+            $incomeCount = Income::count();
+
+            if ($incomeCount === 0) {
+                return redirect()->route('incomes.index')
+                    ->with('warning', 'Tidak ada data income untuk dihapus.');
+            }
+
+            // Gunakan transaction untuk keamanan
+            DB::transaction(function () {
+                // Hapus semua data income
+                Income::query()->delete();
+            });
+
+            return redirect()->route('incomes.index')
+                ->with('success', "Semua data income ($incomeCount data) berhasil dihapus!");
+
+        } catch (\Exception $e) {
+            \Log::error('Delete All Incomes Error: ' . $e->getMessage());
+
+            return redirect()->route('incomes.index')
+                ->with('error', 'Gagal menghapus semua data income: ' . $e->getMessage());
+        }
+    }
 }

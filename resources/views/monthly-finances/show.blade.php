@@ -20,11 +20,11 @@
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="fas fa-eye"></i> Detail Keuangan - {{ $monthlyFinance->nama_periode }}</h5>
                         <div class="d-flex gap-2">
-                            <a href="{{ route('monthly-finances.calculate', $monthlyFinance->id) }}"
+                            {{-- <a href="{{ route('monthly-finances.calculate', $monthlyFinance->id) }}"
                                class="btn btn-warning btn-sm"
                                onclick="return confirm('Hitung ulang data dari database?')">
                                 <i class="fas fa-calculator"></i> Hitung Ulang
-                            </a>
+                            </a> --}}
                             <a href="{{ route('monthly-finances.edit', $monthlyFinance->id) }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-edit"></i> Edit
                             </a>

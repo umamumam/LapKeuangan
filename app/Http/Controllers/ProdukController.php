@@ -11,9 +11,23 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ProdukController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $produks = Produk::orderBy('created_at', 'desc')->get();
+        $searchProduk = $request->get('search_produk');
+        $searchVariasi = $request->get('search_variasi');
+
+        $produks = Produk::when($searchProduk || $searchVariasi, function($query) use ($searchProduk, $searchVariasi) {
+            if ($searchProduk) {
+                $query->where('nama_produk', 'like', '%' . $searchProduk . '%');
+            }
+            if ($searchVariasi) {
+                $query->where('nama_variasi', 'like', '%' . $searchVariasi . '%');
+            }
+            return $query;
+        })
+        ->orderBy('created_at', 'desc')
+        ->get();
+
         return view('produks.index', compact('produks'));
     }
 
@@ -124,5 +138,32 @@ class ProdukController extends Controller
     public function downloadTemplate()
     {
         return Excel::download(new ProdukExport, 'template-import-produk.xlsx');
+    }
+
+    public function deleteAll()
+    {
+        try {
+            $produkCount = Produk::count();
+
+            if ($produkCount === 0) {
+                return redirect()->route('produks.index')
+                    ->with('warning', 'Tidak ada data produk untuk dihapus.');
+            }
+
+            // Gunakan transaction untuk keamanan
+            DB::transaction(function () {
+                // Hapus semua data produk
+                Produk::query()->delete();
+            });
+
+            return redirect()->route('produks.index')
+                ->with('success', "Semua data produk ($produkCount data) berhasil dihapus!");
+
+        } catch (\Exception $e) {
+            \Log::error('Delete All Produks Error: ' . $e->getMessage());
+
+            return redirect()->route('produks.index')
+                ->with('error', 'Gagal menghapus semua data produk: ' . $e->getMessage());
+        }
     }
 }

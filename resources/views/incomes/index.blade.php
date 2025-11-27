@@ -43,6 +43,11 @@
                             <a href="{{ route('incomes.create') }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-plus"></i> Tambah Income
                             </a>
+                            @if($incomes->count() > 0)
+                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteAllModal">
+                                <i class="fas fa-trash-alt"></i> Hapus Semua
+                            </button>
+                            @endif
                         </div>
                     </div>
                     <div class="card-body" style="overflow-x:auto;">
@@ -114,4 +119,36 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Konfirmasi Hapus Semua -->
+    @if($incomes->count() > 0)
+    <div class="modal fade" id="deleteAllModal" tabindex="-1" aria-labelledby="deleteAllModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteAllModalLabel">Konfirmasi Hapus Semua Data Income</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>PERINGATAN!</strong>
+                    </div>
+                    <p>Anda akan menghapus <strong>semua data income</strong> (total: {{ $incomes->count() }} data).</p>
+                    <p class="text-danger mb-0">Tindakan ini tidak dapat dibatalkan! Apakah Anda yakin ingin melanjutkan?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <form action="{{ route('incomes.deleteAll') }}" method="POST" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash-alt"></i> Ya, Hapus Semua
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 </x-app-layout>
