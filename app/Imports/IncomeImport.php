@@ -44,7 +44,7 @@ class IncomeImport implements ToCollection, WithHeadingRow
 
                 $data = [
                     'no_pesanan' => $noPesanan,
-                    'no_pengajuan' => $noPengajuan,
+                    'no_pengajuan' => $this->parseNoPengajuan($noPengajuan), // ← GUNAKAN FUNCTION BARU INI
                     'total_penghasilan' => $this->parseInteger($totalPenghasilan),
                     'toko_id' => $finalTokoId,
                 ];
@@ -79,8 +79,7 @@ class IncomeImport implements ToCollection, WithHeadingRow
                     continue;
                 }
 
-                // Create income - TIDAK PERLU CEK ORDER EXISTS
-                // Biarkan user import data income meskipun order belum ada
+                // Create income
                 Income::create($data);
                 $this->successCount++;
 
@@ -94,6 +93,30 @@ class IncomeImport implements ToCollection, WithHeadingRow
                 continue;
             }
         }
+    }
+
+    /**
+     * HELPER BARU: Konversi no_pengajuan ke string dengan handle scientific notation
+     */
+    private function parseNoPengajuan($value)
+    {
+        if (is_null($value) || $value === '' || $value === 'NULL' || $value === 'null') {
+            return null;
+        }
+
+        // Handle scientific notation (2,04276E+14 → 204276000000000)
+        if (is_string($value) && preg_match('/^[0-9,]*\.?[0-9]+E\+[0-9]+$/i', $value)) {
+            $floatValue = (float) str_replace(',', '.', $value);
+            return number_format($floatValue, 0, '', ''); // Convert to full number string
+        }
+
+        // Handle regular numbers (convert to string to preserve precision)
+        if (is_numeric($value)) {
+            return (string) $value;
+        }
+
+        // Return as is for strings
+        return (string) $value;
     }
 
     private function determineTokoId($tokoIdFromExcel, $rowNumber, $noPesanan)
