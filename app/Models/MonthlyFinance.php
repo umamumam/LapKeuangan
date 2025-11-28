@@ -27,105 +27,146 @@ class MonthlyFinance extends Model
         'rasio_admin_layanan' => 'decimal:2',
     ];
 
-    // Relasi dengan incomes berdasarkan periode (DENGAN WAKTU)
-    public function incomes()
+    /**
+     * Relasi ke MonthlySummary berdasarkan nama_periode
+     */
+    public function summary()
     {
-        return Income::whereBetween('created_at', [
-            $this->periode_awal_start_of_day,
-            $this->periode_akhir_end_of_day
-        ]);
+        return $this->hasOne(MonthlySummary::class, 'nama_periode', 'nama_periode');
     }
 
-    // Relasi dengan orders berdasarkan periode (DENGAN WAKTU)
-    public function orders()
-    {
-        return Order::whereBetween('created_at', [
-            $this->periode_awal_start_of_day,
-            $this->periode_akhir_end_of_day
-        ]);
-    }
-
+    /**
+     * Accessor untuk total_penghasilan dari summary
+     */
     public function getTotalPenghasilanAttribute()
     {
-        return $this->incomes()->sum('total_penghasilan');
+        return $this->summary ? $this->summary->total_penghasilan : 0;
     }
 
+    /**
+     * Accessor untuk HPP dari summary
+     */
     public function getHppAttribute()
     {
-        // Ambil HPP dari data income dalam periode
-        return $this->incomes()->get()->sum(function ($income) {
-            return $income->orders->sum(function ($order) {
-                $netQuantity = $order->jumlah - $order->returned_quantity;
-                return $netQuantity * $order->produk->hpp_produk;
-            });
-        });
+        return $this->summary ? $this->summary->total_hpp : 0;
     }
 
+    /**
+     * Accessor untuk laba/rugi yang sudah include operasional dan iklan
+     */
     public function getLabaRugiAttribute()
     {
-        // Laba/Rugi = Total Penghasilan - HPP - Operasional - Iklan
-        return $this->total_penghasilan - $this->hpp - $this->operasional - $this->iklan;
+        $penghasilanBersih = $this->total_penghasilan - $this->hpp;
+        return $penghasilanBersih - $this->operasional - $this->iklan;
     }
 
+    /**
+     * Accessor untuk rasio operasional
+     */
     public function getRasioOperasionalAttribute()
     {
         return $this->total_pendapatan > 0 ?
             round(($this->operasional / $this->total_pendapatan) * 100, 2) : 0;
     }
 
+    /**
+     * Accessor untuk rasio margin
+     */
     public function getRasioMarginAttribute()
     {
         return $this->total_pendapatan > 0 ?
             round((($this->total_pendapatan - $this->hpp) / $this->total_pendapatan) * 100, 2) : 0;
     }
 
+    /**
+     * Accessor untuk rasio laba
+     */
     public function getRasioLabaAttribute()
     {
         return $this->total_pendapatan > 0 ?
             round(($this->laba_rugi / $this->total_pendapatan) * 100, 2) : 0;
     }
 
-    // Metrics berdasarkan data aktual
+    /**
+     * Accessor untuk AOV aktual dari summary
+     */
     public function getAovAktualAttribute()
     {
-        $totalOrders = $this->orders()->sum('jumlah');
-        $totalRevenueFromOrders = $this->orders()->sum('total_harga_produk');
-        return $totalOrders > 0 ? round($totalRevenueFromOrders / $totalOrders, 2) : 0;
+        return $this->summary ? $this->summary->aov : 0;
     }
 
+    /**
+     * Accessor untuk basket size aktual
+     */
     public function getBasketSizeAktualAttribute()
     {
-        $totalProducts = $this->orders()->sum('jumlah');
-        $totalOrders = $this->orders()->count();
+        if (!$this->summary || $this->summary->total_order_qty == 0) {
+            return 0;
+        }
+
+        $totalProducts = $this->summary->total_order_qty;
+        $totalOrders = $this->summary->total_income_count;
         return $totalOrders > 0 ? round($totalProducts / $totalOrders, 2) : 0;
     }
 
+    /**
+     * Accessor untuk ROAS aktual
+     */
     public function getRoasAktualAttribute()
     {
-        return $this->iklan > 0 ? round(($this->total_pendapatan / $this->iklan) * 100, 2) : 0;
+        return $this->iklan > 0 ?
+            round(($this->total_pendapatan / $this->iklan) * 100, 2) : 0;
     }
 
+    /**
+     * Accessor untuk ACOS aktual
+     */
     public function getAcosAktualAttribute()
     {
-        return $this->total_pendapatan > 0 ? round(($this->iklan / $this->total_pendapatan) * 100, 2) : 0;
+        return $this->total_pendapatan > 0 ?
+            round(($this->iklan / $this->total_pendapatan) * 100, 2) : 0;
     }
 
-    // Helper untuk generate nama periode otomatis
+    /**
+     * Accessor untuk total order quantity dari summary
+     */
+    public function getTotalOrderQtyAttribute()
+    {
+        return $this->summary ? $this->summary->total_order_qty : 0;
+    }
+
+    /**
+     * Accessor untuk total return quantity dari summary
+     */
+    public function getTotalReturnQtyAttribute()
+    {
+        return $this->summary ? $this->summary->total_return_qty : 0;
+    }
+
+    /**
+     * Accessor untuk net quantity dari summary
+     */
+    public function getNetQuantityAttribute()
+    {
+        return $this->summary ? $this->summary->net_quantity : 0;
+    }
+
+    /**
+     * Helper untuk generate nama periode otomatis
+     */
     public static function generateNamaPeriode($periodeAwal)
     {
-        $awal = \Carbon\Carbon::parse($periodeAwal);
+        $awal = Carbon::parse($periodeAwal);
         return $awal->locale('id')->translatedFormat('F Y');
     }
 
-    // Helper untuk generate periode akhir otomatis (akhir bulan)
+    /**
+     * Helper untuk generate periode akhir otomatis (akhir bulan)
+     */
     public static function generatePeriodeAkhir($periodeAwal)
     {
-        return \Carbon\Carbon::parse($periodeAwal)->endOfMonth();
+        return Carbon::parse($periodeAwal)->endOfMonth();
     }
-
-    // =============================================================
-    // ACCESSOR DENGAN WAKTU
-    // =============================================================
 
     /**
      * Get periode_akhir sebagai akhir hari (23:59:59)
@@ -150,5 +191,13 @@ class MonthlyFinance extends Model
     {
         return $query->where('periode_awal', '>=', $startDate)
                     ->where('periode_akhir', '<=', $endDate);
+    }
+
+    /**
+     * Scope dengan eager loading summary
+     */
+    public function scopeWithSummary($query)
+    {
+        return $query->with('summary');
     }
 }

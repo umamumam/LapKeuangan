@@ -277,6 +277,49 @@ class IncomeController extends Controller
         return view('incomes.hasil', compact('incomes', 'tokos'));
     }
 
+    public function detailhasil(Request $request)
+    {
+        $tokos = Toko::all();
+
+        // Query dasar dengan eager loading
+        $query = Income::with(['orders.produk', 'toko'])
+            ->orderBy('created_at', 'desc');
+
+        // Filter berdasarkan toko
+        if ($request->has('toko_id') && $request->toko_id != '') {
+            $query->where('toko_id', $request->toko_id);
+        }
+
+        // Filter berdasarkan tanggal
+        if ($request->has('start_date') && $request->start_date != '') {
+            $query->whereDate('created_at', '>=', $request->start_date);
+        }
+
+        if ($request->has('end_date') && $request->end_date != '') {
+            $query->whereDate('created_at', '<=', $request->end_date);
+        }
+
+        $incomes = $query->get()->map(function ($income) {
+            // Hitung total HPP
+            $totalHpp = $income->orders->sum(function ($order) {
+                $netQuantity = $order->jumlah - $order->returned_quantity;
+                return $netQuantity * $order->produk->hpp_produk;
+            });
+
+            // Hitung laba
+            $laba = $income->total_penghasilan - $totalHpp;
+
+            // Tambahkan field calculated
+            $income->total_hpp = $totalHpp;
+            $income->laba = $laba;
+            $income->persentase_laba = $income->total_penghasilan > 0 ? ($laba / $income->total_penghasilan) * 100 : 0;
+
+            return $income;
+        });
+
+        return view('incomes.detailhasil', compact('incomes', 'tokos'));
+    }
+
     public function exportHasil()
     {
         return Excel::download(new IncomeResultExport, 'hasil-income-' . date('Y-m-d-H-i-s') . '.xlsx');

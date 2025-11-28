@@ -26,6 +26,9 @@
                             <a href="{{ route('monthly-finances.rekap') }}" class="btn btn-info btn-sm">
                                 <i class="fas fa-chart-bar"></i> Rekap
                             </a>
+                            <a href="{{ route('monthly-summaries.index') }}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-database"></i> Manage Summary
+                            </a>
                             <a href="{{ route('monthly-finances.create') }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-plus"></i> Tambah Data
                             </a>
@@ -33,7 +36,8 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table id="res-config" class="display table table-striped table-hover dt-responsive nowrap" style="width: 100%">
+                            <table id="res-config" class="display table table-striped table-hover dt-responsive nowrap"
+                                style="width: 100%">
                                 <thead class="table-light">
                                     <tr>
                                         <th>No</th>
@@ -44,53 +48,73 @@
                                         <th>Operasional</th>
                                         <th>Iklan</th>
                                         <th>Laba/Rugi</th>
-                                        <th width="120">Aksi</th>
+                                        {{-- <th>Status Data</th> --}}
+                                        <th width="140">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($finances as $finance)
-                                        <tr>
-                                            <td>{{ $loop->iteration }}</td>
-                                            <td>
-                                                <strong>{{ $finance->nama_periode }}</strong>
-                                                <br>
-                                                <small class="text-muted">
-                                                    {{ $finance->periode_awal->format('d/m/Y') }} - {{ $finance->periode_akhir->format('d/m/Y') }}
-                                                </small>
-                                            </td>
-                                            <td>Rp {{ number_format($finance->total_pendapatan, 0, ',', '.') }}</td>
-                                            <td>Rp {{ number_format($finance->total_penghasilan, 0, ',', '.') }}</td>
-                                            <td>Rp {{ number_format($finance->hpp, 0, ',', '.') }}</td>
-                                            <td>Rp {{ number_format($finance->operasional, 0, ',', '.') }}</td>
-                                            <td>Rp {{ number_format($finance->iklan, 0, ',', '.') }}</td>
-                                            <td>
-                                                <span class="badge bg-{{ $finance->laba_rugi >= 0 ? 'success' : 'danger' }}">
-                                                    Rp {{ number_format($finance->laba_rugi, 0, ',', '.') }}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex gap-1">
-                                                    <a href="{{ route('monthly-finances.show', $finance->id) }}"
-                                                       class="btn btn-info btn-sm" title="Lihat Detail">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                    <a href="{{ route('monthly-finances.edit', $finance->id) }}"
-                                                       class="btn btn-warning btn-sm" title="Edit">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <form action="{{ route('monthly-finances.destroy', $finance->id) }}"
-                                                          method="POST" class="d-inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-danger btn-sm"
-                                                                onclick="return confirm('Hapus data {{ $finance->nama_periode }}?')"
-                                                                title="Hapus">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                    @php
+                                    $hasSummary = !is_null($finance->summary);
+                                    $dataStatus = $hasSummary ? 'success' : 'warning';
+                                    $dataText = $hasSummary ? 'Lengkap' : 'Perlu Sync';
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>
+                                            <strong>{{ $finance->nama_periode }}</strong>
+                                            <br>
+                                            <small class="text-muted">
+                                                {{ $finance->periode_awal->format('d/m/Y') }} - {{
+                                                $finance->periode_akhir->format('d/m/Y') }}
+                                            </small>
+                                        </td>
+                                        <td>Rp {{ number_format($finance->total_pendapatan, 0, ',', '.') }}</td>
+                                        <td>Rp {{ number_format($finance->total_penghasilan, 0, ',', '.') }}</td>
+                                        <td>Rp {{ number_format($finance->hpp, 0, ',', '.') }}</td>
+                                        <td>Rp {{ number_format($finance->operasional, 0, ',', '.') }}</td>
+                                        <td>Rp {{ number_format($finance->iklan, 0, ',', '.') }}</td>
+                                        <td>
+                                            <span
+                                                class="badge bg-{{ $finance->laba_rugi >= 0 ? 'success' : 'danger' }}">
+                                                Rp {{ number_format($finance->laba_rugi, 0, ',', '.') }}
+                                            </span>
+                                        </td>
+                                        {{-- <td>
+                                            <span class="badge bg-{{ $dataStatus }}">
+                                                {{ $dataText }}
+                                            </span>
+                                        </td> --}}
+                                        <td>
+                                            <div class="d-flex gap-1">
+                                                <a href="{{ route('monthly-finances.show', $finance->id) }}"
+                                                    class="btn btn-info btn-sm" title="Lihat Detail">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ route('monthly-finances.edit', $finance->id) }}"
+                                                    class="btn btn-warning btn-sm" title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                @if(!$hasSummary)
+                                                <a href="{{ route('monthly-finances.sync', $finance->id) }}"
+                                                    class="btn btn-success btn-sm" title="Sync Data"
+                                                    onclick="return confirm('Generate summary data untuk {{ $finance->nama_periode }}?')">
+                                                    <i class="fas fa-sync"></i>
+                                                </a>
+                                                @endif
+                                                <form action="{{ route('monthly-finances.destroy', $finance->id) }}"
+                                                    method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger btn-sm"
+                                                        onclick="return confirm('Hapus data {{ $finance->nama_periode }}?')"
+                                                        title="Hapus">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
                                     @endforeach
                                 </tbody>
                             </table>

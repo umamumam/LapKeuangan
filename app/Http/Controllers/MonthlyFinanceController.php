@@ -11,7 +11,11 @@ class MonthlyFinanceController extends Controller
 {
     public function index()
     {
-        $finances = MonthlyFinance::orderBy('periode_awal', 'desc')->get();
+        // Gunakan eager loading untuk summary
+        $finances = MonthlyFinance::withSummary()
+            ->orderBy('periode_awal', 'desc')
+            ->get();
+
         return view('monthly-finances.index', compact('finances'));
     }
 
@@ -64,7 +68,10 @@ class MonthlyFinanceController extends Controller
 
     public function show(MonthlyFinance $monthlyFinance)
     {
-        // Load calculated attributes
+        // Load summary relationship
+        $monthlyFinance->load('summary');
+
+        // Load calculated attributes dari accessor
         $calculatedData = [
             'total_penghasilan' => $monthlyFinance->total_penghasilan,
             'hpp' => $monthlyFinance->hpp,
@@ -76,6 +83,8 @@ class MonthlyFinanceController extends Controller
             'basket_size_aktual' => $monthlyFinance->basket_size_aktual,
             'roas_aktual' => $monthlyFinance->roas_aktual,
             'acos_aktual' => $monthlyFinance->acos_aktual,
+            'total_order_qty' => $monthlyFinance->total_order_qty,
+            'net_quantity' => $monthlyFinance->net_quantity,
         ];
 
         return view('monthly-finances.show', compact('monthlyFinance', 'calculatedData'));
@@ -144,7 +153,9 @@ class MonthlyFinanceController extends Controller
 
     public function rekap()
     {
-        $finances = MonthlyFinance::orderBy('periode_awal', 'desc')->get();
+        $finances = MonthlyFinance::withSummary()
+            ->orderBy('periode_awal', 'desc')
+            ->get();
 
         // Hitung total-total
         $totals = [
@@ -153,55 +164,32 @@ class MonthlyFinanceController extends Controller
             'iklan' => $finances->sum('iklan'),
         ];
 
-        // Hitung calculated totals
-        $totals['total_penghasilan'] = $finances->sum(function($finance) {
-            return $finance->total_penghasilan;
-        });
-
-        $totals['hpp'] = $finances->sum(function($finance) {
-            return $finance->hpp;
-        });
-
-        $totals['laba_rugi'] = $finances->sum(function($finance) {
-            return $finance->laba_rugi;
-        });
+        // Hitung calculated totals dari accessor
+        $totals['total_penghasilan'] = $finances->sum('total_penghasilan');
+        $totals['hpp'] = $finances->sum('hpp');
+        $totals['laba_rugi'] = $finances->sum('laba_rugi');
 
         // Hitung rata-rata rasio
         $totals['rata_rata_rasio_admin'] = $finances->avg('rasio_admin_layanan');
-        $totals['rata_rata_rasio_operasional'] = $finances->avg(function($finance) {
-            return $finance->rasio_operasional;
-        });
-        $totals['rata_rata_rasio_laba'] = $finances->avg(function($finance) {
-            return $finance->rasio_laba;
-        });
+        $totals['rata_rata_rasio_operasional'] = $finances->avg('rasio_operasional');
+        $totals['rata_rata_rasio_laba'] = $finances->avg('rasio_laba');
 
         return view('monthly-finances.rekap', compact('finances', 'totals'));
     }
 
-    // Method untuk calculate ulang data (jika diperlukan)
-    public function calculate(MonthlyFinance $monthlyFinance)
+    // Method untuk sync dengan summary
+    public function syncWithSummary(MonthlyFinance $monthlyFinance)
     {
         try {
-            // Force calculate semua attributes
-            $calculatedData = [
-                'total_penghasilan' => $monthlyFinance->total_penghasilan,
-                'hpp' => $monthlyFinance->hpp,
-                'laba_rugi' => $monthlyFinance->laba_rugi,
-                'rasio_operasional' => $monthlyFinance->rasio_operasional,
-                'rasio_margin' => $monthlyFinance->rasio_margin,
-                'rasio_laba' => $monthlyFinance->rasio_laba,
-                'aov_aktual' => $monthlyFinance->aov_aktual,
-                'basket_size_aktual' => $monthlyFinance->basket_size_aktual,
-                'roas_aktual' => $monthlyFinance->roas_aktual,
-                'acos_aktual' => $monthlyFinance->acos_aktual,
-            ];
+            // Generate summary untuk periode ini
+            $summary = \App\Models\MonthlySummary::generateForPeriod($monthlyFinance->periode_awal);
 
             return redirect()->route('monthly-finances.show', $monthlyFinance)
-                ->with('success', 'Data berhasil dihitung ulang!')
-                ->with('calculated_data', $calculatedData);
+                ->with('success', "Data berhasil disinkronisasi dengan summary {$summary->nama_periode}!");
+
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'Gagal menghitung ulang data: ' . $e->getMessage());
+                ->with('error', 'Gagal sinkronisasi data: ' . $e->getMessage());
         }
     }
 }

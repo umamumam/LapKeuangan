@@ -157,7 +157,7 @@
                         </div>
 
                         <!-- Table Hasil -->
-                        {{-- <div class="table-responsive">
+                        <div class="table-responsive">
                             <table id="res-config" class="display table table-striped table-hover dt-responsive nowrap" style="width: 100%">
                                 <thead class="table-light">
                                     <tr>
@@ -228,7 +228,7 @@
                                     </tr>
                                 </tfoot>
                             </table>
-                        </div> --}}
+                        </div>
 
                         @if($incomes->isEmpty())
                         <div class="text-center py-5">
