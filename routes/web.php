@@ -72,6 +72,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/bandings/export', [BandingController::class, 'export'])->name('bandings.export');
     Route::get('/bandings/template', [BandingController::class, 'downloadTemplate'])->name('bandings.downloadTemplate');
     Route::delete('/bandings/delete-all', [BandingController::class, 'deleteAll'])->name('bandings.deleteAll');
+    Route::get('/bandings/search', [BandingController::class, 'search'])->name('bandings.search');
+    Route::post('/bandings/search-result', [BandingController::class, 'searchResult'])->name('bandings.search.result');
     Route::resource('bandings', BandingController::class);
 });
 

@@ -42,8 +42,7 @@
                                             id="marketplace" name="marketplace" required>
                                             <option value="">Pilih Marketplace</option>
                                             @foreach($marketplaceOptions as $value => $label)
-                                            <option value="{{ $value }}" {{ old('marketplace')==$value ? 'selected' : ''
-                                                }}>
+                                            <option value="{{ $value }}" {{ old('marketplace')==$value ? 'selected' : '' }}>
                                                 {{ $label }}
                                             </option>
                                             @endforeach
@@ -58,10 +57,10 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="no_pesanan" class="form-label">No. Pesanan *</label>
+                                        <label for="no_pesanan" class="form-label">No. Pesanan</label>
                                         <input type="text"
                                             class="form-control @error('no_pesanan') is-invalid @enderror"
-                                            id="no_pesanan" name="no_pesanan" value="{{ old('no_pesanan') }}" required>
+                                            id="no_pesanan" name="no_pesanan" value="{{ old('no_pesanan') }}">
                                         @error('no_pesanan')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -88,8 +87,7 @@
                                             id="status_banding" name="status_banding" required>
                                             <option value="">Pilih Status</option>
                                             @foreach($statusBandingOptions as $value => $label)
-                                            <option value="{{ $value }}" {{ old('status_banding')==$value ? 'selected'
-                                                : '' }}>
+                                            <option value="{{ $value }}" {{ old('status_banding')==$value ? 'selected' : '' }}>
                                                 {{ $label }}
                                             </option>
                                             @endforeach
@@ -135,32 +133,25 @@
                                 </div>
                             </div>
 
+                            <!-- TAMBAH FIELD STATUS PENERIMAAN -->
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="username" class="form-label">Username *</label>
-                                        <input type="text" class="form-control @error('username') is-invalid @enderror"
-                                            id="username" name="username" value="{{ old('username') }}" required>
-                                        @error('username')
+                                        <label for="status_penerimaan" class="form-label">Status Penerimaan *</label>
+                                        <select class="form-select @error('status_penerimaan') is-invalid @enderror"
+                                            id="status_penerimaan" name="status_penerimaan" required>
+                                            <option value="">Pilih Status Penerimaan</option>
+                                            @foreach($statusPenerimaanOptions as $value => $label)
+                                            <option value="{{ $value }}" {{ old('status_penerimaan')==$value ? 'selected' : '' }}>
+                                                {{ $label }}
+                                            </option>
+                                            @endforeach
+                                        </select>
+                                        @error('status_penerimaan')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="nama_pengirim" class="form-label">Nama Pengirim *</label>
-                                        <input type="text"
-                                            class="form-control @error('nama_pengirim') is-invalid @enderror"
-                                            id="nama_pengirim" name="nama_pengirim" value="{{ old('nama_pengirim') }}"
-                                            required>
-                                        @error('nama_pengirim')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="no_resi" class="form-label">No. Resi</label>
@@ -171,7 +162,31 @@
                                         @enderror
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="username" class="form-label">Username</label>
+                                        <input type="text" class="form-control @error('username') is-invalid @enderror"
+                                            id="username" name="username" value="{{ old('username') }}">
+                                        @error('username')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="nama_pengirim" class="form-label">Nama Pengirim</label>
+                                        <input type="text"
+                                            class="form-control @error('nama_pengirim') is-invalid @enderror"
+                                            id="nama_pengirim" name="nama_pengirim" value="{{ old('nama_pengirim') }}">
+                                        @error('nama_pengirim')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
                                     <div class="mb-3">
                                         <label for="no_hp" class="form-label">No. HP</label>
                                         <input type="text" class="form-control @error('no_hp') is-invalid @enderror"

@@ -32,6 +32,7 @@ class BandingImport implements ToCollection, WithHeadingRow
                 $noPesanan = $this->getCellValue($row, ['no_pesanan', 'no pesanan', 'nomor_pesanan']);
                 $noPengajuan = $this->getCellValue($row, ['no_pengajuan', 'no pengajuan', 'nomor_pengajuan']);
                 $alasan = $this->getCellValue($row, ['alasan', 'reason', 'keterangan']);
+                $statusPenerimaan = $this->getCellValue($row, ['status_penerimaan', 'status penerimaan', 'penerimaan']); // TAMBAH INI
                 $username = $this->getCellValue($row, ['username', 'user', 'nama_user']);
                 $namaPengirim = $this->getCellValue($row, ['nama_pengirim', 'nama pengirim', 'pengirim']);
                 $noHp = $this->getCellValue($row, ['no_hp', 'no hp', 'telepon', 'hp', 'no_telepon']);
@@ -54,6 +55,7 @@ class BandingImport implements ToCollection, WithHeadingRow
                     'no_pesanan' => $this->parseStringValue($noPesanan),
                     'no_pengajuan' => $this->parseStringValue($noPengajuan),
                     'alasan' => $alasan ?: 'Barang Belum Diterima',
+                    'status_penerimaan' => $statusPenerimaan ?: '-', // TAMBAH INI
                     'username' => $username ?: '-',
                     'nama_pengirim' => $namaPengirim ?: '-',
                     'no_hp' => $this->parseStringValue($noHp),
@@ -63,7 +65,7 @@ class BandingImport implements ToCollection, WithHeadingRow
                     'updated_at' => now(),
                 ];
 
-                // Validasi data
+                // Validasi data - UPDATE VALIDASI
                 $validator = Validator::make($data, [
                     'tanggal' => 'required|date',
                     'status_banding' => [
@@ -74,8 +76,8 @@ class BandingImport implements ToCollection, WithHeadingRow
                         'required',
                         Rule::in(['Dibebaskan', 'Ditanggung', '-'])
                     ],
-                    'no_pesanan' => [
-                        'required',
+                    'no_pesanan' => [ // UBAH DARI required KE nullable
+                        'nullable',
                         'string',
                         'max:100',
                         Rule::unique('bandings', 'no_pesanan')
@@ -92,8 +94,12 @@ class BandingImport implements ToCollection, WithHeadingRow
                             'Bukan Produk Asli Toko'
                         ])
                     ],
-                    'username' => 'required|string|max:100',
-                    'nama_pengirim' => 'required|string|max:100',
+                    'status_penerimaan' => [ // TAMBAH VALIDASI BARU
+                        'required',
+                        Rule::in(['Diterima dengan baik', 'Cacat', '-'])
+                    ],
+                    'username' => 'nullable|string|max:100', // UBAH DARI required KE nullable
+                    'nama_pengirim' => 'nullable|string|max:100', // UBAH DARI required KE nullable
                     'no_hp' => 'nullable|string|max:20',
                     'alamat' => 'required|string',
                     'marketplace' => [
@@ -107,12 +113,11 @@ class BandingImport implements ToCollection, WithHeadingRow
                     'status_banding.in' => 'Status banding harus Berhasil, Ditinjau, atau Ditolak',
                     'ongkir.required' => 'Ongkir wajib diisi',
                     'ongkir.in' => 'Ongkir harus Dibebaskan, Ditanggung, atau -',
-                    'no_pesanan.required' => 'Nomor pesanan wajib diisi',
                     'no_pesanan.unique' => 'Nomor pesanan sudah ada dalam database',
                     'alasan.required' => 'Alasan wajib diisi',
                     'alasan.in' => 'Alasan tidak valid',
-                    'username.required' => 'Username wajib diisi',
-                    'nama_pengirim.required' => 'Nama pengirim wajib diisi',
+                    'status_penerimaan.required' => 'Status penerimaan wajib diisi', // TAMBAH PESAN ERROR
+                    'status_penerimaan.in' => 'Status penerimaan harus Diterima dengan baik, Cacat, atau -',
                     'alamat.required' => 'Alamat wajib diisi',
                     'marketplace.required' => 'Marketplace wajib diisi',
                     'marketplace.in' => 'Marketplace harus Shopee atau Tiktok',

@@ -29,7 +29,7 @@
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label class="form-label text-muted small mb-1">No. Pesanan</label>
-                                            <div class="fw-semibold">{{ $banding->no_pesanan }}</div>
+                                            <div class="fw-semibold">{{ $banding->no_pesanan ?: '-' }}</div>
                                         </div>
                                         <div class="col-sm-6 mb-3">
                                             <label class="form-label text-muted small mb-1">No. Pengajuan</label>
@@ -57,6 +57,15 @@
                                         <label class="form-label text-muted small mb-1">Alasan</label>
                                         <div class="fw-semibold">{{ $banding->alasan }}</div>
                                     </div>
+                                    <!-- TAMBAH STATUS PENERIMAAN -->
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small mb-1">Status Penerimaan</label>
+                                        <div>
+                                            <span class="badge {{ $banding->status_penerimaan == 'Diterima dengan baik' ? 'bg-success' : ($banding->status_penerimaan == 'Cacat' ? 'bg-danger' : 'bg-secondary') }}">
+                                                {{ $banding->status_penerimaan }}
+                                            </span>
+                                        </div>
+                                    </div>
                                     <div class="mb-3">
                                         <label class="form-label text-muted small mb-1">Status Ongkir</label>
                                         <div>
@@ -83,11 +92,11 @@
                             <div class="row">
                                 <div class="col-sm-4 mb-3">
                                     <label class="form-label text-muted small mb-1">Username</label>
-                                    <div>{{ $banding->username }}</div>
+                                    <div>{{ $banding->username ?: '-' }}</div>
                                 </div>
                                 <div class="col-sm-4 mb-3">
                                     <label class="form-label text-muted small mb-1">Nama Pengirim</label>
-                                    <div>{{ $banding->nama_pengirim }}</div>
+                                    <div>{{ $banding->nama_pengirim ?: '-' }}</div>
                                 </div>
                                 <div class="col-sm-4 mb-3">
                                     <label class="form-label text-muted small mb-1">No. HP</label>

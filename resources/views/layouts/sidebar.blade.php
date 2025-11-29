@@ -61,13 +61,19 @@
                     </ul>
                 </li>
                 <li class="pc-item pc-caption">
-                    <label>Banding</label>
+                    <label style="color: red;">Pengembalian / Pembatalan</label>
                     <i class="ti ti-news"></i>
                 </li>
                 <li class="pc-item">
                     <a href="/bandings" class="pc-link">
-                        <span class="pc-micon"><i class="ti ti-cash"></i></span>
-                        <span class="pc-mtext">Pengembalian / Pembatalan</span>
+                        <span class="pc-micon"><i class="ti ti-report-analytics"></i></span>
+                        <span class="pc-mtext">Daftar Banding</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/bandings/search" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-qrcode"></i></span>
+                        <span class="pc-mtext">Scan Resi</span>
                     </a>
                 </li>
                 {{-- <li class="pc-item">

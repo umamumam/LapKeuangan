@@ -17,6 +17,7 @@ class Banding extends Model
         'no_pesanan',
         'no_pengajuan',
         'alasan',
+        'status_penerimaan',
         'username',
         'nama_pengirim',
         'no_hp',
@@ -58,6 +59,15 @@ class Banding extends Model
         ];
     }
 
+    public static function getStatusPenerimaanOptions()
+    {
+        return [
+            'Diterima dengan baik' => 'Diterima dengan baik',
+            'Cacat' => 'Cacat',
+            '-' => '-'
+        ];
+    }
+
     public static function getMarketplaceOptions()
     {
         return [
@@ -77,6 +87,7 @@ class Banding extends Model
             'No Pesanan',
             'No Pengajuan',
             'Alasan',
+            'Status Penerimaan',
             'Username',
             'Nama Pengirim',
             'No HP',
@@ -97,6 +108,7 @@ class Banding extends Model
             $this->no_pesanan,
             $this->no_pengajuan,
             $this->alasan,
+            $this->status_penerimaan,
             $this->username,
             $this->nama_pengirim,
             $this->no_hp,

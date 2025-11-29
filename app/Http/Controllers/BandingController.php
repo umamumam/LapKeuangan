@@ -23,12 +23,14 @@ class BandingController extends Controller
         $ongkirOptions = Banding::getOngkirOptions();
         $alasanOptions = Banding::getAlasanOptions();
         $marketplaceOptions = Banding::getMarketplaceOptions();
+        $statusPenerimaanOptions = Banding::getStatusPenerimaanOptions();
 
         return view('bandings.create', compact(
             'statusBandingOptions',
             'ongkirOptions',
             'alasanOptions',
-            'marketplaceOptions'
+            'marketplaceOptions',
+            'statusPenerimaanOptions'
         ));
     }
 
@@ -39,11 +41,12 @@ class BandingController extends Controller
             'status_banding' => 'required|in:Berhasil,Ditinjau,Ditolak',
             'ongkir' => 'required|in:Dibebaskan,Ditanggung,-',
             'no_resi' => 'nullable|string|max:100',
-            'no_pesanan' => 'required|string|max:100',
+            'no_pesanan' => 'nullable|string|max:100',
             'no_pengajuan' => 'nullable|string|max:100',
             'alasan' => 'required|in:Barang Palsu,Tidak Sesuai Ekspektasi Pembeli,Barang Belum Diterima,Cacat,Jumlah Barang Retur Kurang,Bukan Produk Asli Toko',
-            'username' => 'required|string|max:100',
-            'nama_pengirim' => 'required|string|max:100',
+            'status_penerimaan' => 'required|in:Diterima dengan baik,Cacat,-',
+            'username' => 'nullable|string|max:100',
+            'nama_pengirim' => 'nullable|string|max:100',
             'no_hp' => 'nullable|string|max:20',
             'alamat' => 'required|string',
             'marketplace' => 'required|in:Shopee,Tiktok'
@@ -73,13 +76,15 @@ class BandingController extends Controller
         $ongkirOptions = Banding::getOngkirOptions();
         $alasanOptions = Banding::getAlasanOptions();
         $marketplaceOptions = Banding::getMarketplaceOptions();
+        $statusPenerimaanOptions = Banding::getStatusPenerimaanOptions();
 
         return view('bandings.edit', compact(
             'banding',
             'statusBandingOptions',
             'ongkirOptions',
             'alasanOptions',
-            'marketplaceOptions'
+            'marketplaceOptions',
+            'statusPenerimaanOptions'
         ));
     }
 
@@ -90,11 +95,12 @@ class BandingController extends Controller
             'status_banding' => 'required|in:Berhasil,Ditinjau,Ditolak',
             'ongkir' => 'required|in:Dibebaskan,Ditanggung,-',
             'no_resi' => 'nullable|string|max:100',
-            'no_pesanan' => 'required|string|max:100',
+            'no_pesanan' => 'nullable|string|max:100',
             'no_pengajuan' => 'nullable|string|max:100',
             'alasan' => 'required|in:Barang Palsu,Tidak Sesuai Ekspektasi Pembeli,Barang Belum Diterima,Cacat,Jumlah Barang Retur Kurang,Bukan Produk Asli Toko',
-            'username' => 'required|string|max:100',
-            'nama_pengirim' => 'required|string|max:100',
+            'status_penerimaan' => 'required|in:Diterima dengan baik,Cacat,-',
+            'username' => 'nullable|string|max:100',
+            'nama_pengirim' => 'nullable|string|max:100',
             'no_hp' => 'nullable|string|max:20',
             'alamat' => 'required|string',
             'marketplace' => 'required|in:Shopee,Tiktok'
@@ -205,6 +211,7 @@ class BandingController extends Controller
                 'PESANAN001',
                 'PENGAJUAN001',
                 'Barang Belum Diterima',
+                'Diterima dengan baik',
                 'customer123',
                 'John Doe',
                 '081234567890',
@@ -222,14 +229,49 @@ class BandingController extends Controller
                 'no_pesanan' => $item[4],
                 'no_pengajuan' => $item[5],
                 'alasan' => $item[6],
-                'username' => $item[7],
-                'nama_pengirim' => $item[8],
-                'no_hp' => $item[9],
-                'alamat' => $item[10],
-                'marketplace' => $item[11]
+                'status_penerimaan' => $item[7], // TAMBAH INI
+                'username' => $item[8],
+                'nama_pengirim' => $item[9],
+                'no_hp' => $item[10],
+                'alamat' => $item[11],
+                'marketplace' => $item[12]
             ];
         }));
 
         return Excel::download($export, $filename);
+    }
+
+    public function search()
+    {
+        return view('bandings.search');
+    }
+
+    public function searchResult(Request $request)
+    {
+        $request->validate([
+            'no_resi' => 'required|string|max:100'
+        ]);
+
+        try {
+            $banding = Banding::where('no_resi', $request->no_resi)->first();
+
+            if (!$banding) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tidak ditemukan untuk nomor resi: ' . $request->no_resi
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $banding
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
