@@ -61,7 +61,7 @@
                     @endif
 
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-balance-scale"></i> Daftar Banding</h5>
+                        <h5 class="mb-0"><i class="fas fa-balance-scale"></i> Daftar Pengembalian / Pembatalan</h5>
                         <div class="d-flex gap-2">
                             <!-- Import Button -->
                             <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">
@@ -96,6 +96,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Tanggal</th>
+                                    <th>No. Resi</th>
                                     <th>No. Pesanan</th>
                                     <th>No. Pengajuan</th>
                                     <th>Username</th>
@@ -119,6 +120,7 @@
                                         <span class="text-muted">-</span>
                                         @endif
                                     </td>
+                                    <td>{{ $banding->no_resi }}</td>
                                     <td>{{ $banding->no_pesanan }}</td>
                                     <td>
                                         @if($banding->no_pengajuan)

@@ -67,7 +67,7 @@
                 <li class="pc-item">
                     <a href="/bandings" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-cash"></i></span>
-                        <span class="pc-mtext">Banding Shopee & Tiktok</span>
+                        <span class="pc-mtext">Pengembalian / Pembatalan</span>
                     </a>
                 </li>
                 {{-- <li class="pc-item">
