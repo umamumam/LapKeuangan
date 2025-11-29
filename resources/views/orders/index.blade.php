@@ -57,6 +57,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>No. Pesanan</th>
+                                    <th>No. Resi</th>
                                     <th>SKU Induk</th>
                                     <th>Nama Produk</th>
                                     <th>Nomor Referensi SKU</th>
@@ -74,6 +75,7 @@
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $order->no_pesanan }}</td>
+                                    <td>{{ $order->no_resi ?? '-' }}</td>
                                     <td>{{ $order->produk->sku_induk }}</td>
                                     <td>{{ $order->produk->nama_produk }}</td>
                                     <td>{{ $order->produk->nomor_referensi_sku }}</td>

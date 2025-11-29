@@ -1,0 +1,109 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Banding extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'tanggal',
+        'status_banding',
+        'ongkir',
+        'no_resi',
+        'no_pesanan',
+        'no_pengajuan',
+        'alasan',
+        'username',
+        'nama_pengirim',
+        'no_hp',
+        'alamat',
+        'marketplace'
+    ];
+
+    protected $casts = [
+        'tanggal' => 'datetime'
+    ];
+
+    public static function getStatusBandingOptions()
+    {
+        return [
+            'Berhasil' => 'Berhasil',
+            'Ditinjau' => 'Ditinjau',
+            'Ditolak' => 'Ditolak'
+        ];
+    }
+
+    public static function getOngkirOptions()
+    {
+        return [
+            'Dibebaskan' => 'Dibebaskan',
+            'Ditanggung' => 'Ditanggung',
+            '-' => '-'
+        ];
+    }
+
+    public static function getAlasanOptions()
+    {
+        return [
+            'Barang Palsu' => 'Barang Palsu',
+            'Tidak Sesuai Ekspektasi Pembeli' => 'Tidak Sesuai Ekspektasi Pembeli',
+            'Barang Belum Diterima' => 'Barang Belum Diterima',
+            'Cacat' => 'Cacat',
+            'Jumlah Barang Retur Kurang' => 'Jumlah Barang Retur Kurang',
+            'Bukan Produk Asli Toko' => 'Bukan Produk Asli Toko'
+        ];
+    }
+
+    public static function getMarketplaceOptions()
+    {
+        return [
+            'Shopee' => 'Shopee',
+            'Tiktok' => 'Tiktok'
+        ];
+    }
+
+    // Method untuk export
+    public static function getExportHeaders()
+    {
+        return [
+            'Tanggal',
+            'Status Banding',
+            'Ongkir',
+            'No Resi',
+            'No Pesanan',
+            'No Pengajuan',
+            'Alasan',
+            'Username',
+            'Nama Pengirim',
+            'No HP',
+            'Alamat',
+            'Marketplace',
+            'Dibuat Pada',
+            'Diupdate Pada'
+        ];
+    }
+
+    public function toExportArray()
+    {
+        return [
+            $this->tanggal->format('d/m/Y H:i'),
+            $this->status_banding,
+            $this->ongkir,
+            $this->no_resi,
+            $this->no_pesanan,
+            $this->no_pengajuan,
+            $this->alasan,
+            $this->username,
+            $this->nama_pengirim,
+            $this->no_hp,
+            $this->alamat,
+            $this->marketplace,
+            $this->created_at->format('d/m/Y H:i'),
+            $this->updated_at->format('d/m/Y H:i')
+        ];
+    }
+}

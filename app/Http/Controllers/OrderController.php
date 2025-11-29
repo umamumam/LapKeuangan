@@ -37,6 +37,7 @@ class OrderController extends Controller
     {
         $request->validate([
             'no_pesanan' => 'required|string|max:100',
+            'no_resi' => 'nullable|string|max:100',
             'produk_id' => 'required|exists:produks,id',
             'jumlah' => 'required|integer|min:1',
             'returned_quantity' => 'nullable|integer|min:0',
@@ -80,6 +81,7 @@ class OrderController extends Controller
     {
         $request->validate([
             'no_pesanan' => 'required|string|max:100',
+            'no_resi' => 'nullable|string|max:100',
             'produk_id' => 'required|exists:produks,id',
             'jumlah' => 'required|integer|min:1',
             'returned_quantity' => 'nullable|integer|min:0',

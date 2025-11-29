@@ -14,6 +14,7 @@ class Order extends Model
 
     protected $fillable = [
         'no_pesanan',
+        'no_resi',
         'produk_id',
         'jumlah',
         'returned_quantity',
@@ -51,6 +52,11 @@ class Order extends Model
             ->whereMonth('created_at', $month);
     }
 
+    public function scopeSearchNoResi($query, $noResi)
+    {
+        return $query->where('no_resi', 'like', "%{$noResi}%");
+    }
+
     // Accessor untuk quantity bersih
     public function getNetQuantityAttribute()
     {
@@ -61,5 +67,9 @@ class Order extends Model
     public function getSubtotalHppAttribute()
     {
         return $this->net_quantity * $this->produk->hpp_produk;
+    }
+    public function getNoResiDisplayAttribute()
+    {
+        return $this->no_resi ?: '-';
     }
 }

@@ -60,6 +60,16 @@
                         <li class="pc-item"><a class="pc-link" href="/monthly-finances">Summary & Output</a></li>
                     </ul>
                 </li>
+                <li class="pc-item pc-caption">
+                    <label>Banding</label>
+                    <i class="ti ti-news"></i>
+                </li>
+                <li class="pc-item">
+                    <a href="/bandings" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-cash"></i></span>
+                        <span class="pc-mtext">Banding Shopee & Tiktok</span>
+                    </a>
+                </li>
                 {{-- <li class="pc-item">
                     <a href="/incomes/hasil" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-chart-bar"></i></span>

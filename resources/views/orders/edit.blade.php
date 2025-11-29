@@ -25,13 +25,23 @@
                                 </div>
 
                                 <div class="col-md-6 mb-3">
+                                    <label for="no_resi" class="form-label">No. Resi</label>
+                                    <input type="text" class="form-control @error('no_resi') is-invalid @enderror"
+                                        id="no_resi" name="no_resi" value="{{ old('no_resi', $order->no_resi) }}"
+                                        placeholder="Masukkan nomor resi (opsional)">
+                                    @error('no_resi')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-12 mb-3">
                                     <label for="produk_id" class="form-label">Produk <span class="text-danger">*</span></label>
                                     <select class="form-control @error('produk_id') is-invalid @enderror"
                                         id="produk_id" name="produk_id" required>
                                         <option value="">Pilih Produk</option>
                                         @foreach($produks as $produk)
                                             <option value="{{ $produk->id }}" {{ old('produk_id', $order->produk_id) == $produk->id ? 'selected' : '' }}>
-                                                {{ $produk->nama_produk }}
+                                                {{ $produk->nama_produk }} - {{ $produk->nama_variasi }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -56,6 +66,7 @@
                                     @error('returned_quantity')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    <div class="form-text">Jumlah barang yang diretur</div>
                                 </div>
 
                                 <div class="col-md-6 mb-3">
@@ -82,7 +93,10 @@
                                 </div>
                             </div>
 
-                            <div class="d-flex justify-content-end">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{{ route('orders.index') }}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Batal
+                                </a>
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-save"></i> Update Order
                                 </button>

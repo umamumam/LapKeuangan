@@ -23,6 +23,7 @@ class OrderExport implements FromCollection, WithHeadings, WithMapping, WithStyl
     {
         return [
             $order->no_pesanan,
+            $order->no_resi,
             $order->produk->nama_produk,
             $order->produk->nama_variasi,
             $order->jumlah,
@@ -36,6 +37,7 @@ class OrderExport implements FromCollection, WithHeadings, WithMapping, WithStyl
     {
         return [
             'no_pesanan',
+            'no_resi',
             'nama_produk',
             'nama_variasi',
             'jumlah',

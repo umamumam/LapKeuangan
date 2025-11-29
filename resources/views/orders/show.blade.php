@@ -20,6 +20,10 @@
                                             <div class="fw-semibold">{{ $order->no_pesanan }}</div>
                                         </div>
                                         <div class="col-sm-6 mb-3">
+                                            <label class="form-label text-muted small mb-1">No. Resi</label>
+                                            <div class="fw-semibold">{{ $order->no_resi }}</div>
+                                        </div>
+                                        <div class="col-sm-12 mb-3">
                                             <label class="form-label text-muted small mb-1">Produk</label>
                                             <div>{{ $order->produk->nama_produk }}</div>
                                         </div>

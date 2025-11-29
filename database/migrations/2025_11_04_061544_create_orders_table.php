@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->string('no_pesanan', 100);
+            $table->string('no_resi', 100)->nullable(); //no resi
             $table->foreignId('produk_id')->constrained('produks')->onDelete('cascade');
             $table->integer('jumlah')->default(0);
             $table->integer('returned_quantity')->default(0);

@@ -5,6 +5,7 @@ use App\Http\Controllers\TokoController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\ProdukController;
+use App\Http\Controllers\BandingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MonthlyFinanceController;
 use App\Http\Controllers\MonthlySummaryController;
@@ -67,6 +68,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/{monthlySummary}', [MonthlySummaryController::class, 'show'])->name('monthly-summaries.show');
         Route::delete('/{monthlySummary}', [MonthlySummaryController::class, 'destroy'])->name('monthly-summaries.destroy');
     });
+    Route::post('/bandings/import', [BandingController::class, 'import'])->name('bandings.import');
+    Route::get('/bandings/export', [BandingController::class, 'export'])->name('bandings.export');
+    Route::get('/bandings/template', [BandingController::class, 'downloadTemplate'])->name('bandings.downloadTemplate');
+    Route::delete('/bandings/delete-all', [BandingController::class, 'deleteAll'])->name('bandings.deleteAll');
+    Route::resource('bandings', BandingController::class);
 });
 
 require __DIR__ . '/auth.php';

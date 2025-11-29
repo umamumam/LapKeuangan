@@ -50,9 +50,13 @@ class OrderImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFai
         // Parse total_harga_produk
         $totalHargaProduk = $this->parseInteger($row['total_harga_produk'] ?? 0);
 
+        // Parse no_resi (nullable)
+        $noResi = !empty($row['no_resi']) ? trim($row['no_resi']) : null;
+
         try {
             return new Order([
                 'no_pesanan' => $row['no_pesanan'],
+                'no_resi' => $noResi,
                 'produk_id' => $produk->id,
                 'jumlah' => $row['jumlah'],
                 'returned_quantity' => $row['returned_quantity'] ?? 0,
@@ -78,6 +82,7 @@ class OrderImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFai
     {
         return [
             'no_pesanan' => 'required|string|max:100',
+            'no_resi' => 'nullable|string|max:100',
             'nama_produk' => 'required|string|max:255',
             'nama_variasi' => 'required|string|max:100',
             'jumlah' => 'required|integer|min:1',
@@ -96,6 +101,8 @@ class OrderImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFai
             'no_pesanan.required' => 'No. Pesanan wajib diisi',
             'no_pesanan.string' => 'No. Pesanan harus berupa teks',
             'no_pesanan.max' => 'No. Pesanan maksimal 100 karakter',
+            'no_resi.string' => 'No. Resi harus berupa teks', // ✅ TAMBAH INI
+            'no_resi.max' => 'No. Resi maksimal 100 karakter',
             'nama_produk.required' => 'Nama Produk wajib diisi',
             'nama_produk.string' => 'Nama Produk harus berupa teks',
             'nama_produk.max' => 'Nama Produk maksimal 255 karakter',
@@ -169,6 +176,24 @@ class OrderImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFai
                     $errorMessage = "Baris {$rowNumber}: Total Harga Produk tidak boleh negatif";
                     $validator->errors()->add(
                         $rowIndex . '.total_harga_produk',
+                        $errorMessage
+                    );
+
+                    // Simpan informasi pesanan yang gagal
+                    $this->failedOrders[] = [
+                        'no_pesanan' => $row['no_pesanan'],
+                        'nama_produk' => $row['nama_produk'],
+                        'nama_variasi' => $row['nama_variasi'] ?? '',
+                        'reason' => $errorMessage,
+                        'row' => $rowNumber
+                    ];
+                }
+
+                // ✅ TAMBAH: Validasi no_resi max length
+                if (isset($row['no_resi']) && strlen($row['no_resi']) > 100) {
+                    $errorMessage = "Baris {$rowNumber}: No. Resi maksimal 100 karakter";
+                    $validator->errors()->add(
+                        $rowIndex . '.no_resi',
                         $errorMessage
                     );
 
@@ -257,6 +282,7 @@ class OrderImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFai
         // Bersihkan dan format data sebelum validasi
         return [
             'no_pesanan' => trim($data['no_pesanan'] ?? ''),
+            'no_resi' => isset($data['no_resi']) ? trim($data['no_resi']) : null,
             'nama_produk' => trim($data['nama_produk'] ?? ''),
             'nama_variasi' => trim($data['nama_variasi'] ?? ''),
             'jumlah' => intval($data['jumlah'] ?? 0),
