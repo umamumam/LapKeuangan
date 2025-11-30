@@ -74,6 +74,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/bandings/delete-all', [BandingController::class, 'deleteAll'])->name('bandings.deleteAll');
     Route::get('/bandings/search', [BandingController::class, 'search'])->name('bandings.search');
     Route::post('/bandings/search-result', [BandingController::class, 'searchResult'])->name('bandings.search.result');
+    Route::get('/bandings/create-with-resi/{noResi}', [BandingController::class, 'createWithResi'])->name('bandings.create-with-resi');
+    Route::post('/bandings/{banding}/update-status', [BandingController::class, 'updateStatus'])->name('bandings.update-status');
     Route::resource('bandings', BandingController::class);
 });
 

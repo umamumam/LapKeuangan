@@ -269,10 +269,24 @@
                     '-': 'bg-secondary'
                 };
 
+                const penerimaanClass = {
+                    'Diterima dengan baik': 'bg-success',
+                    'Cacat': 'bg-danger',
+                    '-': 'bg-secondary'
+                };
+
                 const html = `
                     <div class="card">
-                        <div class="card-header bg-success text-white">
+                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
                             <h5 class="mb-0"><i class="fas fa-check-circle"></i> Data Ditemukan</h5>
+                            <div>
+                                <button class="btn btn-light btn-sm me-2" onclick="resiScanner.showUpdateStatusModal(resiScanner.currentData)">
+                                    <i class="fas fa-edit"></i> Ubah Status
+                                </button>
+                                <button class="btn btn-warning btn-sm" onclick="window.location.href='/bandings/${data.id}/edit'">
+                                    <i class="fas fa-edit"></i> Edit Data
+                                </button>
+                            </div>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -292,10 +306,18 @@
                                             <td>${this.formatDate(data.tanggal)}</td>
                                         </tr>
                                         <tr>
-                                            <td><strong>Status</strong></td>
+                                            <td><strong>Status Banding</strong></td>
                                             <td>
                                                 <span class="badge ${statusClass[data.status_banding] || 'bg-secondary'}">
                                                     ${data.status_banding}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Status Penerimaan</strong></td>
+                                            <td>
+                                                <span class="badge ${penerimaanClass[data.status_penerimaan] || 'bg-secondary'}">
+                                                    ${data.status_penerimaan}
                                                 </span>
                                             </td>
                                         </tr>
@@ -347,8 +369,14 @@
                                 </div>
                             </div>
                             <div class="text-center mt-4">
-                                <button class="btn btn-primary btn-lg" onclick="resiScanner.showModal(resiScanner.currentData)">
+                                <button class="btn btn-primary btn-lg me-2" onclick="resiScanner.showModal(resiScanner.currentData)">
                                     <i class="fas fa-expand"></i> Lihat Detail Lengkap
+                                </button>
+                                <button class="btn btn-warning btn-lg me-2" onclick="resiScanner.showUpdateStatusModal(resiScanner.currentData)">
+                                    <i class="fas fa-edit"></i> Ubah Status
+                                </button>
+                                <button class="btn btn-info btn-lg" onclick="window.location.href='/bandings/${data.id}/edit'">
+                                    <i class="fas fa-edit"></i> Edit Data Lengkap
                                 </button>
                             </div>
                         </div>
@@ -357,6 +385,144 @@
 
                 this.searchResult.innerHTML = html;
                 this.currentData = data;
+            }
+
+            showUpdateStatusModal(data) {
+                const statusBandingOptions = {
+                    'Berhasil': 'Berhasil',
+                    'Ditinjau': 'Ditinjau',
+                    'Ditolak': 'Ditolak'
+                };
+
+                const statusPenerimaanOptions = {
+                    'Diterima dengan baik': 'Diterima dengan baik',
+                    'Cacat': 'Cacat',
+                    '-': '-'
+                };
+
+                let statusBandingOptionsHtml = '';
+                for (const [value, label] of Object.entries(statusBandingOptions)) {
+                    statusBandingOptionsHtml += `<option value="${value}" ${data.status_banding === value ? 'selected' : ''}>${label}</option>`;
+                }
+
+                let statusPenerimaanOptionsHtml = '';
+                for (const [value, label] of Object.entries(statusPenerimaanOptions)) {
+                    statusPenerimaanOptionsHtml += `<option value="${value}" ${data.status_penerimaan === value ? 'selected' : ''}>${label}</option>`;
+                }
+
+                const modalHtml = `
+                    <div class="modal fade" id="updateStatusModal" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"><i class="fas fa-edit"></i> Ubah Status</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label for="update_status_banding" class="form-label">Status Banding <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="update_status_banding" name="status_banding" required>
+                                            <option value="">Pilih Status Banding</option>
+                                            ${statusBandingOptionsHtml}
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="update_status_penerimaan" class="form-label">Status Penerimaan <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="update_status_penerimaan" name="status_penerimaan" required>
+                                            <option value="">Pilih Status Penerimaan</option>
+                                            ${statusPenerimaanOptionsHtml}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                    <button type="button" class="btn btn-primary" onclick="resiScanner.updateStatus(${data.id})">
+                                        <i class="fas fa-save"></i> Simpan Perubahan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Remove existing modal if any
+                const existingModal = document.getElementById('updateStatusModal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                const updateStatusModal = new bootstrap.Modal(document.getElementById('updateStatusModal'));
+                updateStatusModal.show();
+            }
+
+            async updateStatus(bandingId) {
+                const statusBanding = document.getElementById('update_status_banding').value;
+                const statusPenerimaan = document.getElementById('update_status_penerimaan').value;
+
+                // Validasi
+                if (!statusBanding || !statusPenerimaan) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Peringatan!',
+                        text: 'Harap pilih status banding dan status penerimaan!'
+                    });
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/bandings/${bandingId}/update-status`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            status_banding: statusBanding,
+                            status_penerimaan: statusPenerimaan
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.message || 'HTTP error! status: ' + response.status);
+                    }
+
+                    if (data.success) {
+                        // Close modal
+                        const modal = document.getElementById('updateStatusModal');
+                        if (modal) {
+                            bootstrap.Modal.getInstance(modal).hide();
+                            modal.remove();
+                        }
+
+                        // Show success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: data.message,
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+
+                        // Refresh the search result after a short delay
+                        setTimeout(() => {
+                            this.searchData();
+                        }, 1500);
+
+                    } else {
+                        throw new Error(data.message);
+                    }
+                } catch (error) {
+                    console.error('Update status error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: error.message || 'Terjadi kesalahan saat mengupdate status'
+                    });
+                }
             }
 
             showModal(data) {
@@ -472,13 +638,25 @@
                             <i class="fas fa-search fa-4x text-muted mb-3 opacity-50"></i>
                             <h4 class="text-danger">${message}</h4>
                             <p class="text-muted">Pastikan nomor resi benar dan coba lagi</p>
-                            <button class="btn btn-primary mt-3" onclick="document.getElementById('no_resi').focus()">
-                                <i class="fas fa-redo"></i> Coba Lagi
-                            </button>
+                            <div class="mt-4">
+                                <button class="btn btn-primary me-2" onclick="document.getElementById('no_resi').focus()">
+                                    <i class="fas fa-redo"></i> Coba Lagi
+                                </button>
+                                <button class="btn btn-success" onclick="resiScanner.createNewData()">
+                                    <i class="fas fa-plus-circle"></i> Input Data Baru
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
                 this.searchResult.innerHTML = html;
+            }
+
+            createNewData() {
+                const noResi = this.noResiInput.value.trim();
+                if (noResi) {
+                    window.location.href = `/bandings/create-with-resi/${encodeURIComponent(noResi)}`;
+                }
             }
         }
 

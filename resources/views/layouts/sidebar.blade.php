@@ -76,6 +76,16 @@
                         <span class="pc-mtext">Scan Resi</span>
                     </a>
                 </li>
+                <li class="pc-item pc-caption">
+                    <label style="color: red;">Pengiriman Sampel</label>
+                    <i class="ti ti-news"></i>
+                </li>
+                <li class="pc-item">
+                    <a href="/sampel" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-report-analytics"></i></span>
+                        <span class="pc-mtext">Daftar Pengiriman Sampel</span>
+                    </a>
+                </li>
                 {{-- <li class="pc-item">
                     <a href="/incomes/hasil" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-chart-bar"></i></span>

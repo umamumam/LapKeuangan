@@ -34,6 +34,37 @@ class BandingController extends Controller
         ));
     }
 
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'tanggal' => 'required|date',
+    //         'status_banding' => 'required|in:Berhasil,Ditinjau,Ditolak',
+    //         'ongkir' => 'required|in:Dibebaskan,Ditanggung,-',
+    //         'no_resi' => 'nullable|string|max:100',
+    //         'no_pesanan' => 'nullable|string|max:100',
+    //         'no_pengajuan' => 'nullable|string|max:100',
+    //         'alasan' => 'required|in:Barang Palsu,Tidak Sesuai Ekspektasi Pembeli,Barang Belum Diterima,Cacat,Jumlah Barang Retur Kurang,Bukan Produk Asli Toko',
+    //         'status_penerimaan' => 'required|in:Diterima dengan baik,Cacat,-',
+    //         'username' => 'nullable|string|max:100',
+    //         'nama_pengirim' => 'nullable|string|max:100',
+    //         'no_hp' => 'nullable|string|max:20',
+    //         'alamat' => 'required|string',
+    //         'marketplace' => 'required|in:Shopee,Tiktok'
+    //     ]);
+
+    //     try {
+    //         Banding::create($request->all());
+
+    //         return redirect()->route('bandings.index')
+    //             ->with('success', 'Data banding berhasil ditambahkan!');
+
+    //     } catch (\Exception $e) {
+    //         return redirect()->back()
+    //             ->with('error', 'Gagal menambahkan data banding: ' . $e->getMessage())
+    //             ->withInput();
+    //     }
+    // }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -55,10 +86,26 @@ class BandingController extends Controller
         try {
             Banding::create($request->all());
 
+            // Return JSON untuk request dari create-with-resi
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data banding berhasil ditambahkan!'
+                ]);
+            }
+
             return redirect()->route('bandings.index')
                 ->with('success', 'Data banding berhasil ditambahkan!');
 
         } catch (\Exception $e) {
+            // Return JSON untuk request dari create-with-resi
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menambahkan data banding: ' . $e->getMessage()
+                ], 500);
+            }
+
             return redirect()->back()
                 ->with('error', 'Gagal menambahkan data banding: ' . $e->getMessage())
                 ->withInput();
@@ -271,6 +318,53 @@ class BandingController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function createWithResi($noResi)
+    {
+        $statusBandingOptions = Banding::getStatusBandingOptions();
+        $ongkirOptions = Banding::getOngkirOptions();
+        $alasanOptions = Banding::getAlasanOptions();
+        $marketplaceOptions = Banding::getMarketplaceOptions();
+        $statusPenerimaanOptions = Banding::getStatusPenerimaanOptions();
+
+        return view('bandings.create-with-resi', compact(
+            'statusBandingOptions',
+            'ongkirOptions',
+            'alasanOptions',
+            'marketplaceOptions',
+            'statusPenerimaanOptions',
+            'noResi'
+        ));
+    }
+
+    public function updateStatus(Request $request, Banding $banding)
+    {
+        $request->validate([
+            'status_banding' => 'required|in:Berhasil,Ditinjau,Ditolak',
+            'status_penerimaan' => 'required|in:Diterima dengan baik,Cacat,-'
+        ]);
+
+        try {
+            $banding->update([
+                'status_banding' => $request->status_banding,
+                'status_penerimaan' => $request->status_penerimaan
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status berhasil diperbarui!',
+                'data' => $banding
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Update status error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui status: ' . $e->getMessage()
             ], 500);
         }
     }
