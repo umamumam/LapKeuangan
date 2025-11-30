@@ -81,9 +81,21 @@
                     <i class="ti ti-news"></i>
                 </li>
                 <li class="pc-item">
-                    <a href="/sampel" class="pc-link">
+                    <a href="/sampels" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-report-analytics"></i></span>
+                        <span class="pc-mtext">Daftar Sampel</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/pengiriman-sampels" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-truck"></i></span>
                         <span class="pc-mtext">Daftar Pengiriman Sampel</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/pengiriman-sampels-rekap" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-file-text"></i></span>
+                        <span class="pc-mtext">Rekap Pengiriman Sampel</span>
                     </a>
                 </li>
                 {{-- <li class="pc-item">

@@ -5,10 +5,12 @@ use App\Http\Controllers\TokoController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\ProdukController;
+use App\Http\Controllers\SampelController;
 use App\Http\Controllers\BandingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MonthlyFinanceController;
 use App\Http\Controllers\MonthlySummaryController;
+use App\Http\Controllers\PengirimanSampelController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -77,6 +79,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/bandings/create-with-resi/{noResi}', [BandingController::class, 'createWithResi'])->name('bandings.create-with-resi');
     Route::post('/bandings/{banding}/update-status', [BandingController::class, 'updateStatus'])->name('bandings.update-status');
     Route::resource('bandings', BandingController::class);
+
+    Route::get('/sampels/export', [SampelController::class, 'export'])->name('sampels.export');
+    Route::post('/sampels/import', [SampelController::class, 'import'])->name('sampels.import');
+    Route::get('/sampels/get-harga/{id}', [SampelController::class, 'getHarga'])->name('sampels.get-harga');
+    Route::resource('sampels', SampelController::class);
+
+    Route::get('/get-total-hpp', [PengirimanSampelController::class, 'getTotalHpp'])->name('get-total-hpp');
+    Route::get('/get-total-biaya', [PengirimanSampelController::class, 'getTotalBiaya'])->name('get-total-biaya');
+    Route::delete('/pengiriman-sampels-delete-all', [PengirimanSampelController::class, 'deleteAll'])->name('pengiriman-sampels.deleteAll');
+    Route::get('/pengiriman-sampels-export', [PengirimanSampelController::class, 'export'])->name('pengiriman-sampels.export');
+    Route::post('/pengiriman-sampels-import', [PengirimanSampelController::class, 'import'])->name('pengiriman-sampels.import');
+    Route::get('/pengiriman-sampels-rekap', [PengirimanSampelController::class, 'rekap'])->name('pengiriman-sampels.rekap');
+    Route::resource('pengiriman-sampels', PengirimanSampelController::class);
 });
 
 require __DIR__ . '/auth.php';
