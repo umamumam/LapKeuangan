@@ -31,7 +31,12 @@
                     @endif
 
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-list"></i> Daftar Order</h5>
+                        <div class="d-flex align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-list"></i> Daftar Order</h5>
+                            <span class="badge bg-primary ms-3">
+                                <i class="fas fa-database me-1"></i> Total: {{ $orders->total() }}
+                            </span>
+                        </div>
                         <div class="d-flex gap-2">
                             <a href="{{ route('orders.import.form') }}" class="btn btn-info btn-sm">
                                 <i class="fas fa-file-import"></i> Import

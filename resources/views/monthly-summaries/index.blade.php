@@ -29,7 +29,7 @@
                                         <th>Periode</th>
                                         <th>Total Penghasilan</th>
                                         <th>Total HPP</th>
-                                        <th>Laba/Rugi</th>
+                                        {{-- <th>Laba/Rugi</th> --}}
                                         <th>Margin</th>
                                         <th>Total Orders</th>
                                         <th width="120">Aksi</th>
@@ -47,11 +47,11 @@
                                         </td>
                                         <td>Rp {{ number_format($summary->total_penghasilan, 0, ',', '.') }}</td>
                                         <td>Rp {{ number_format($summary->total_hpp, 0, ',', '.') }}</td>
-                                        <td>
+                                        {{-- <td>
                                             <span class="badge bg-{{ $summary->laba_rugi >= 0 ? 'success' : 'danger' }}">
                                                 Rp {{ number_format($summary->laba_rugi, 0, ',', '.') }}
                                             </span>
-                                        </td>
+                                        </td> --}}
                                         <td>{{ $summary->rasio_margin }}%</td>
                                         <td>{{ number_format($summary->total_order_qty, 0, ',', '.') }}</td>
                                         <td>

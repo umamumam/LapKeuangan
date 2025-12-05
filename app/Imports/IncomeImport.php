@@ -50,7 +50,7 @@ class IncomeImport implements ToCollection, WithHeadingRow
                 $parsedDate = $this->parseExcelDate($tanggalDibuat, $rowNumber, $noPesanan);
 
                 $data = [
-                    'no_pesanan' => $noPesanan,
+                    'no_pesanan' => $this->parseNoPesanan($noPesanan),
                     'no_pengajuan' => $this->parseNoPengajuan($noPengajuan),
                     'total_penghasilan' => $this->parseInteger($totalPenghasilan),
                     'toko_id' => $finalTokoId,
@@ -189,6 +189,27 @@ class IncomeImport implements ToCollection, WithHeadingRow
      * HELPER BARU: Konversi no_pengajuan ke string dengan handle scientific notation
      */
     private function parseNoPengajuan($value)
+    {
+        if (is_null($value) || $value === '' || $value === 'NULL' || $value === 'null') {
+            return null;
+        }
+
+        // Handle scientific notation (2,04276E+14 → 204276000000000)
+        if (is_string($value) && preg_match('/^[0-9,]*\.?[0-9]+E\+[0-9]+$/i', $value)) {
+            $floatValue = (float) str_replace(',', '.', $value);
+            return number_format($floatValue, 0, '', ''); // Convert to full number string
+        }
+
+        // Handle regular numbers (convert to string to preserve precision)
+        if (is_numeric($value)) {
+            return (string) $value;
+        }
+
+        // Return as is for strings
+        return (string) $value;
+    }
+
+    private function parseNoPesanan($value)
     {
         if (is_null($value) || $value === '' || $value === 'NULL' || $value === 'null') {
             return null;

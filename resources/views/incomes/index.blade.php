@@ -32,7 +32,13 @@
                     @endif
 
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-money-bill-wave"></i> Daftar Income</h5>
+                        <div class="d-flex align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-list"></i> Daftar Income</h5>
+                            <span class="badge bg-primary ms-3">
+                                <i class="fas fa-database me-1"></i> Total: {{ $incomes->total() }}
+                            </span>
+                        </div>
+                        {{-- <h5 class="mb-0"><i class="fas fa-money-bill-wave"></i> Daftar Income</h5> --}}
                         <div class="d-flex gap-2">
                             <a href="{{ route('incomes.import.form') }}" class="btn btn-info btn-sm">
                                 <i class="fas fa-file-import"></i> Import

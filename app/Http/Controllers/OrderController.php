@@ -17,8 +17,9 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::with('produk')->orderBy('created_at', 'desc')->get();
-        return view('orders.index', compact('orders'));
+        $orders = Order::with('produk')->orderBy('id', 'desc')->paginate(200);
+        $totalOrders = Order::count();
+        return view('orders.index', compact('orders', 'totalOrders'));
     }
 
     /**

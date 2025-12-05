@@ -16,8 +16,9 @@ class IncomeController extends Controller
 {
     public function index()
     {
-        $incomes = Income::with(['orders.produk', 'toko'])->orderBy('created_at', 'desc')->get();
-        return view('incomes.index', compact('incomes'));
+        $incomes = Income::with(['orders.produk', 'toko'])->orderBy('id', 'desc')->paginate(200);
+        $totalIncomes = Order::count();
+        return view('incomes.index', compact('incomes', 'totalIncomes'));
     }
 
     public function create()
@@ -185,19 +186,32 @@ class IncomeController extends Controller
             $successCount = $import->getSuccessCount();
             $totalRows = $import->getRowCount();
 
-            // Jika ada data yang berhasil diimport, redirect ke index
+            // Jika ada data yang berhasil diimport
             if ($successCount > 0) {
                 $message = "Berhasil mengimport {$successCount} data income!";
 
-                // Jika ada yang gagal, tambahkan info
+                // Jika ada yang gagal, tampilkan detail no_pesanan yang gagal
                 if (count($failures) > 0) {
+                    $failedOrderNumbers = collect($failures)
+                        ->pluck('no_pesanan')
+                        ->filter(function ($value) {
+                            return !empty($value) && $value !== 'Tidak diketahui';
+                        })
+                        ->unique()
+                        ->implode(', ');
+
                     $failedCount = count($failures);
                     $message .= " {$failedCount} data gagal diimport.";
 
+                    if (!empty($failedOrderNumbers)) {
+                        $message .= " No. Pesanan yang gagal: " . $failedOrderNumbers;
+                    }
+
                     return redirect()->route('incomes.index')
                         ->with('success', $message)
-                        ->with('warning', "Beberapa data gagal diimport. Cek log untuk detail.")
-                        ->with('failures', $failures);
+                        ->with('warning', "Beberapa data gagal diimport. Cek detail untuk informasi lebih lanjut.")
+                        ->with('failures', $failures)
+                        ->with('failed_order_numbers', $failedOrderNumbers);
                 }
 
                 return redirect()->route('incomes.index')
@@ -206,7 +220,13 @@ class IncomeController extends Controller
 
             // Jika tidak ada yang berhasil sama sekali
             if (count($failures) > 0) {
-                $failedOrderNumbers = collect($failures)->pluck('no_pesanan')->filter()->unique()->implode(', ');
+                $failedOrderNumbers = collect($failures)
+                    ->pluck('no_pesanan')
+                    ->filter(function ($value) {
+                        return !empty($value) && $value !== 'Tidak diketahui';
+                    })
+                    ->unique()
+                    ->implode(', ');
 
                 $message = "Tidak ada data yang berhasil diimport. " . count($failures) . " data gagal.";
 
@@ -216,7 +236,8 @@ class IncomeController extends Controller
 
                 return redirect()->route('incomes.import.form')
                     ->with('error', $message)
-                    ->with('failures', $failures);
+                    ->with('failures', $failures)
+                    ->with('failed_order_numbers', $failedOrderNumbers);
             }
 
             // Jika file kosong
@@ -224,6 +245,8 @@ class IncomeController extends Controller
                 ->with('error', 'File yang diimport tidak mengandung data yang valid.');
         } catch (\Exception $e) {
             \Log::error('Import income error: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+
             return redirect()->route('incomes.import.form')
                 ->with('error', 'Gagal mengimport data: ' . $e->getMessage());
         }
