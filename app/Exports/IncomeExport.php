@@ -21,6 +21,7 @@ class IncomeExport implements FromCollection, WithHeadings, WithMapping
             'No Pengajuan',
             'Total Penghasilan',
             'Toko ID',
+            'Marketplace',
             'Jumlah Item',
             'Tanggal Dibuat'
         ];
@@ -33,6 +34,7 @@ class IncomeExport implements FromCollection, WithHeadings, WithMapping
             $income->no_pengajuan,
             $income->total_penghasilan,
             $income->toko_id,
+            $income->marketplace,
             $income->orders->count(),
             $income->created_at->format('d/m/Y H:i')
         ];

@@ -21,6 +21,7 @@ return new class extends Migration
             $table->index('no_pesanan');
             $table->index('no_pengajuan');
             $table->index('toko_id');
+            $table->enum('marketplace', ['Shopee', 'Tiktok']);
         });
     }
 

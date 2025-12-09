@@ -11,7 +11,7 @@
                             @csrf
 
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <div class="mb-3">
                                         <label for="no_pesanan" class="form-label">No Pesanan <span
                                                 class="text-danger">*</span></label>
@@ -24,7 +24,7 @@
                                         @enderror
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <div class="mb-3">
                                         <label for="no_pengajuan" class="form-label">No Pengajuan</label>
                                         <input type="text"
@@ -32,6 +32,21 @@
                                             id="no_pengajuan" name="no_pengajuan" value="{{ old('no_pengajuan') }}"
                                             placeholder="Masukkan no pengajuan">
                                         @error('no_pengajuan')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="marketplace" class="form-label">Marketplace <span
+                                                class="text-danger">*</span></label>
+                                        <select class="form-control @error('marketplace') is-invalid @enderror"
+                                            id="marketplace" name="marketplace" required>
+                                            <option value="">Pilih Marketplace</option>
+                                            <option value="Shopee" {{ old('marketplace') == 'Shopee' ? 'selected' : '' }}>Shopee</option>
+                                            <option value="Tiktok" {{ old('marketplace') == 'Tiktok' ? 'selected' : '' }}>Tiktok Shop</option>
+                                        </select>
+                                        @error('marketplace')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>

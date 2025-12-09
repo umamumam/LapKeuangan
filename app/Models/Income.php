@@ -13,7 +13,8 @@ class Income extends Model
         'no_pesanan',
         'no_pengajuan',
         'total_penghasilan',
-        'toko_id'
+        'toko_id',
+        'marketplace'
     ];
 
     protected $casts = [

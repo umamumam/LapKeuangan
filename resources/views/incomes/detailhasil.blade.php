@@ -4,7 +4,7 @@
             <div class="col-sm-12">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Hasil Analisis Income</h5>
+                        <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Hasil Analisis Income (Detail)</h5>
                         <div class="d-flex gap-2">
                             <a href="{{ route('incomes.export-hasil') }}?{{ http_build_query(request()->query()) }}"
                                 class="btn btn-success btn-sm">
@@ -24,7 +24,7 @@
                             <div class="card-body">
                                 <form method="GET" action="{{ route('incomes.detailhasil') }}">
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="mb-3">
                                                 <label for="toko_id" class="form-label">Filter Toko</label>
                                                 <select class="form-control" id="toko_id" name="toko_id">
@@ -38,7 +38,17 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-2">
+                                            <div class="mb-3">
+                                                <label for="marketplace" class="form-label">Marketplace</label>
+                                                <select class="form-control" id="marketplace" name="marketplace">
+                                                    <option value="">All Marketplace</option>
+                                                    <option value="Shopee" {{ request('marketplace') == 'Shopee' ? 'selected' : '' }}>Shopee</option>
+                                                    <option value="Tiktok" {{ request('marketplace') == 'Tiktok' ? 'selected' : '' }}>Tiktok Shop</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
                                             <div class="mb-3">
                                                 <label for="start_date" class="form-label">Tanggal Mulai</label>
                                                 <input type="date" class="form-control" id="start_date"
@@ -46,21 +56,21 @@
                                                     value="{{ request('start_date', $startDate ?? '') }}">
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-2">
                                             <div class="mb-3">
                                                 <label for="end_date" class="form-label">Tanggal Akhir</label>
                                                 <input type="date" class="form-control" id="end_date" name="end_date"
                                                     value="{{ request('end_date', $endDate ?? '') }}">
                                             </div>
                                         </div>
-                                        <div class="col-md-2">
+                                        <div class="col-md-3">
                                             <div class="mb-3">
                                                 <label class="form-label">&nbsp;</label>
                                                 <div class="d-grid gap-2">
                                                     <button type="submit" class="btn btn-primary">
                                                         <i class="fas fa-search"></i> Filter
                                                     </button>
-                                                    <a href="{{ route('incomes.hasil') }}" class="btn btn-secondary">
+                                                    <a href="{{ route('incomes.detailhasil') }}" class="btn btn-secondary">
                                                         <i class="fas fa-refresh"></i> Reset
                                                     </a>
                                                 </div>
@@ -79,11 +89,22 @@
                             $totalLaba = $incomes->sum('laba');
                             $totalPersentase = $totalPenghasilan > 0 ? ($totalLaba / $totalPenghasilan) * 100 : 0;
 
+                            // Hitung statistik per marketplace
+                            $shopeeIncomes = $incomes->where('marketplace', 'Shopee');
+                            $tiktokIncomes = $incomes->where('marketplace', 'Tiktok');
+                            $shopeeTotal = $shopeeIncomes->sum('total_penghasilan');
+                            $tiktokTotal = $tiktokIncomes->sum('total_penghasilan');
+                            $shopeeCount = $shopeeIncomes->count();
+                            $tiktokCount = $tiktokIncomes->count();
+
                             // Info filter aktif
                             $filterAktif = [];
                             if (request('toko_id')) {
                             $tokoTerpilih = $tokos->firstWhere('id', request('toko_id'));
                             $filterAktif[] = 'Toko: ' . ($tokoTerpilih->nama ?? 'Tidak Ditemukan');
+                            }
+                            if (request('marketplace')) {
+                            $filterAktif[] = 'Marketplace: ' . request('marketplace');
                             }
                             if (request('start_date')) {
                             $filterAktif[] = 'Dari: ' . \Carbon\Carbon::parse(request('start_date'))->format('d/m/Y');
@@ -113,6 +134,12 @@
                                         <h6 class="card-title text-primary">Total Penghasilan</h6>
                                         <h4 class="mb-0">Rp {{ number_format($totalPenghasilan, 0, ',', '.') }}</h4>
                                         <small class="text-muted">{{ $incomes->count() }} pesanan</small>
+                                        <div class="mt-2">
+                                            <strong>
+                                                <span class="badge bg-warning">Shopee: {{ $shopeeCount }}</span>
+                                                <span class="badge bg-info ms-1">Tiktok: {{ $tiktokCount }}</span>
+                                            </strong>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -127,6 +154,12 @@
                                         <h4 class="mb-0">Rp {{ number_format($totalHpp, 0, ',', '.') }}</h4>
                                         <small class="text-muted">{{ number_format($totalHpp > 0 ? ($totalHpp /
                                             $totalPenghasilan) * 100 : 0, 1) }}% dari penghasilan</small>
+                                        <div class="mt-2">
+                                            <strong>
+                                                <span class="badge bg-warning">Rp {{ number_format($shopeeIncomes->sum('total_hpp'), 0, ',', '.') }}</span>
+                                                <span class="badge bg-info ms-1">Rp {{ number_format($tiktokIncomes->sum('total_hpp'), 0, ',', '.') }}</span>
+                                            </strong>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -141,6 +174,20 @@
                                             Laba/Rugi</h6>
                                         <h4 class="mb-0">Rp {{ number_format($totalLaba, 0, ',', '.') }}</h4>
                                         <small class="text-muted">{{ number_format($totalPersentase, 1) }}%</small>
+                                        <div class="mt-2">
+                                            <small>
+                                                @php
+                                                    $shopeeLaba = $shopeeIncomes->sum('laba');
+                                                    $tiktokLaba = $tiktokIncomes->sum('laba');
+                                                @endphp
+                                                <span class="badge bg-{{ $shopeeLaba >= 0 ? 'success' : 'danger' }}">
+                                                    Shopee: Rp {{ number_format($shopeeLaba, 0, ',', '.') }}
+                                                </span>
+                                                <span class="badge bg-{{ $tiktokLaba >= 0 ? 'success' : 'danger' }} ms-1">
+                                                    Tiktok: Rp {{ number_format($tiktokLaba, 0, ',', '.') }}
+                                                </span>
+                                            </small>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -151,9 +198,27 @@
                                         <div class="fs-2 text-secondary mb-2">
                                             <i class="fas fa-store"></i>
                                         </div>
-                                        <h6 class="card-title text-secondary">Jumlah Toko</h6>
-                                        <h4 class="mb-0">{{ $incomes->pluck('toko_id')->unique()->count() }}</h4>
-                                        <small class="text-muted">Toko aktif</small>
+                                        <h6 class="card-title text-secondary">Statistik Marketplace</h6>
+                                        <div class="row text-start">
+                                            <div class="col-6">
+                                                <h6 class="mb-1">Shopee</h6>
+                                                <p class="mb-0">
+                                                    <strong>
+                                                        <span class="badge bg-warning">Rp {{ number_format($shopeeTotal, 0, ',', '.') }}</span>
+                                                    </strong>
+                                                    <small>{{ $shopeeCount }} pesanan</small>
+                                                </p>
+                                            </div>
+                                            <div class="col-6">
+                                                <h6 class="mb-1">Tiktok</h6>
+                                                <p class="mb-0">
+                                                    <strong>
+                                                        <span class="badge bg-info">Rp {{ number_format($tiktokTotal, 0, ',', '.') }}</span>
+                                                    </strong>
+                                                    <small>{{ $tiktokCount }} pesanan</small>
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -168,6 +233,7 @@
                                         <th>No</th>
                                         <th>No Pesanan</th>
                                         <th>No Pengajuan</th>
+                                        <th>Marketplace</th>
                                         <th>Total Penghasilan</th>
                                         <th>HPP</th>
                                         <th>Laba/Rugi</th>
@@ -185,6 +251,11 @@
                                             <strong>{{ $income->no_pesanan }}</strong>
                                         </td>
                                         <td>{{ $income->no_pengajuan ?? '-' }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ $income->marketplace == 'Shopee' ? 'warning' : 'info' }}">
+                                                {{ $income->marketplace }}
+                                            </span>
+                                        </td>
                                         <td>Rp {{ number_format($income->total_penghasilan, 0, ',', '.') }}</td>
                                         <td>Rp {{ number_format($income->total_hpp, 0, ',', '.') }}</td>
                                         <td>
@@ -215,7 +286,7 @@
                                 </tbody>
                                 <tfoot class="table-secondary">
                                     <tr>
-                                        <th colspan="3" class="text-end">TOTAL:</th>
+                                        <th colspan="4" class="text-end">TOTAL:</th>
                                         <th>Rp {{ number_format($totalPenghasilan, 0, ',', '.') }}</th>
                                         <th>Rp {{ number_format($totalHpp, 0, ',', '.') }}</th>
                                         <th>
@@ -239,7 +310,7 @@
                             <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
                             <h5 class="text-muted">Tidak ada data</h5>
                             <p class="text-muted">Tidak ditemukan data income dengan filter yang dipilih.</p>
-                            <a href="{{ route('incomes.hasil') }}" class="btn btn-primary">
+                            <a href="{{ route('incomes.detailhasil') }}" class="btn btn-primary">
                                 <i class="fas fa-refresh"></i> Tampilkan Semua Data
                             </a>
                         </div>

@@ -35,6 +35,7 @@ class IncomeController extends Controller
             'no_pengajuan' => 'nullable|string|max:100',
             'total_penghasilan' => 'required|integer',
             'toko_id' => 'required|exists:tokos,id',
+            'marketplace' => 'required|in:Shopee,Tiktok',
         ]);
 
         try {
@@ -68,6 +69,7 @@ class IncomeController extends Controller
             'no_pengajuan' => 'nullable|string|max:100',
             'total_penghasilan' => 'required|integer',
             'toko_id' => 'required|exists:tokos,id',
+            'marketplace' => 'required|in:Shopee,Tiktok',
         ]);
 
         try {
@@ -145,11 +147,13 @@ class IncomeController extends Controller
                 return redirect()->back()
                     ->with('error', 'Tidak ada toko yang tersedia. Silahkan buat toko terlebih dahulu.');
             }
+            $marketplace = $orders->first()->marketplace ?? 'Shopee';
             $income = Income::create([
                 'no_pesanan' => $noPesanan,
                 'no_pengajuan' => $noPengajuan,
                 'total_penghasilan' => $total,
                 'toko_id' => $toko_id,
+                'marketplace' => $marketplace, // Tambah marketplace
             ]);
 
             return redirect()->route('incomes.show', $income)
@@ -175,11 +179,12 @@ class IncomeController extends Controller
     {
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv|max:5120',
-            'default_toko_id' => 'nullable|exists:tokos,id'
+            'default_toko_id' => 'nullable|exists:tokos,id',
+            'default_marketplace' => 'nullable|in:Shopee,Tiktok'
         ]);
 
         try {
-            $import = new IncomeImport($request->default_toko_id);
+            $import = new IncomeImport($request->default_toko_id, $request->default_marketplace);
             Excel::import($import, $request->file('file'));
 
             $failures = $import->getFailedOrders();
@@ -268,6 +273,11 @@ class IncomeController extends Controller
             $query->where('toko_id', $request->toko_id);
         }
 
+        // Tambah filter marketplace
+        if ($request->has('marketplace') && $request->marketplace != '') {
+            $query->where('marketplace', $request->marketplace);
+        }
+
         $startDate = $request->start_date;
         $endDate = $request->end_date;
 
@@ -311,6 +321,10 @@ class IncomeController extends Controller
 
         if ($request->has('toko_id') && $request->toko_id != '') {
             $query->where('toko_id', $request->toko_id);
+        }
+
+        if ($request->has('marketplace') && $request->marketplace != '') {
+            $query->where('marketplace', $request->marketplace);
         }
 
         $startDate = $request->start_date;

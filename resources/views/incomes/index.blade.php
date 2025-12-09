@@ -50,7 +50,8 @@
                                 <i class="fas fa-plus"></i> Tambah Income
                             </a>
                             @if($incomes->count() > 0)
-                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteAllModal">
+                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#deleteAllModal">
                                 <i class="fas fa-trash-alt"></i> Hapus Semua
                             </button>
                             @endif
@@ -68,6 +69,7 @@
                                     <th>Total Penghasilan</th>
                                     <th>Jumlah Item</th>
                                     <th>Toko</th>
+                                    <th>Marketplace</th>
                                     <th>Tanggal Dibuat</th>
                                     <th>Aksi</th>
                                 </tr>
@@ -85,6 +87,12 @@
                                         <span class="badge bg-info">{{ $income->orders->count() }} item</span>
                                     </td>
                                     <td>{{ $income->nama_toko }}</td>
+                                    <td>
+                                        <span
+                                            class="badge bg-{{ $income->marketplace == 'Shopee' ? 'warning' : 'info' }}">
+                                            {{ $income->marketplace }}
+                                        </span>
+                                    </td>
                                     <td>{{ $income->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
                                         <div class="d-flex gap-2">
@@ -141,7 +149,8 @@
                         <strong>PERINGATAN!</strong>
                     </div>
                     <p>Anda akan menghapus <strong>semua data income</strong> (total: {{ $incomes->count() }} data).</p>
-                    <p class="text-danger mb-0">Tindakan ini tidak dapat dibatalkan! Apakah Anda yakin ingin melanjutkan?</p>
+                    <p class="text-danger mb-0">Tindakan ini tidak dapat dibatalkan! Apakah Anda yakin ingin
+                        melanjutkan?</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
