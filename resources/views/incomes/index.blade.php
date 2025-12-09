@@ -37,6 +37,10 @@
                             <span class="badge bg-primary ms-3">
                                 <i class="fas fa-database me-1"></i> Total: {{ $incomes->total() }}
                             </span>
+                            <!-- TAMBAHAN: Income Bulan Ini -->
+                            <span class="badge bg-success ms-2">
+                                <i class="fas fa-calendar-check me-1"></i> Bulan Ini: Rp {{ number_format($totalIncomeBulanIni, 0, ',', '.') }}
+                            </span>
                         </div>
                         {{-- <h5 class="mb-0"><i class="fas fa-money-bill-wave"></i> Daftar Income</h5> --}}
                         <div class="d-flex gap-2">

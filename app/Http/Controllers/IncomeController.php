@@ -17,8 +17,14 @@ class IncomeController extends Controller
     public function index()
     {
         $incomes = Income::with(['orders.produk', 'toko'])->orderBy('id', 'desc')->paginate(200);
-        $totalIncomes = Order::count();
-        return view('incomes.index', compact('incomes', 'totalIncomes'));
+        $totalIncomes = Income::count();
+        $startOfMonth = now()->startOfMonth(); // Tanggal 1 bulan ini
+        $totalIncomeBulanIni = Income::where('created_at', '>=', $startOfMonth)->sum('total_penghasilan');
+        return view('incomes.index', compact(
+            'incomes',
+            'totalIncomes',
+            'totalIncomeBulanIni'
+        ));
     }
 
     public function create()
@@ -384,7 +390,6 @@ class IncomeController extends Controller
 
             return redirect()->route('incomes.index')
                 ->with('success', "Semua data income ($incomeCount data) berhasil dihapus!");
-
         } catch (\Exception $e) {
             \Log::error('Delete All Incomes Error: ' . $e->getMessage());
 
