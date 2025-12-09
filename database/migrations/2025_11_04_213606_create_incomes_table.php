@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('incomes', function (Blueprint $table) {
             $table->id();
-            $table->string('no_pesanan', 100)->unique();
+            $table->string('no_pesanan', 100);
             $table->string('no_pengajuan', 100)->nullable();
             $table->integer('total_penghasilan');
             $table->foreignId('toko_id')->constrained('tokos')->onDelete('cascade');
+            $table->enum('marketplace', ['Shopee', 'Tiktok']);
             $table->timestamps();
             $table->index('no_pesanan');
             $table->index('no_pengajuan');
             $table->index('toko_id');
-            $table->enum('marketplace', ['Shopee', 'Tiktok']);
         });
     }
 

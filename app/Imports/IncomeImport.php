@@ -83,13 +83,14 @@ class IncomeImport implements ToCollection, WithHeadingRow
                     'updated_at' => $parsedDate, // Sama dengan created_at
                 ];
 
-                // Validasi dasar - HANYA created_at yang wajib
+                // Validasi dasar - HAPUS validasi unique untuk no_pesanan
                 $validator = Validator::make($data, [
                     'no_pesanan' => [
                         'required',
                         'string',
                         'max:100',
-                        Rule::unique('incomes', 'no_pesanan')
+                        // HAPUS: Rule::unique('incomes', 'no_pesanan')
+                        // no_pesanan tidak harus unique, bisa ada data duplikat
                     ],
                     'no_pengajuan' => 'nullable|string|max:100',
                     'total_penghasilan' => 'required|integer',
@@ -99,7 +100,7 @@ class IncomeImport implements ToCollection, WithHeadingRow
                     // updated_at TIDAK divalidasi karena otomatis = created_at
                 ], [
                     'no_pesanan.required' => 'Nomor pesanan wajib diisi',
-                    'no_pesanan.unique' => 'Nomor pesanan sudah ada dalam database',
+                    // HAPUS: 'no_pesanan.unique' => 'Nomor pesanan sudah ada dalam database',
                     'total_penghasilan.required' => 'Total penghasilan wajib diisi',
                     'total_penghasilan.integer' => 'Total penghasilan harus berupa angka',
                     'toko_id.required' => 'Toko ID wajib diisi',
@@ -401,19 +402,33 @@ class IncomeImport implements ToCollection, WithHeadingRow
             return (int) $value;
         }
 
-        // Handle string dengan karakter non-numeric
-        $cleaned = preg_replace('/[^0-9,-]/', '', (string)$value);
-        $cleaned = str_replace(',', '', $cleaned); // Remove commas for thousands separator
+        $stringValue = trim((string)$value);
 
-        if ($cleaned === '' || $cleaned === '-') {
+        $isNegative = false;
+
+        if (preg_match('/^\(.*\)$/', $stringValue)) {
+            $isNegative = true;
+            $stringValue = preg_replace('/[\(\)]/', '', $stringValue);
+        }
+        elseif (strpos($stringValue, '-') !== false) {
+            $isNegative = true;
+        }
+
+        $cleaned = preg_replace('/[^0-9,.-]/', '', $stringValue);
+
+        $cleaned = str_replace(['.', ','], '', $cleaned);
+
+        if ($cleaned === '' || !is_numeric($cleaned)) {
             return 0;
         }
 
-        if (is_numeric($cleaned)) {
-            return (int) $cleaned;
+        $result = (int) $cleaned;
+
+        if ($isNegative) {
+            $result = -abs($result);
         }
 
-        return 0;
+        return $result;
     }
 
     /**

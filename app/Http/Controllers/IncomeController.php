@@ -37,7 +37,7 @@ class IncomeController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'no_pesanan' => 'required|string|max:100|unique:incomes,no_pesanan',
+            'no_pesanan' => 'required|string|max:100',
             'no_pengajuan' => 'nullable|string|max:100',
             'total_penghasilan' => 'required|integer',
             'toko_id' => 'required|exists:tokos,id',
@@ -71,7 +71,7 @@ class IncomeController extends Controller
     public function update(Request $request, Income $income)
     {
         $request->validate([
-            'no_pesanan' => 'required|string|max:100|unique:incomes,no_pesanan,' . $income->id,
+            'no_pesanan' => 'required|string|max:100' . $income->id,
             'no_pengajuan' => 'nullable|string|max:100',
             'total_penghasilan' => 'required|integer',
             'toko_id' => 'required|exists:tokos,id',
