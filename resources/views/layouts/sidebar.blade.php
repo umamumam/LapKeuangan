@@ -44,14 +44,20 @@
                         <span class="pc-mtext">Total Bulanan</span>
                     </a>
                 </li> --}}
-                <li class="pc-item pc-hasmenu">
+                <li class="pc-item">
+                    <a href="/incomes/detailhasil" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-chart-bar"></i></span>
+                        <span class="pc-mtext">Hasil</span>
+                    </a>
+                </li>
+                {{-- <li class="pc-item pc-hasmenu">
                     <a href="#!" class="pc-link"><span class="pc-micon"><i class="ti ti-chart-bar"></i>
                     </span><span class="pc-mtext">Hasil</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
                     <ul class="pc-submenu">
                         <li class="pc-item"><a class="pc-link" href="/incomes/hasil">Rekap Hasil</a></li>
                         <li class="pc-item"><a class="pc-link" href="/incomes/detailhasil">Detail Hasil</a></li>
                     </ul>
-                </li>
+                </li> --}}
                 <li class="pc-item pc-hasmenu">
                     <a href="#!" class="pc-link"><span class="pc-micon"><i class="ti ti-report-analytics"></i>
                     </span><span class="pc-mtext">Summary & Output</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
