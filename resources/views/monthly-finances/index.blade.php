@@ -127,8 +127,19 @@
                                         <td>
                                             <span
                                                 class="badge bg-{{ $finance->laba_rugi >= 0 ? 'success' : 'danger' }}">
-                                                Rp {{ number_format($finance->laba_rugi, 0, ',', '.') }}
+                                                <strong>Rp {{ number_format($finance->laba_rugi, 0, ',', '.') }}</strong>
                                             </span>
+                                            <br>
+                                            <small class="text-muted">
+                                                <div class="text-primary">
+                                                    S: Rp {{ number_format($finance->laba_rugi_net_shopee ?? 0, 0, ',',
+                                                    '.') }}
+                                                </div>
+                                                <div class="text-danger">
+                                                    T: Rp {{ number_format($finance->laba_rugi_net_tiktok ?? 0, 0, ',',
+                                                    '.') }}
+                                                </div>
+                                            </small>
                                         </td>
                                         {{-- <td>
                                             <span class="badge bg-{{ $dataStatus }}">
