@@ -48,29 +48,94 @@
                                 </div>
                             </div>
 
+                            <!-- Tambahan kolom untuk Shopee -->
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="total_pendapatan_shopee" class="form-label">Pendapatan Shopee *</label>
+                                        <input type="number" class="form-control @error('total_pendapatan_shopee') is-invalid @enderror"
+                                               id="total_pendapatan_shopee" name="total_pendapatan_shopee"
+                                               value="{{ old('total_pendapatan_shopee') }}" required min="0" step="1">
+                                        @error('total_pendapatan_shopee')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="rasio_admin_layanan_shopee" class="form-label">Rasio Admin Shopee (%) *</label>
+                                        <input type="number" step="0.01" class="form-control @error('rasio_admin_layanan_shopee') is-invalid @enderror"
+                                               id="rasio_admin_layanan_shopee" name="rasio_admin_layanan_shopee"
+                                               value="{{ old('rasio_admin_layanan_shopee') }}" required min="0" max="100">
+                                        @error('rasio_admin_layanan_shopee')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="iklan_shopee" class="form-label">Iklan Shopee *</label>
+                                        <input type="number" class="form-control @error('iklan_shopee') is-invalid @enderror"
+                                               id="iklan_shopee" name="iklan_shopee"
+                                               value="{{ old('iklan_shopee') }}" required min="0" step="1">
+                                        @error('iklan_shopee')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tambahan kolom untuk Tiktok -->
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="total_pendapatan_tiktok" class="form-label">Pendapatan Tiktok *</label>
+                                        <input type="number" class="form-control @error('total_pendapatan_tiktok') is-invalid @enderror"
+                                               id="total_pendapatan_tiktok" name="total_pendapatan_tiktok"
+                                               value="{{ old('total_pendapatan_tiktok') }}" required min="0" step="1">
+                                        @error('total_pendapatan_tiktok')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="rasio_admin_layanan_tiktok" class="form-label">Rasio Admin Tiktok (%) *</label>
+                                        <input type="number" step="0.01" class="form-control @error('rasio_admin_layanan_tiktok') is-invalid @enderror"
+                                               id="rasio_admin_layanan_tiktok" name="rasio_admin_layanan_tiktok"
+                                               value="{{ old('rasio_admin_layanan_tiktok') }}" required min="0" max="100">
+                                        @error('rasio_admin_layanan_tiktok')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="iklan_tiktok" class="form-label">Iklan Tiktok *</label>
+                                        <input type="number" class="form-control @error('iklan_tiktok') is-invalid @enderror"
+                                               id="iklan_tiktok" name="iklan_tiktok"
+                                               value="{{ old('iklan_tiktok') }}" required min="0" step="1">
+                                        @error('iklan_tiktok')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Kolom yang sudah ada (untuk backward compatibility) -->
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="total_pendapatan" class="form-label">Total Pendapatan *</label>
-                                        <input type="number" class="form-control @error('total_pendapatan') is-invalid @enderror"
-                                               id="total_pendapatan" name="total_pendapatan"
-                                               value="{{ old('total_pendapatan') }}" required min="0" step="1">
-                                        @error('total_pendapatan')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                        <div class="form-text">Pendapatan setelah dipotong voucher dan diskon</div>
+                                        <label for="total_pendapatan" class="form-label">Total Pendapatan (Otomatis)</label>
+                                        <input type="number" class="form-control" id="total_pendapatan" readonly>
+                                        <div class="form-text">Pendapatan Shopee + Tiktok</div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="rasio_admin_layanan" class="form-label">Rasio Admin & Layanan (%) *</label>
-                                        <input type="number" step="0.01" class="form-control @error('rasio_admin_layanan') is-invalid @enderror"
-                                               id="rasio_admin_layanan" name="rasio_admin_layanan"
-                                               value="{{ old('rasio_admin_layanan') }}" required min="0" max="100">
-                                        @error('rasio_admin_layanan')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                        <div class="form-text">Persentase biaya admin, AMS, dan layanan</div>
+                                        <label for="rasio_admin_layanan" class="form-label">Rasio Admin Rata-rata (Otomatis)</label>
+                                        <input type="number" class="form-control" id="rasio_admin_layanan" readonly>
+                                        <div class="form-text">Rata-rata tertimbang Shopee & Tiktok</div>
                                     </div>
                                 </div>
                             </div>
@@ -90,14 +155,9 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="iklan" class="form-label">Biaya Iklan *</label>
-                                        <input type="number" class="form-control @error('iklan') is-invalid @enderror"
-                                               id="iklan" name="iklan"
-                                               value="{{ old('iklan') }}" required min="0" step="1">
-                                        @error('iklan')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                        <div class="form-text">Biaya iklan termasuk PPN 11%</div>
+                                        <label for="iklan" class="form-label">Total Iklan (Otomatis)</label>
+                                        <input type="number" class="form-control" id="iklan" readonly>
+                                        <div class="form-text">Iklan Shopee + Tiktok</div>
                                     </div>
                                 </div>
                             </div>
@@ -132,6 +192,21 @@
         const periodeAkhir = document.getElementById('periode_akhir');
         const namaPeriodePreview = document.getElementById('nama-periode-preview');
 
+        // Elements for Shopee
+        const pendapatanShopee = document.getElementById('total_pendapatan_shopee');
+        const rasioShopee = document.getElementById('rasio_admin_layanan_shopee');
+        const iklanShopee = document.getElementById('iklan_shopee');
+
+        // Elements for Tiktok
+        const pendapatanTiktok = document.getElementById('total_pendapatan_tiktok');
+        const rasioTiktok = document.getElementById('rasio_admin_layanan_tiktok');
+        const iklanTiktok = document.getElementById('iklan_tiktok');
+
+        // Auto-calculated fields
+        const totalPendapatan = document.getElementById('total_pendapatan');
+        const rataRataRasio = document.getElementById('rasio_admin_layanan');
+        const totalIklan = document.getElementById('iklan');
+
         function updateNamaPeriode() {
             if (periodeAwal.value) {
                 const date = new Date(periodeAwal.value);
@@ -146,10 +221,45 @@
             }
         }
 
+        function updateCalculatedFields() {
+            // Calculate total pendapatan
+            const shopeePendapatan = parseInt(pendapatanShopee.value) || 0;
+            const tiktokPendapatan = parseInt(pendapatanTiktok.value) || 0;
+            const totalPendapatanValue = shopeePendapatan + tiktokPendapatan;
+            totalPendapatan.value = totalPendapatanValue;
+
+            // Calculate total iklan
+            const shopeeIklan = parseInt(iklanShopee.value) || 0;
+            const tiktokIklan = parseInt(iklanTiktok.value) || 0;
+            const totalIklanValue = shopeeIklan + tiktokIklan;
+            totalIklan.value = totalIklanValue;
+
+            // Calculate weighted average rasio
+            const shopeeRasio = parseFloat(rasioShopee.value) || 0;
+            const tiktokRasio = parseFloat(rasioTiktok.value) || 0;
+
+            if (totalPendapatanValue > 0) {
+                const adminShopee = shopeePendapatan * (shopeeRasio / 100);
+                const adminTiktok = tiktokPendapatan * (tiktokRasio / 100);
+                const totalAdmin = adminShopee + adminTiktok;
+                const weightedAverage = (totalAdmin / totalPendapatanValue) * 100;
+                rataRataRasio.value = weightedAverage.toFixed(2);
+            } else {
+                rataRataRasio.value = 0;
+            }
+        }
+
+        // Initialize events
         periodeAwal.addEventListener('change', updateNamaPeriode);
+
+        // Add event listeners for calculations
+        [pendapatanShopee, pendapatanTiktok, rasioShopee, rasioTiktok, iklanShopee, iklanTiktok].forEach(input => {
+            input.addEventListener('input', updateCalculatedFields);
+        });
 
         // Initialize on page load
         updateNamaPeriode();
+        updateCalculatedFields();
     });
     </script>
 </x-app-layout>

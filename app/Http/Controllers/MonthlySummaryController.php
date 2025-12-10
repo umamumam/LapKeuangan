@@ -36,8 +36,16 @@ class MonthlySummaryController extends Controller
         $calculatedData = [
             'margin' => $monthlySummary->margin,
             'rasio_margin' => $monthlySummary->rasio_margin,
+            'rasio_margin_shopee' => $monthlySummary->rasio_margin_shopee,
+            'rasio_margin_tiktok' => $monthlySummary->rasio_margin_tiktok,
             'aov' => $monthlySummary->aov,
+            'aov_shopee' => $monthlySummary->total_income_count_shopee > 0 ?
+                round($monthlySummary->total_penghasilan_shopee / $monthlySummary->total_income_count_shopee) : 0,
+            'aov_tiktok' => $monthlySummary->total_income_count_tiktok > 0 ?
+                round($monthlySummary->total_penghasilan_tiktok / $monthlySummary->total_income_count_tiktok) : 0,
             'net_quantity' => $monthlySummary->net_quantity,
+            'total_orders_shopee' => $monthlySummary->getOrdersCountByMarketplace('Shopee'),
+            'total_orders_tiktok' => $monthlySummary->getOrdersCountByMarketplace('Tiktok'),
         ];
 
         return view('monthly-summaries.modal-show', compact('monthlySummary', 'calculatedData'));
@@ -139,7 +147,11 @@ class MonthlySummaryController extends Controller
         // Calculate growth
         $growth = [
             'penghasilan' => $this->calculateGrowth($currentMonth->total_penghasilan ?? 0, $previousMonth->total_penghasilan ?? 0),
+            'penghasilan_shopee' => $this->calculateGrowth($currentMonth->total_penghasilan_shopee ?? 0, $previousMonth->total_penghasilan_shopee ?? 0),
+            'penghasilan_tiktok' => $this->calculateGrowth($currentMonth->total_penghasilan_tiktok ?? 0, $previousMonth->total_penghasilan_tiktok ?? 0),
             'laba_rugi' => $this->calculateGrowth($currentMonth->laba_rugi ?? 0, $previousMonth->laba_rugi ?? 0),
+            'laba_rugi_shopee' => $this->calculateGrowth($currentMonth->laba_rugi_shopee ?? 0, $previousMonth->laba_rugi_shopee ?? 0),
+            'laba_rugi_tiktok' => $this->calculateGrowth($currentMonth->laba_rugi_tiktok ?? 0, $previousMonth->laba_rugi_tiktok ?? 0),
             'orders' => $this->calculateGrowth($currentMonth->total_order_qty ?? 0, $previousMonth->total_order_qty ?? 0),
         ];
 

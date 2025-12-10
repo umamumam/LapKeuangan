@@ -69,11 +69,61 @@
                                                 $finance->periode_akhir->format('d/m/Y') }}
                                             </small>
                                         </td>
-                                        <td>Rp {{ number_format($finance->total_pendapatan, 0, ',', '.') }}</td>
-                                        <td>Rp {{ number_format($finance->total_penghasilan, 0, ',', '.') }}</td>
-                                        <td>Rp {{ number_format($finance->hpp, 0, ',', '.') }}</td>
-                                        <td>Rp {{ number_format($finance->operasional, 0, ',', '.') }}</td>
-                                        <td>Rp {{ number_format($finance->iklan, 0, ',', '.') }}</td>
+                                        <td>Rp {{ number_format($finance->total_pendapatan, 0, ',', '.') }}
+                                            <br>
+                                            <strong>
+                                                <span class="badge bg-warning text-dark">
+                                                    Shopee: Rp {{ number_format($finance->total_pendapatan_shopee, 0,
+                                                    ',', '.') }}
+                                                </span>
+                                                <br>
+                                                <span class="badge bg-dark">
+                                                    Tiktok: Rp {{ number_format($finance->total_pendapatan_tiktok, 0,
+                                                    ',', '.') }}
+                                                </span>
+                                            </strong>
+                                        </td>
+                                        <td>Rp {{ number_format($finance->total_penghasilan, 0, ',', '.') }}
+                                            <br>
+                                            <strong>
+                                                <span class="badge bg-warning text-dark">
+                                                    Shopee: Rp {{ number_format($finance->total_penghasilan_shopee, 0,
+                                                    ',', '.') }}
+                                                </span>
+                                                <br>
+                                                <span class="badge bg-dark">
+                                                    Tiktok: Rp {{ number_format($finance->total_penghasilan_tiktok, 0,
+                                                    ',', '.') }}
+                                                </span>
+                                            </strong>
+                                        </td>
+                                        <td>Rp {{ number_format($finance->hpp, 0, ',', '.') }}
+                                            <br>
+                                            <strong>
+                                                <span class="badge bg-warning text-dark">
+                                                    Shopee: Rp {{ number_format($finance->hpp_shopee, 0,
+                                                    ',', '.') }}
+                                                </span>
+                                                <br>
+                                                <span class="badge bg-dark">
+                                                    Tiktok: Rp {{ number_format($finance->hpp_tiktok, 0,
+                                                    ',', '.') }}
+                                                </span>
+                                            </strong>
+                                        </td>
+                                        <td>
+                                            <div class="text-primary">
+                                                Rp {{ number_format($finance->operasional, 0, ',', '.') }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            Rp {{ number_format($finance->total_iklan, 0, ',', '.') }}
+                                            <br>
+                                            <small class="text-muted">
+                                                S: Rp {{ number_format($finance->iklan_shopee, 0, ',', '.') }}<br>
+                                                T: Rp {{ number_format($finance->iklan_tiktok, 0, ',', '.') }}
+                                            </small>
+                                        </td>
                                         <td>
                                             <span
                                                 class="badge bg-{{ $finance->laba_rugi >= 0 ? 'success' : 'danger' }}">

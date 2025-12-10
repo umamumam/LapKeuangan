@@ -10,34 +10,40 @@
                                 <i class="fas fa-tachometer-alt"></i> Dashboard
                             </button>
                             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#generateModal">
-                                <i class="fas fa-plus"></i> Generate Summary
+                                <i class="fas fa-plus"></i> Generate
                             </button>
                             <button type="button" class="btn btn-success btn-sm" onclick="generateCurrentMonth()">
-                                <i class="fas fa-sync"></i> Generate Bulan Ini
+                                <i class="fas fa-sync"></i> Bulan Ini
                             </button>
                         </div>
                     </div>
 
                     <div class="card-body">
-                        <!-- Alert Area -->
                         <div id="alertContainer"></div>
 
+                        @if($summaries->isEmpty())
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Belum ada summary bulanan.</p>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateModal">
+                                <i class="fas fa-plus"></i> Generate Summary Pertama
+                            </button>
+                        </div>
+                        @else
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover">
-                                <thead>
+                            <table class="table table-hover">
+                                <thead class="table-light">
                                     <tr>
                                         <th>Periode</th>
-                                        <th>Total Penghasilan</th>
-                                        <th>Total HPP</th>
-                                        {{-- <th>Laba/Rugi</th> --}}
-                                        <th>Margin</th>
-                                        <th>Total Orders</th>
-                                        <th width="120">Aksi</th>
+                                        <th>Penghasilan</th>
+                                        <th>HPP</th>
+                                        <th>Income</th>
+                                        <th width="80">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($summaries as $summary)
-                                    <tr>
+                                    <tr class="table-active">
                                         <td>
                                             <strong>{{ $summary->nama_periode }}</strong>
                                             <br>
@@ -45,15 +51,15 @@
                                                 {{ $summary->periode_awal->format('d/m/Y') }} - {{ $summary->periode_akhir->format('d/m/Y') }}
                                             </small>
                                         </td>
-                                        <td>Rp {{ number_format($summary->total_penghasilan, 0, ',', '.') }}</td>
-                                        <td>Rp {{ number_format($summary->total_hpp, 0, ',', '.') }}</td>
-                                        {{-- <td>
-                                            <span class="badge bg-{{ $summary->laba_rugi >= 0 ? 'success' : 'danger' }}">
-                                                Rp {{ number_format($summary->laba_rugi, 0, ',', '.') }}
-                                            </span>
-                                        </td> --}}
-                                        <td>{{ $summary->rasio_margin }}%</td>
-                                        <td>{{ number_format($summary->total_order_qty, 0, ',', '.') }}</td>
+                                        <td class="fw-bold text-success">
+                                            Rp {{ number_format($summary->total_penghasilan, 0, ',', '.') }}
+                                        </td>
+                                        <td class="text-danger">
+                                            Rp {{ number_format($summary->total_hpp, 0, ',', '.') }}
+                                        </td>
+                                        <td>
+                                            {{ number_format($summary->total_income_count, 0, ',', '.') }}
+                                        </td>
                                         <td>
                                             <div class="d-flex gap-1">
                                                 <button type="button" class="btn btn-info btn-sm"
@@ -68,18 +74,70 @@
                                             </div>
                                         </td>
                                     </tr>
+
+                                    <tr class="table-light">
+                                        <td class="border-0 py-1">
+                                            <small class="text-muted">Detail Penjualan</small>
+                                        </td>
+                                        <td class="border-0 py-1">
+                                            <div class="d-flex justify-content-between mb-0">
+                                                <small>
+                                                    <i class="fa-brands fa-tiktok text-warning me-1"></i>Shopee:
+                                                </small>
+                                                <small class="fw-semibold">
+                                                    Rp {{ number_format($summary->total_penghasilan_shopee, 0, ',', '.') }}
+                                                </small>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <small>
+                                                    <i class="fa-brands fa-tiktok text-info me-1"></i>Tiktok:
+                                                </small>
+                                                <small class="fw-semibold">
+                                                    Rp {{ number_format($summary->total_penghasilan_tiktok, 0, ',', '.') }}
+                                                </small>
+                                            </div>
+                                        </td>
+                                        <td class="border-0 py-1">
+                                            <div class="d-flex justify-content-between mb-0">
+                                                <small>Shopee:</small>
+                                                <small class="text-danger">
+                                                    Rp {{ number_format($summary->total_hpp_shopee, 0, ',', '.') }}
+                                                </small>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <small>Tiktok:</small>
+                                                <small class="text-danger">
+                                                    Rp {{ number_format($summary->total_hpp_tiktok, 0, ',', '.') }}
+                                                </small>
+                                            </div>
+                                        </td>
+                                        <td class="border-0 py-1">
+                                            <div class="d-flex justify-content-between mb-0">
+                                                <small>
+                                                    <i class="fa-brands fa-tiktok text-primary me-1"></i>Shopee:
+                                                </small>
+                                                <small class="fw-semibold">
+                                                    {{ number_format($summary->getOrdersCountByMarketplace('Shopee'), 0, ',', '.') }}
+                                                </small>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <small>
+                                                    <i class="fa-brands fa-tiktok text-info me-1"></i>Tiktok:
+                                                </small>
+                                                <small class="fw-semibold">
+                                                    {{ number_format($summary->getOrdersCountByMarketplace('Tiktok'), 0, ',', '.') }}
+                                                </small>
+                                            </div>
+                                        </td>
+                                        <td class="border-0 py-1"></td>
+                                    </tr>
+
+                                    <tr>
+                                        <td colspan="6" class="border-0 py-2"></td>
+                                    </tr>
                                     @endforeach
                                 </tbody>
                             </table>
-                        </div>
-
-                        @if($summaries->isEmpty())
-                        <div class="text-center py-4">
-                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">Belum ada summary bulanan.</p>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateModal">
-                                <i class="fas fa-plus"></i> Generate Summary Pertama
-                            </button>
                         </div>
                         @endif
                     </div>
@@ -88,12 +146,11 @@
         </div>
     </div>
 
-    <!-- Modal Generate -->
     <div class="modal fade" id="generateModal" tabindex="-1" aria-labelledby="generateModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="generateModalLabel">Generate Summary Bulanan</h5>
+                    <h5 class="modal-title" id="generateModalLabel">Generate Summary</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="generateForm">
@@ -123,9 +180,9 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-play"></i> Generate
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-play me-1"></i> Generate
                         </button>
                     </div>
                 </form>
@@ -133,7 +190,6 @@
         </div>
     </div>
 
-    <!-- Modal Detail -->
     <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -142,13 +198,11 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" id="detailModalBody">
-                    <!-- Content will be loaded via AJAX -->
-                </div>
+                    </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal Dashboard -->
     <div class="modal fade" id="dashboardModal" tabindex="-1" aria-labelledby="dashboardModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
@@ -157,8 +211,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" id="dashboardModalBody">
-                    <!-- Content will be loaded via AJAX -->
-                </div>
+                    </div>
             </div>
         </div>
     </div>

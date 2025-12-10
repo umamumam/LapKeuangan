@@ -16,10 +16,13 @@ return new class extends Migration
             $table->date('periode_awal');
             $table->date('periode_akhir');
             $table->string('nama_periode', 50);
-            $table->bigInteger('total_pendapatan')->default(0);
+            $table->bigInteger('total_pendapatan_shopee')->default(0);
+            $table->bigInteger('total_pendapatan_tiktok')->default(0);
             $table->bigInteger('operasional')->default(0);
-            $table->bigInteger('iklan')->default(0);
-            $table->decimal('rasio_admin_layanan', 5, 2)->default(0);
+            $table->bigInteger('iklan_shopee')->default(0);
+            $table->bigInteger('iklan_tiktok')->default(0);
+            $table->decimal('rasio_admin_layanan_shopee', 5, 2)->default(0);
+            $table->decimal('rasio_admin_layanan_tiktok', 5, 2)->default(0);
             $table->text('keterangan')->nullable();
             $table->timestamps();
             $table->unique('nama_periode');
