@@ -164,9 +164,9 @@ class MonthlyFinance extends Model
     {
         $labaRugiShopee = $this->laba_rugi_shopee;
         // Alokasikan operasional dan iklan proporsional berdasarkan pendapatan
-        $proporsiShopee = $this->total_pendapatan > 0 ?
-            ($this->total_pendapatan_shopee / $this->total_pendapatan) : 0;
-        $operasionalShopee = $this->operasional * $proporsiShopee;
+        // $proporsiShopee = $this->total_pendapatan > 0 ?
+        //     ($this->total_pendapatan_shopee / $this->total_pendapatan) : 0;
+        $operasionalShopee = $this->operasional;
         return $labaRugiShopee - $operasionalShopee - $this->iklan_shopee;
     }
 
