@@ -177,9 +177,9 @@ class MonthlyFinance extends Model
     {
         $labaRugiTiktok = $this->laba_rugi_tiktok;
         // Alokasikan operasional dan iklan proporsional berdasarkan pendapatan
-        $proporsiTiktok = $this->total_pendapatan > 0 ?
-            ($this->total_pendapatan_tiktok / $this->total_pendapatan) : 0;
-        $operasionalTiktok = $this->operasional * $proporsiTiktok;
+        // $proporsiTiktok = $this->total_pendapatan > 0 ?
+        //     ($this->total_pendapatan_tiktok / $this->total_pendapatan) : 0;
+        $operasionalTiktok = $this->operasional;
         return $labaRugiTiktok - $operasionalTiktok - $this->iklan_tiktok;
     }
 
