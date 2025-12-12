@@ -25,7 +25,8 @@
                             <div class="col-md-6">
                                 <div class="card">
                                     <div class="card-body">
-                                        <h6>Template Format Excel</h6>
+                                        <h4>Template Format Excel</h4>
+                                        <br>
                                         <p>Download template untuk memastikan format data sesuai:</p>
                                         <a href="{{ route('incomes.download-template') }}"
                                             class="btn btn-success btn-sm">
@@ -41,39 +42,45 @@
                                         <ul class="mb-0">
                                             <li><strong>No Pesanan</strong>: Text (wajib, unique)</li>
                                             <li><strong>No Pengajuan</strong>: Text (opsional)</li>
-                                            <li><strong>Total Penghasilan</strong>: Number (wajib)</li>
-                                            <li><strong>Toko ID</strong>: Number (opsional, gunakan default jika kosong)</li>
+                                            <li><strong>Total Penghasilan</strong>: Number (wajib, minimal 0)</li>
+                                            <li><strong>Periode ID</strong>: Number (opsional)</li>
                                         </ul>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Informasi Daftar Toko -->
+                        <!-- Informasi Daftar Periode -->
                         <div class="row mt-3">
                             <div class="col-12">
                                 <div class="card">
                                     <div class="card-header bg-light">
-                                        <h6 class="mb-0"><i class="fas fa-store"></i> Daftar Toko yang Tersedia</h6>
+                                        <h6 class="mb-0"><i class="fas fa-calendar-alt"></i> Daftar Periode yang Tersedia</h6>
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">
                                             <table class="table table-sm table-bordered">
                                                 <thead class="table-light">
                                                     <tr>
-                                                        <th>ID Toko</th>
-                                                        <th>Nama Toko</th>
+                                                        <th>ID Periode</th>
+                                                        <th>Nama Periode</th>
+                                                        <th>Toko</th>
+                                                        <th>Marketplace</th>
                                                         <th>Jumlah Income</th>
-                                                        <th>Dibuat</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    @foreach($tokos as $toko)
+                                                    @foreach($periodes as $periode)
                                                     <tr>
-                                                        <td><strong>{{ $toko->id }}</strong></td>
-                                                        <td>{{ $toko->nama }}</td>
-                                                        <td>{{ $toko->incomes->count() }}</td>
-                                                        <td>{{ $toko->created_at->format('d/m/Y') }}</td>
+                                                        <td><strong>{{ $periode->id }}</strong></td>
+                                                        <td>{{ $periode->nama_periode }}</td>
+                                                        <td>{{ $periode->toko->nama }}</td>
+                                                        <td>
+                                                            <span class="badge bg-{{ $periode->marketplace == 'Shopee' ? 'warning' : 'info' }}">
+                                                                {{ $periode->marketplace }}
+                                                            </span>
+                                                        </td>
+                                                        <td>{{ $periode->incomes->count() }}</td>
                                                     </tr>
                                                     @endforeach
                                                 </tbody>
@@ -81,7 +88,7 @@
                                         </div>
                                         <small class="text-muted">
                                             <i class="fas fa-info-circle"></i>
-                                            Gunakan ID toko di atas pada kolom "Toko ID" di file Excel
+                                            Gunakan ID periode di atas pada kolom "Periode ID" di file Excel
                                         </small>
                                     </div>
                                 </div>
@@ -106,22 +113,22 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="default_toko_id" class="form-label">Default Toko (Opsional)</label>
-                                            <select class="form-control @error('default_toko_id') is-invalid @enderror"
-                                                id="default_toko_id" name="default_toko_id">
-                                                <option value="">Pilih Default Toko</option>
-                                                @foreach($tokos as $toko)
-                                                    <option value="{{ $toko->id }}"
-                                                        {{ old('default_toko_id') == $toko->id ? 'selected' : '' }}>
-                                                        {{ $toko->nama }} (ID: {{ $toko->id }})
+                                            <label for="default_periode_id" class="form-label">Default Periode (Opsional)</label>
+                                            <select class="form-control @error('default_periode_id') is-invalid @enderror"
+                                                id="default_periode_id" name="default_periode_id">
+                                                <option value="">Pilih Default Periode</option>
+                                                @foreach($periodes as $periode)
+                                                    <option value="{{ $periode->id }}"
+                                                        {{ old('default_periode_id') == $periode->id ? 'selected' : '' }}>
+                                                        {{ $periode->nama_periode }} - {{ $periode->toko->nama }} ({{ $periode->marketplace }})
                                                     </option>
                                                 @endforeach
                                             </select>
-                                            @error('default_toko_id')
+                                            @error('default_periode_id')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                             <div class="form-text">
-                                                Jika kolom "Toko ID" kosong di Excel, akan menggunakan toko ini
+                                                Jika kolom "Periode ID" kosong di Excel, akan menggunakan periode ini
                                             </div>
                                         </div>
                                     </div>
@@ -164,7 +171,7 @@
                                                 <tr>
                                                     <th>Baris</th>
                                                     <th>No Pesanan</th>
-                                                    <th>Toko ID</th>
+                                                    <th>Periode ID</th>
                                                     <th>Alasan</th>
                                                 </tr>
                                             </thead>
@@ -173,7 +180,7 @@
                                                 <tr>
                                                     <td>{{ $failure['row'] }}</td>
                                                     <td>{{ $failure['no_pesanan'] }}</td>
-                                                    <td>{{ $failure['toko_id'] ?? '-' }}</td>
+                                                    <td>{{ $failure['periode_id'] ?? '-' }}</td>
                                                     <td class="text-danger small">{{ $failure['reason'] }}</td>
                                                 </tr>
                                                 @endforeach

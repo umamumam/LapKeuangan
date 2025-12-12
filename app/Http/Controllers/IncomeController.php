@@ -2,36 +2,45 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Income;
+use App\Models\Periode;
 use App\Models\Toko;
 use App\Models\Order;
-use App\Models\Income;
 use Illuminate\Http\Request;
-use App\Exports\IncomeExport;
-use App\Imports\IncomeImport;
 use Illuminate\Support\Facades\DB;
+use App\Exports\IncomeExport;
 use App\Exports\IncomeResultExport;
+use App\Imports\IncomeImport;
 use Maatwebsite\Excel\Facades\Excel;
 
 class IncomeController extends Controller
 {
     public function index()
     {
-        $incomes = Income::with(['orders.produk', 'toko'])->orderBy('id', 'desc')->paginate(200);
+        $incomes = Income::with(['orders.produk', 'periode'])
+            ->orderBy('id', 'desc')
+            ->paginate(200);
+
         $totalIncomes = Income::count();
-        $startOfMonth = now()->startOfMonth(); // Tanggal 1 bulan ini
+        $startOfMonth = now()->startOfMonth();
         $totalIncomeBulanIni = Income::where('created_at', '>=', $startOfMonth)->sum('total_penghasilan');
+
+        // Ambil semua periode untuk dropdown filter
+        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
+
         return view('incomes.index', compact(
             'incomes',
             'totalIncomes',
-            'totalIncomeBulanIni'
+            'totalIncomeBulanIni',
+            'periodes'
         ));
     }
 
     public function create()
     {
         $orders = Order::select('no_pesanan')->distinct()->get();
-        $tokos = Toko::all();
-        return view('incomes.create', compact('orders', 'tokos'));
+        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
+        return view('incomes.create', compact('orders', 'periodes'));
     }
 
     public function store(Request $request)
@@ -39,9 +48,8 @@ class IncomeController extends Controller
         $request->validate([
             'no_pesanan' => 'required|string|max:100',
             'no_pengajuan' => 'nullable|string|max:100',
-            'total_penghasilan' => 'required|integer',
-            'toko_id' => 'required|exists:tokos,id',
-            'marketplace' => 'required|in:Shopee,Tiktok',
+            'total_penghasilan' => 'required|integer|min:0',
+            'periode_id' => 'nullable|exists:periodes,id',
         ]);
 
         try {
@@ -57,15 +65,15 @@ class IncomeController extends Controller
 
     public function show(Income $income)
     {
-        $income->load(['orders.produk', 'toko']);
+        $income->load(['orders.produk', 'periode.toko']);
         return view('incomes.show', compact('income'));
     }
 
     public function edit(Income $income)
     {
         $orders = Order::select('no_pesanan')->distinct()->get();
-        $tokos = Toko::all();
-        return view('incomes.edit', compact('income', 'orders', 'tokos'));
+        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
+        return view('incomes.edit', compact('income', 'orders', 'periodes'));
     }
 
     public function update(Request $request, Income $income)
@@ -73,9 +81,8 @@ class IncomeController extends Controller
         $request->validate([
             'no_pesanan' => 'required|string|max:100' . $income->id,
             'no_pengajuan' => 'nullable|string|max:100',
-            'total_penghasilan' => 'required|integer',
-            'toko_id' => 'required|exists:tokos,id',
-            'marketplace' => 'required|in:Shopee,Tiktok',
+            'total_penghasilan' => 'required|integer|min:0',
+            'periode_id' => 'nullable|exists:periodes,id',
         ]);
 
         try {
@@ -146,20 +153,15 @@ class IncomeController extends Controller
             });
 
             $noPengajuan = 'SUB-' . $noPesanan . '-' . date('YmdHis');
-            // Ambil toko_id dari order pertama atau default ke toko pertama
-            $toko_id = $orders->first()->toko_id ?? Toko::first()->id ?? null;
 
-            if (!$toko_id) {
-                return redirect()->back()
-                    ->with('error', 'Tidak ada toko yang tersedia. Silahkan buat toko terlebih dahulu.');
-            }
-            $marketplace = $orders->first()->marketplace ?? 'Shopee';
+            // Ambil periode_id dari order pertama yang punya periode
+            $periodeId = $orders->firstWhere('periode_id', '!=', null)?->periode_id ?? null;
+
             $income = Income::create([
                 'no_pesanan' => $noPesanan,
                 'no_pengajuan' => $noPengajuan,
                 'total_penghasilan' => $total,
-                'toko_id' => $toko_id,
-                'marketplace' => $marketplace, // Tambah marketplace
+                'periode_id' => $periodeId,
             ]);
 
             return redirect()->route('incomes.show', $income)
@@ -177,20 +179,19 @@ class IncomeController extends Controller
 
     public function importForm()
     {
-        $tokos = Toko::all();
-        return view('incomes.import', compact('tokos'));
+        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
+        return view('incomes.import', compact('periodes'));
     }
 
     public function import(Request $request)
     {
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv|max:5120',
-            'default_toko_id' => 'nullable|exists:tokos,id',
-            'default_marketplace' => 'nullable|in:Shopee,Tiktok'
+            'default_periode_id' => 'nullable|exists:periodes,id',
         ]);
 
         try {
-            $import = new IncomeImport($request->default_toko_id, $request->default_marketplace);
+            $import = new IncomeImport($request->default_periode_id);
             Excel::import($import, $request->file('file'));
 
             $failures = $import->getFailedOrders();
@@ -270,20 +271,17 @@ class IncomeController extends Controller
 
     public function hasil(Request $request)
     {
-        $tokos = Toko::all();
+        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
 
-        $query = Income::with(['orders.produk', 'toko'])
+        $query = Income::with(['orders.produk', 'periode.toko'])
             ->orderBy('created_at', 'desc');
 
-        if ($request->has('toko_id') && $request->toko_id != '') {
-            $query->where('toko_id', $request->toko_id);
+        // Filter berdasarkan periode_id
+        if ($request->has('periode_id') && $request->periode_id != '') {
+            $query->where('periode_id', $request->periode_id);
         }
 
-        // Tambah filter marketplace
-        if ($request->has('marketplace') && $request->marketplace != '') {
-            $query->where('marketplace', $request->marketplace);
-        }
-
+        // Filter berdasarkan rentang tanggal
         $startDate = $request->start_date;
         $endDate = $request->end_date;
 
@@ -315,22 +313,18 @@ class IncomeController extends Controller
             return $income;
         });
 
-        return view('incomes.hasil', compact('incomes', 'tokos', 'startDate', 'endDate'));
+        return view('incomes.hasil', compact('incomes', 'periodes', 'startDate', 'endDate'));
     }
 
     public function detailhasil(Request $request)
     {
-        $tokos = Toko::all();
+        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
 
-        $query = Income::with(['orders.produk', 'toko'])
+        $query = Income::with(['orders.produk', 'periode.toko'])
             ->orderBy('created_at', 'desc');
 
-        if ($request->has('toko_id') && $request->toko_id != '') {
-            $query->where('toko_id', $request->toko_id);
-        }
-
-        if ($request->has('marketplace') && $request->marketplace != '') {
-            $query->where('marketplace', $request->marketplace);
+        if ($request->has('periode_id') && $request->periode_id != '') {
+            $query->where('periode_id', $request->periode_id);
         }
 
         $startDate = $request->start_date;
@@ -364,7 +358,7 @@ class IncomeController extends Controller
             return $income;
         });
 
-        return view('incomes.detailhasil', compact('incomes', 'tokos', 'startDate', 'endDate'));
+        return view('incomes.detailhasil', compact('incomes', 'periodes', 'startDate', 'endDate'));
     }
 
     public function exportHasil()
@@ -378,23 +372,138 @@ class IncomeController extends Controller
             $incomeCount = Income::count();
 
             if ($incomeCount === 0) {
-                return redirect()->route('incomes.index')
-                    ->with('warning', 'Tidak ada data income untuk dihapus.');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada data income untuk dihapus.'
+                ], 400);
             }
 
-            // Gunakan transaction untuk keamanan
-            DB::transaction(function () {
-                // Hapus semua data income
-                Income::query()->delete();
-            });
+            // Gunakan truncate tanpa transaction
+            Income::truncate();
 
-            return redirect()->route('incomes.index')
-                ->with('success', "Semua data income ($incomeCount data) berhasil dihapus!");
+            return response()->json([
+                'success' => true,
+                'message' => "Semua data income ($incomeCount data) berhasil dihapus!"
+            ]);
+
         } catch (\Exception $e) {
             \Log::error('Delete All Incomes Error: ' . $e->getMessage());
 
-            return redirect()->route('incomes.index')
-                ->with('error', 'Gagal menghapus semua data income: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus semua data income: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteByPeriode(Request $request)
+    {
+        $request->validate([
+            'periode_id' => 'required|exists:periodes,id'
+        ]);
+
+        try {
+            $periode = Periode::findOrFail($request->periode_id);
+            $incomeCount = Income::where('periode_id', $request->periode_id)->count();
+
+            if ($incomeCount === 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada data income pada periode ' . $periode->nama_periode
+                ], 400);
+            }
+
+            DB::transaction(function () use ($request) {
+                Income::where('periode_id', $request->periode_id)->delete();
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil menghapus {$incomeCount} income dari periode {$periode->nama_periode}!"
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Delete Incomes by Periode Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus income: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete income by multiple periode IDs (for bulk delete)
+     */
+    public function deleteByMultiplePeriode(Request $request)
+    {
+        $request->validate([
+            'periode_ids' => 'required|array',
+            'periode_ids.*' => 'exists:periodes,id'
+        ]);
+
+        try {
+            $periodeIds = $request->periode_ids;
+            $incomeCount = Income::whereIn('periode_id', $periodeIds)->count();
+
+            if ($incomeCount === 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada data income pada periode yang dipilih'
+                ], 400);
+            }
+
+            DB::transaction(function () use ($periodeIds) {
+                Income::whereIn('periode_id', $periodeIds)->delete();
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil menghapus {$incomeCount} income dari periode yang dipilih!"
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Delete Incomes by Multiple Periode Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus income: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Bulk attach incomes to periode
+     */
+    public function bulkAttachToPeriode(Request $request)
+    {
+        $request->validate([
+            'periode_id' => 'required|exists:periodes,id',
+            'income_ids' => 'required|array',
+            'income_ids.*' => 'exists:incomes,id'
+        ]);
+
+        try {
+            $periode = Periode::findOrFail($request->periode_id);
+            $incomeCount = count($request->income_ids);
+
+            DB::transaction(function () use ($request) {
+                Income::whereIn('id', $request->income_ids)
+                    ->update(['periode_id' => $request->periode_id]);
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil menghubungkan {$incomeCount} income ke periode {$periode->nama_periode}!"
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Bulk Attach Incomes to Periode Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghubungkan income ke periode: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

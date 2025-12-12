@@ -28,8 +28,8 @@ class OrderExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             $order->produk->nama_variasi,
             $order->jumlah,
             $order->returned_quantity,
-            $order->pesananselesai ? $order->pesananselesai->format('d/m/Y H:i') : '-',
-            $order->total_harga_produk, // ✅ TAMBAH INI
+            $order->total_harga_produk,
+            $order->periode_id,
         ];
     }
 
@@ -42,8 +42,8 @@ class OrderExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             'nama_variasi',
             'jumlah',
             'returned_quantity',
-            'pesananselesai',
-            'total_harga_produk', // ✅ TAMBAH INI
+            'total_harga_produk',
+            'periode_id',
         ];
     }
 

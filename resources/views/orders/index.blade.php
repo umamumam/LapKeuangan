@@ -48,8 +48,8 @@
                                 <i class="fas fa-plus"></i> Tambah Order
                             </a>
                             @if($orders->count() > 0)
-                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteAllModal">
-                                <i class="fas fa-trash-alt"></i> Hapus Semua
+                            <button type="button" class="btn btn-danger btn-sm" onclick="showDeleteOptions()">
+                                <i class="fas fa-trash-alt"></i> Hapus
                             </button>
                             @endif
                         </div>
@@ -63,15 +63,12 @@
                                     <th>#</th>
                                     <th>No. Pesanan</th>
                                     <th>No. Resi</th>
-                                    <th>SKU Induk</th>
-                                    <th>Nama Produk</th>
-                                    <th>Nomor Referensi SKU</th>
-                                    <th>Nama Variasi</th>
+                                    <th>Produk</th>
                                     <th>HPP</th>
                                     <th>Jumlah</th>
                                     <th>Returned Qty</th>
-                                    <th>Pesanan Selesai</th>
                                     <th>Total Harga Produk</th>
+                                    <th>Periode</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
@@ -81,21 +78,35 @@
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $order->no_pesanan }}</td>
                                     <td>{{ $order->no_resi ?? '-' }}</td>
-                                    <td>{{ $order->produk->sku_induk }}</td>
-                                    <td>{{ $order->produk->nama_produk }}</td>
-                                    <td>{{ $order->produk->nomor_referensi_sku }}</td>
-                                    <td>{{ $order->produk->nama_variasi }}</td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <strong>{{ $order->produk->nama_produk }}</strong>
+                                            @if($order->produk->nama_variasi)
+                                            <small class="text-muted">Variasi: {{ $order->produk->nama_variasi }}</small>
+                                            @endif
+                                            <small class="text-muted">SKU: {{ $order->produk->sku_induk }}</small>
+                                        </div>
+                                    </td>
                                     <td>{{ $order->produk->hpp_produk }}</td>
                                     <td>{{ $order->jumlah }}</td>
                                     <td>{{ $order->returned_quantity }}</td>
+                                    <td>{{ $order->total_harga_produk }}</td>
                                     <td>
-                                        @if($order->pesananselesai)
-                                        {{ \Carbon\Carbon::parse($order->pesananselesai)->format('d/m/Y H:i') }}
+                                        @if($order->periode)
+                                        <div class="d-flex flex-column">
+                                            <span class="badge bg-{{ $order->periode->marketplace == 'Shopee' ? 'warning' : 'info' }}">
+                                                {{ $order->periode->marketplace }}
+                                            </span>
+                                            <small class="text-muted">
+                                                {{ $order->periode->nama_periode }}
+                                            </small>
+                                        </div>
                                         @else
-                                        <span class="text-muted">-</span>
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-times me-1"></i> Tanpa Periode
+                                        </span>
                                         @endif
                                     </td>
-                                    <td>{{ $order->total_harga_produk }}</td>
                                     <td>
                                         <div class="d-flex gap-2">
                                             <a href="{{ route('orders.show', $order->id) }}" class="btn btn-info btn-sm"
@@ -106,15 +117,10 @@
                                                 class="btn btn-warning btn-sm" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <form action="{{ route('orders.destroy', $order->id) }}" method="POST"
-                                                class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm" title="Hapus"
-                                                    onclick="return confirm('Apakah Anda yakin ingin menghapus order ini?')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
+                                            <button type="button" class="btn btn-danger btn-sm" title="Hapus"
+                                                onclick="deleteOrder({{ $order->id }})">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -135,36 +141,219 @@
             </div>
         </div>
     </div>
+</x-app-layout>
 
-    <!-- Modal Konfirmasi Hapus Semua -->
-    @if($orders->count() > 0)
-    <div class="modal fade" id="deleteAllModal" tabindex="-1" aria-labelledby="deleteAllModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteAllModalLabel">Konfirmasi Hapus Semua Data</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<script>
+// Delete order with SweetAlert
+function deleteOrder(orderId) {
+    Swal.fire({
+        title: 'Hapus Order?',
+        text: 'Data order akan dihapus permanen.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#d33'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/orders/${orderId}`;
+
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '_token';
+            csrf.value = '{{ csrf_token() }}';
+
+            const method = document.createElement('input');
+            method.type = 'hidden';
+            method.name = '_method';
+            method.value = 'DELETE';
+
+            form.appendChild(csrf);
+            form.appendChild(method);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+}
+
+// Show delete options
+function showDeleteOptions() {
+    Swal.fire({
+        title: 'Pilih Jenis Hapus',
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: 'Hapus Semua Order',
+        denyButtonText: 'Hapus per Periode',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#d33',
+        denyButtonColor: '#f39c12',
+        icon: 'question'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            deleteAllOrders();
+        } else if (result.isDenied) {
+            deleteByPeriode();
+        }
+    });
+}
+
+// Delete all orders
+function deleteAllOrders() {
+    Swal.fire({
+        title: 'Hapus Semua Order?',
+        html: `Yakin menghapus <strong>semua data order</strong>?<br>
+               <small class="text-danger">Tindakan ini tidak dapat dibatalkan!</small>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Hapus Semua',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#d33',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+            return fetch('{{ route("orders.deleteAll") }}', {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    throw new Error(data.message || 'Gagal menghapus data');
+                }
+                return data;
+            });
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Berhasil!',
+                text: result.value.message || 'Semua data order berhasil dihapus!',
+                icon: 'success',
+                timer: 3000,
+                showConfirmButton: false
+            }).then(() => {
+                location.reload();
+            });
+        }
+    }).catch(error => {
+        Swal.fire({
+            title: 'Gagal!',
+            text: error.message || 'Terjadi kesalahan saat menghapus data',
+            icon: 'error'
+        });
+    });
+}
+
+// Delete by periode - versi sederhana
+function deleteByPeriode() {
+    Swal.fire({
+        title: 'Hapus Order per Periode',
+        html: `
+            <div class="text-start">
+                <p>Anda akan menghapus semua order pada periode tertentu.</p>
+                <div class="mb-3">
+                    <label for="periodeSelect" class="form-label">Pilih Periode:</label>
+                    <select class="form-select" id="periodeSelect">
+                        <option value="">-- Pilih Periode --</option>
+                        @php
+                            $periodes = \App\Models\Periode::orderBy('nama_periode', 'desc')->get();
+                        @endphp
+                        @foreach($periodes as $periode)
+                            <option value="{{ $periode->id }}">
+                                {{ $periode->nama_periode }} ({{ $periode->marketplace }})
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
-                <div class="modal-body">
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <strong>PERINGATAN!</strong>
-                    </div>
-                    <p>Anda akan menghapus <strong>semua data order</strong> (total: {{ $orders->count() }} data).</p>
-                    <p class="text-danger mb-0">Tindakan ini tidak dapat dibatalkan! Apakah Anda yakin ingin melanjutkan?</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <form action="{{ route('orders.deleteAll') }}" method="POST" class="d-inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger">
-                            <i class="fas fa-trash-alt"></i> Ya, Hapus Semua
-                        </button>
-                    </form>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong class="ms-2">Tindakan ini tidak dapat dibatalkan!</strong>
                 </div>
             </div>
-        </div>
-    </div>
-    @endif
-</x-app-layout>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Lanjutkan',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#f39c12',
+        showLoaderOnConfirm: false,
+        preConfirm: () => {
+            const periodeId = document.getElementById('periodeSelect').value;
+            if (!periodeId) {
+                Swal.showValidationMessage('Pilih periode terlebih dahulu');
+                return false;
+            }
+            return periodeId;
+        }
+    }).then((result) => {
+        if (result.isConfirmed && result.value) {
+            // Konfirmasi final
+            Swal.fire({
+                title: 'Konfirmasi Hapus',
+                html: `Yakin menghapus semua order pada periode ini?<br>
+                       <small class="text-danger">Semua order akan dihapus permanen!</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus Semua',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#d33',
+                showLoaderOnConfirm: true,
+                preConfirm: () => {
+                    const formData = new FormData();
+                    formData.append('periode_id', result.value);
+                    formData.append('_token', '{{ csrf_token() }}');
+
+                    return fetch('{{ route("orders.delete.by.periode") }}', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            throw new Error(data.message || 'Gagal menghapus data');
+                        }
+                        return data;
+                    });
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then((result2) => {
+                if (result2.isConfirmed) {
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: result2.value.message || 'Order berhasil dihapus!',
+                        icon: 'success',
+                        timer: 3000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                }
+            }).catch(error => {
+                Swal.fire({
+                    title: 'Gagal!',
+                    text: error.message || 'Terjadi kesalahan saat menghapus data',
+                    icon: 'error'
+                });
+            });
+        }
+    });
+}
+
+// Initialize DataTable
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('res-config')) {
+        $('#res-config').DataTable({
+            responsive: true,
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/id.json'
+            },
+            order: [[0, 'desc']],
+            pageLength: 25
+        });
+    }
+});
+</script>

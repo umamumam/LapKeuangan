@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Produk;
+use App\Models\Periode; // DITAMBAHKAN
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Exports\OrderExport;
@@ -17,7 +18,7 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::with('produk')->orderBy('id', 'desc')->paginate(200);
+        $orders = Order::with('produk', 'periode')->orderBy('id', 'desc')->paginate(200);
         $totalOrders = Order::count();
         return view('orders.index', compact('orders', 'totalOrders'));
     }
@@ -28,7 +29,8 @@ class OrderController extends Controller
     public function create()
     {
         $produks = Produk::all();
-        return view('orders.create', compact('produks'));
+        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
+        return view('orders.create', compact('produks', 'periodes'));
     }
 
     /**
@@ -42,8 +44,8 @@ class OrderController extends Controller
             'produk_id' => 'required|exists:produks,id',
             'jumlah' => 'required|integer|min:1',
             'returned_quantity' => 'nullable|integer|min:0',
-            'pesananselesai' => 'nullable|date',
             'total_harga_produk' => 'required|integer|min:0',
+            'periode_id' => 'nullable|exists:periodes,id', // DITAMBAHKAN
         ]);
 
         try {
@@ -62,7 +64,7 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        $order->load('produk');
+        $order->load('produk', 'periode');
         return view('orders.show', compact('order'));
     }
 
@@ -72,7 +74,8 @@ class OrderController extends Controller
     public function edit(Order $order)
     {
         $produks = Produk::all();
-        return view('orders.edit', compact('order', 'produks'));
+        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
+        return view('orders.edit', compact('order', 'produks', 'periodes'));
     }
 
     /**
@@ -86,8 +89,8 @@ class OrderController extends Controller
             'produk_id' => 'required|exists:produks,id',
             'jumlah' => 'required|integer|min:1',
             'returned_quantity' => 'nullable|integer|min:0',
-            'pesananselesai' => 'nullable|date',
             'total_harga_produk' => 'required|integer|min:0',
+            'periode_id' => 'nullable|exists:periodes,id', // DITAMBAHKAN
         ]);
 
         // Validasi returned_quantity tidak boleh lebih besar dari jumlah
@@ -222,29 +225,73 @@ class OrderController extends Controller
     {
         return Excel::download(new OrderExport, 'template-import-order.xlsx');
     }
+
     public function deleteAll()
     {
         try {
             $orderCount = Order::count();
 
             if ($orderCount === 0) {
-                return redirect()->route('orders.index')
-                    ->with('warning', 'Tidak ada data order untuk dihapus.');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada data order untuk dihapus.'
+                ], 400);
             }
 
-            // Gunakan transaction untuk memastikan konsistensi data
-            DB::transaction(function () {
-                Order::truncate(); // Menghapus semua data dan reset auto increment
-            });
+            // Gunakan truncate tanpa transaction
+            Order::truncate();
 
-            return redirect()->route('orders.index')
-                ->with('success', "Semua data order ($orderCount data) berhasil dihapus!");
+            return response()->json([
+                'success' => true,
+                'message' => "Semua data order ($orderCount data) berhasil dihapus!"
+            ]);
 
         } catch (\Exception $e) {
             \Log::error('Delete All Orders Error: ' . $e->getMessage());
 
-            return redirect()->route('orders.index')
-                ->with('error', 'Gagal menghapus semua data order: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus semua data order: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteByPeriode(Request $request)
+    {
+        $request->validate([
+            'periode_id' => 'required|exists:periodes,id'
+        ]);
+
+        try {
+            $periode = Periode::findOrFail($request->periode_id);
+            $orderCount = Order::where('periode_id', $request->periode_id)->count();
+
+            if ($orderCount === 0) {
+                // Return JSON untuk AJAX
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada data order pada periode ' . $periode->nama_periode
+                ], 400);
+            }
+
+            DB::transaction(function () use ($request) {
+                Order::where('periode_id', $request->periode_id)->delete();
+            });
+
+            // Return JSON untuk AJAX
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil menghapus {$orderCount} order dari periode {$periode->nama_periode}!"
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Delete Orders by Periode Error: ' . $e->getMessage());
+
+            // Return JSON untuk AJAX
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus order: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

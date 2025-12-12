@@ -18,14 +18,13 @@ class Order extends Model
         'produk_id',
         'jumlah',
         'returned_quantity',
-        'pesananselesai',
         'total_harga_produk',
+        'periode_id',
     ];
 
     protected $casts = [
         'jumlah' => 'integer',
         'returned_quantity' => 'integer',
-        'pesananselesai' => 'datetime',
         'total_harga_produk' => 'integer',
     ];
 
@@ -37,6 +36,11 @@ class Order extends Model
     public function income()
     {
         return $this->belongsTo(Income::class, 'no_pesanan', 'no_pesanan');
+    }
+
+    public function periode()
+    {
+        return $this->belongsTo(Periode::class);
     }
 
     // Scope untuk filter by periode
@@ -71,5 +75,17 @@ class Order extends Model
     public function getNoResiDisplayAttribute()
     {
         return $this->no_resi ?: '-';
+    }
+
+    // TAMBAHKAN: Scope untuk filter by periode_id
+    public function scopeByPeriode($query, $periodeId)
+    {
+        return $query->where('periode_id', $periodeId);
+    }
+
+    // TAMBAHKAN: Scope untuk order tanpa periode
+    public function scopeWithoutPeriode($query)
+    {
+        return $query->whereNull('periode_id');
     }
 }

@@ -12,7 +12,7 @@
                             @method('PUT')
 
                             <div class="row">
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="no_pesanan" class="form-label">No Pesanan <span
                                                 class="text-danger">*</span></label>
@@ -26,7 +26,7 @@
                                         @enderror
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="no_pengajuan" class="form-label">No Pengajuan</label>
                                         <input type="text"
@@ -39,43 +39,9 @@
                                         @enderror
                                     </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="marketplace" class="form-label">Marketplace <span
-                                                class="text-danger">*</span></label>
-                                        <select class="form-control @error('marketplace') is-invalid @enderror"
-                                            id="marketplace" name="marketplace" required>
-                                            <option value="">Pilih Marketplace</option>
-                                            <option value="Shopee" {{ old('marketplace', $income->marketplace) == 'Shopee' ? 'selected' : '' }}>Shopee</option>
-                                            <option value="Tiktok" {{ old('marketplace', $income->marketplace) == 'Tiktok' ? 'selected' : '' }}>Tiktok Shop</option>
-                                        </select>
-                                        @error('marketplace')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
                             </div>
 
                             <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="toko_id" class="form-label">Toko <span
-                                                class="text-danger">*</span></label>
-                                        <select class="form-control @error('toko_id') is-invalid @enderror"
-                                            id="toko_id" name="toko_id" required>
-                                            <option value="">Pilih Toko</option>
-                                            @foreach($tokos as $toko)
-                                                <option value="{{ $toko->id }}"
-                                                    {{ old('toko_id', $income->toko_id) == $toko->id ? 'selected' : '' }}>
-                                                    {{ $toko->nama }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        @error('toko_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="total_penghasilan" class="form-label">Total Penghasilan <span
@@ -84,8 +50,26 @@
                                             class="form-control @error('total_penghasilan') is-invalid @enderror"
                                             id="total_penghasilan" name="total_penghasilan"
                                             value="{{ old('total_penghasilan', $income->total_penghasilan) }}"
-                                            placeholder="Masukkan total penghasilan" required>
+                                            placeholder="Masukkan total penghasilan" required min="0">
                                         @error('total_penghasilan')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="periode_id" class="form-label">Periode</label>
+                                        <select class="form-control @error('periode_id') is-invalid @enderror"
+                                            id="periode_id" name="periode_id">
+                                            <option value="">-- Pilih Periode --</option>
+                                            @foreach($periodes as $periode)
+                                                <option value="{{ $periode->id }}"
+                                                    {{ old('periode_id', $income->periode_id) == $periode->id ? 'selected' : '' }}>
+                                                    {{ $periode->nama_periode }} - {{ $periode->toko->nama }} ({{ $periode->marketplace }})
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('periode_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>

@@ -2,9 +2,8 @@
 
 namespace App\Imports;
 
-use App\Models\Toko;
-use App\Models\Order;
 use App\Models\Income;
+use App\Models\Periode;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
@@ -17,16 +16,14 @@ class IncomeImport implements ToCollection, WithHeadingRow
     private $failedOrders = [];
     private $rowCount = 0;
     private $successCount = 0;
-    private $defaultTokoId;
-    private $defaultMarketplace;
+    private $defaultPeriodeId;
 
     /**
-     * Constructor untuk menerima default values
+     * Constructor untuk menerima default periode_id
      */
-    public function __construct($defaultTokoId = null, $defaultMarketplace = null)
+    public function __construct($defaultPeriodeId = null)
     {
-        $this->defaultTokoId = $defaultTokoId;
-        $this->defaultMarketplace = $defaultMarketplace;
+        $this->defaultPeriodeId = $defaultPeriodeId;
     }
 
     /**
@@ -44,9 +41,7 @@ class IncomeImport implements ToCollection, WithHeadingRow
                 $noPesanan = $this->getCellValue($row, ['no_pesanan', 'no pesanan', 'nomor_pesanan']);
                 $noPengajuan = $this->getCellValue($row, ['no_pengajuan', 'no pengajuan', 'nomor_pengajuan']);
                 $totalPenghasilan = $this->getCellValue($row, ['total_penghasilan', 'total penghasilan', 'penghasilan']);
-                $tokoId = $this->getCellValue($row, ['toko_id', 'toko id', 'id_toko', 'id toko']);
-                // TAMBAH: Ambil kolom marketplace dari Excel
-                $marketplace = $this->getCellValue($row, ['marketplace', 'market_place', 'platform']);
+                $periodeId = $this->getCellValue($row, ['periode_id', 'periode id', 'id_periode', 'id periode']);
 
                 // Ambil kolom tanggal dari Excel
                 $tanggalDibuat = $this->getCellValue($row, ['created_at', 'tanggal', 'tanggal_dibuat', 'tgl_dibuat', 'date', 'tanggal_buat']);
@@ -56,16 +51,11 @@ class IncomeImport implements ToCollection, WithHeadingRow
                     continue;
                 }
 
-                // Handle toko_id - gunakan dari Excel atau default
-                $finalTokoId = $this->determineTokoId($tokoId, $rowNumber, $noPesanan);
-                if ($finalTokoId === false) {
-                    continue; // Skip jika toko tidak valid
-                }
-
-                // Handle marketplace - gunakan dari Excel atau default
-                $finalMarketplace = $this->determineMarketplace($marketplace, $rowNumber, $noPesanan);
-                if ($finalMarketplace === false) {
-                    continue; // Skip jika marketplace tidak valid
+                // Handle periode_id - gunakan dari Excel atau default
+                $finalPeriodeId = $this->determinePeriodeId($periodeId, $rowNumber, $noPesanan);
+                if ($finalPeriodeId === false) {
+                    // Periode tidak wajib, bisa null
+                    $finalPeriodeId = null;
                 }
 
                 // Parse tanggal dari Excel
@@ -76,37 +66,31 @@ class IncomeImport implements ToCollection, WithHeadingRow
                     'no_pesanan' => $this->parseNoPesanan($noPesanan),
                     'no_pengajuan' => $this->parseNoPengajuan($noPengajuan),
                     'total_penghasilan' => $this->parseInteger($totalPenghasilan),
-                    'toko_id' => $finalTokoId,
-                    'marketplace' => $finalMarketplace, // TAMBAH: Marketplace
+                    'periode_id' => $finalPeriodeId,
                     // HANYA created_at yang diinput dari Excel, updated_at = created_at
                     'created_at' => $parsedDate,
                     'updated_at' => $parsedDate, // Sama dengan created_at
                 ];
 
-                // Validasi dasar - HAPUS validasi unique untuk no_pesanan
+                // Validasi dasar
                 $validator = Validator::make($data, [
                     'no_pesanan' => [
                         'required',
                         'string',
                         'max:100',
-                        // HAPUS: Rule::unique('incomes', 'no_pesanan')
-                        // no_pesanan tidak harus unique, bisa ada data duplikat
                     ],
                     'no_pengajuan' => 'nullable|string|max:100',
-                    'total_penghasilan' => 'required|integer',
-                    'toko_id' => 'required|exists:tokos,id',
-                    'marketplace' => 'required|in:Shopee,Tiktok', // TAMBAH: Validasi marketplace
+                    'total_penghasilan' => 'required|integer|min:0',
+                    'periode_id' => 'nullable|exists:periodes,id',
                     'created_at' => 'required|date',
                     // updated_at TIDAK divalidasi karena otomatis = created_at
                 ], [
                     'no_pesanan.required' => 'Nomor pesanan wajib diisi',
-                    // HAPUS: 'no_pesanan.unique' => 'Nomor pesanan sudah ada dalam database',
+                    // 'no_pesanan.unique' => 'Nomor pesanan sudah ada dalam database',
                     'total_penghasilan.required' => 'Total penghasilan wajib diisi',
                     'total_penghasilan.integer' => 'Total penghasilan harus berupa angka',
-                    'toko_id.required' => 'Toko ID wajib diisi',
-                    'toko_id.exists' => 'Toko ID tidak valid atau tidak ditemukan',
-                    'marketplace.required' => 'Marketplace wajib diisi', // TAMBAH: Pesan error
-                    'marketplace.in' => 'Marketplace harus Shopee atau Tiktok', // TAMBAH: Pesan error
+                    'total_penghasilan.min' => 'Total penghasilan minimal 0',
+                    'periode_id.exists' => 'Periode ID tidak valid atau tidak ditemukan',
                     'created_at.required' => 'Tanggal dibuat wajib diisi',
                     'created_at.date' => 'Format tanggal dibuat tidak valid',
                     // Tidak ada pesan error untuk updated_at
@@ -115,8 +99,7 @@ class IncomeImport implements ToCollection, WithHeadingRow
                 if ($validator->fails()) {
                     $this->failedOrders[] = [
                         'no_pesanan' => $data['no_pesanan'] ?? 'Tidak diketahui',
-                        'toko_id' => $tokoId ?? '-',
-                        'marketplace' => $marketplace ?? '-', // TAMBAH: Simpan marketplace yang gagal
+                        'periode_id' => $periodeId ?? '-',
                         'row' => $rowNumber,
                         'reason' => implode(', ', $validator->errors()->all())
                     ];
@@ -133,8 +116,7 @@ class IncomeImport implements ToCollection, WithHeadingRow
             } catch (\Exception $e) {
                 $this->failedOrders[] = [
                     'no_pesanan' => $data['no_pesanan'] ?? 'Tidak diketahui',
-                    'toko_id' => $tokoId ?? '-',
-                    'marketplace' => $marketplace ?? '-', // TAMBAH: Simpan marketplace yang gagal
+                    'periode_id' => $periodeId ?? '-',
                     'row' => $rowNumber,
                     'reason' => $e->getMessage()
                 ];
@@ -144,67 +126,35 @@ class IncomeImport implements ToCollection, WithHeadingRow
     }
 
     /**
-     * Helper untuk menentukan marketplace dari Excel atau default
+     * Helper untuk menentukan periode_id dari Excel atau default
      */
-    private function determineMarketplace($marketplaceFromExcel, $rowNumber, $noPesanan)
+    private function determinePeriodeId($periodeIdFromExcel, $rowNumber, $noPesanan)
     {
-        // Jika ada marketplace dari Excel
-        if (!empty($marketplaceFromExcel) && $marketplaceFromExcel !== '') {
-            $marketplace = trim($marketplaceFromExcel);
+        // Jika ada periode_id dari Excel
+        if (!empty($periodeIdFromExcel) && $periodeIdFromExcel !== '') {
+            $periodeId = $this->parseInteger($periodeIdFromExcel);
 
-            // Normalisasi nilai marketplace
-            $marketplace = $this->normalizeMarketplace($marketplace);
-
-            // Validasi nilai marketplace
-            if (in_array($marketplace, ['Shopee', 'Tiktok'])) {
-                return $marketplace;
+            // Cek apakah periode exists
+            if (Periode::where('id', $periodeId)->exists()) {
+                return $periodeId;
             } else {
                 $this->failedOrders[] = [
                     'no_pesanan' => $noPesanan ?? 'Tidak diketahui',
-                    'toko_id' => '-',
-                    'marketplace' => $marketplaceFromExcel,
+                    'periode_id' => $periodeIdFromExcel,
                     'row' => $rowNumber,
-                    'reason' => 'Marketplace tidak valid. Harus "Shopee" atau "Tiktok"'
+                    'reason' => 'Periode ID tidak ditemukan dalam database'
                 ];
                 return false;
             }
         }
 
-        // Jika tidak ada marketplace dari Excel, gunakan default
-        if ($this->defaultMarketplace && in_array($this->defaultMarketplace, ['Shopee', 'Tiktok'])) {
-            return $this->defaultMarketplace;
+        // Jika tidak ada periode_id dari Excel, gunakan default
+        if ($this->defaultPeriodeId && Periode::where('id', $this->defaultPeriodeId)->exists()) {
+            return $this->defaultPeriodeId;
         }
 
-        // Jika tidak ada default marketplace dan tidak ada dari Excel
-        $this->failedOrders[] = [
-            'no_pesanan' => $noPesanan ?? 'Tidak diketahui',
-            'toko_id' => '-',
-            'marketplace' => $marketplaceFromExcel ?? '-',
-            'row' => $rowNumber,
-            'reason' => 'Marketplace tidak diisi dan tidak ada default marketplace yang dipilih'
-        ];
-        return false;
-    }
-
-    /**
-     * Helper untuk menormalisasi nilai marketplace
-     */
-    private function normalizeMarketplace($value)
-    {
-        $value = trim($value);
-
-        // Case insensitive matching
-        $lowerValue = strtolower($value);
-
-        if ($lowerValue === 'shopee' || $lowerValue === 'shp' || $lowerValue === 'sh') {
-            return 'Shopee';
-        }
-
-        if ($lowerValue === 'tiktok' || $lowerValue === 'tiktok shop' || $lowerValue === 'tiktokshop' || $lowerValue === 'tt') {
-            return 'Tiktok';
-        }
-
-        return $value; // Return as is jika tidak cocok
+        // Periode tidak wajib, return null jika tidak ada default
+        return null;
     }
 
     /**
@@ -270,8 +220,7 @@ class IncomeImport implements ToCollection, WithHeadingRow
         } catch (\Exception $e) {
             $this->failedOrders[] = [
                 'no_pesanan' => $noPesanan ?? 'Tidak diketahui',
-                'toko_id' => '-',
-                'marketplace' => '-',
+                'periode_id' => '-',
                 'row' => $rowNumber,
                 'reason' => 'Format tanggal tidak valid: ' . $excelDate . ' - ' . $e->getMessage()
             ];
@@ -325,46 +274,6 @@ class IncomeImport implements ToCollection, WithHeadingRow
 
         // Return as is for strings
         return (string) $value;
-    }
-
-    /**
-     * Helper untuk menentukan toko_id dari Excel atau default
-     */
-    private function determineTokoId($tokoIdFromExcel, $rowNumber, $noPesanan)
-    {
-        // Jika ada toko_id dari Excel
-        if (!empty($tokoIdFromExcel) && $tokoIdFromExcel !== '') {
-            $tokoId = $this->parseInteger($tokoIdFromExcel);
-
-            // Cek apakah toko exists
-            if (Toko::where('id', $tokoId)->exists()) {
-                return $tokoId;
-            } else {
-                $this->failedOrders[] = [
-                    'no_pesanan' => $noPesanan ?? 'Tidak diketahui',
-                    'toko_id' => $tokoIdFromExcel,
-                    'marketplace' => '-',
-                    'row' => $rowNumber,
-                    'reason' => 'Toko ID tidak ditemukan dalam database'
-                ];
-                return false;
-            }
-        }
-
-        // Jika tidak ada toko_id dari Excel, gunakan default
-        if ($this->defaultTokoId && Toko::where('id', $this->defaultTokoId)->exists()) {
-            return $this->defaultTokoId;
-        }
-
-        // Jika tidak ada default toko dan tidak ada toko_id dari Excel
-        $this->failedOrders[] = [
-            'no_pesanan' => $noPesanan ?? 'Tidak diketahui',
-            'toko_id' => $tokoIdFromExcel ?? '-',
-            'marketplace' => '-',
-            'row' => $rowNumber,
-            'reason' => 'Toko ID tidak diisi dan tidak ada default toko yang dipilih'
-        ];
-        return false;
     }
 
     /**

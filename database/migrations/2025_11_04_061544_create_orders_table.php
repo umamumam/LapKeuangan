@@ -18,8 +18,8 @@ return new class extends Migration
             $table->foreignId('produk_id')->constrained('produks')->onDelete('cascade');
             $table->integer('jumlah')->default(0);
             $table->integer('returned_quantity')->default(0);
-            $table->datetime('pesananselesai')->nullable();
             $table->integer('total_harga_produk')->default(0); //ini penambahan
+            $table->foreignId('periode_id')->nullable()->constrained('periodes')->nullOnDelete();
             $table->timestamps();
         });
     }

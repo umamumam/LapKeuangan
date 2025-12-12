@@ -10,7 +10,6 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
-use Illuminate\Validation\Rule;
 
 class OrderImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFailure, SkipsEmptyRows
 {
@@ -44,14 +43,14 @@ class OrderImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFai
             return null;
         }
 
-        // Format pesananselesai jika ada
-        $pesananselesai = $this->parseDate($row['pesananselesai'] ?? null);
-
         // Parse total_harga_produk
         $totalHargaProduk = $this->parseInteger($row['total_harga_produk'] ?? 0);
 
         // Parse no_resi (nullable)
         $noResi = !empty($row['no_resi']) ? trim($row['no_resi']) : null;
+
+        // Parse periode_id (nullable)
+        $periodeId = !empty($row['periode_id']) ? $this->parseInteger($row['periode_id']) : null;
 
         try {
             return new Order([
@@ -60,8 +59,8 @@ class OrderImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFai
                 'produk_id' => $produk->id,
                 'jumlah' => $row['jumlah'],
                 'returned_quantity' => $row['returned_quantity'] ?? 0,
-                'pesananselesai' => $pesananselesai,
-                'total_harga_produk' => $totalHargaProduk, // ✅ TAMBAH INI
+                'total_harga_produk' => $totalHargaProduk,
+                'periode_id' => $periodeId, // ✅ TAMBAHKAN INI
             ]);
         } catch (\Exception $e) {
             // Simpan informasi pesanan yang gagal karena error database
@@ -87,8 +86,8 @@ class OrderImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFai
             'nama_variasi' => 'required|string|max:100',
             'jumlah' => 'required|integer|min:1',
             'returned_quantity' => 'nullable|integer|min:0',
-            'pesananselesai' => 'nullable|string',
-            'total_harga_produk' => 'required|integer|min:0', // ✅ TAMBAH INI
+            'total_harga_produk' => 'required|integer|min:0',
+            'periode_id' => 'nullable|integer', // ✅ TAMBAHKAN INI
         ];
     }
 
@@ -101,7 +100,7 @@ class OrderImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFai
             'no_pesanan.required' => 'No. Pesanan wajib diisi',
             'no_pesanan.string' => 'No. Pesanan harus berupa teks',
             'no_pesanan.max' => 'No. Pesanan maksimal 100 karakter',
-            'no_resi.string' => 'No. Resi harus berupa teks', // ✅ TAMBAH INI
+            'no_resi.string' => 'No. Resi harus berupa teks',
             'no_resi.max' => 'No. Resi maksimal 100 karakter',
             'nama_produk.required' => 'Nama Produk wajib diisi',
             'nama_produk.string' => 'Nama Produk harus berupa teks',
@@ -114,9 +113,10 @@ class OrderImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFai
             'jumlah.min' => 'Jumlah minimal 1',
             'returned_quantity.integer' => 'Returned Quantity harus berupa angka',
             'returned_quantity.min' => 'Returned Quantity minimal 0',
-            'total_harga_produk.required' => 'Total Harga Produk wajib diisi', // ✅ TAMBAH INI
-            'total_harga_produk.integer' => 'Total Harga Produk harus berupa angka', // ✅ TAMBAH INI
-            'total_harga_produk.min' => 'Total Harga Produk minimal 0', // ✅ TAMBAH INI
+            'total_harga_produk.required' => 'Total Harga Produk wajib diisi',
+            'total_harga_produk.integer' => 'Total Harga Produk harus berupa angka',
+            'total_harga_produk.min' => 'Total Harga Produk minimal 0',
+            'periode_id.integer' => 'Periode ID harus berupa angka', // ✅ TAMBAHKAN INI
         ];
     }
 
@@ -171,7 +171,7 @@ class OrderImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFai
                     ];
                 }
 
-                // ✅ TAMBAH: Validasi total_harga_produk tidak boleh negatif
+                // Validasi total_harga_produk tidak boleh negatif
                 if (isset($row['total_harga_produk']) && $row['total_harga_produk'] < 0) {
                     $errorMessage = "Baris {$rowNumber}: Total Harga Produk tidak boleh negatif";
                     $validator->errors()->add(
@@ -189,7 +189,7 @@ class OrderImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFai
                     ];
                 }
 
-                // ✅ TAMBAH: Validasi no_resi max length
+                // Validasi no_resi max length
                 if (isset($row['no_resi']) && strlen($row['no_resi']) > 100) {
                     $errorMessage = "Baris {$rowNumber}: No. Resi maksimal 100 karakter";
                     $validator->errors()->add(
@@ -206,44 +206,29 @@ class OrderImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFai
                         'row' => $rowNumber
                     ];
                 }
-            }
-        });
-    }
 
-    /**
-     * Parse date from various formats
-     */
-    private function parseDate($dateValue)
-    {
-        if (empty($dateValue) || $dateValue == '-') {
-            return null;
-        }
+                // ✅ TAMBAHKAN: Validasi periode_id jika diisi
+                if (!empty($row['periode_id'])) {
+                    $periodeId = $this->parseInteger($row['periode_id']);
+                    if ($periodeId <= 0) {
+                        $errorMessage = "Baris {$rowNumber}: Periode ID harus angka positif";
+                        $validator->errors()->add(
+                            $rowIndex . '.periode_id',
+                            $errorMessage
+                        );
 
-        try {
-            if (is_numeric($dateValue)) {
-                return \Carbon\Carbon::instance(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($dateValue));
-            }
-
-            $formats = [
-                'd/m/Y H:i',
-                'Y-m-d H:i:s',
-                'Y-m-d H:i',
-                'Y-m-d',
-                'd/m/Y',
-            ];
-
-            foreach ($formats as $format) {
-                try {
-                    return \Carbon\Carbon::createFromFormat($format, $dateValue);
-                } catch (\Exception $e) {
-                    continue;
+                        // Simpan informasi pesanan yang gagal
+                        $this->failedOrders[] = [
+                            'no_pesanan' => $row['no_pesanan'],
+                            'nama_produk' => $row['nama_produk'],
+                            'nama_variasi' => $row['nama_variasi'] ?? '',
+                            'reason' => $errorMessage,
+                            'row' => $rowNumber
+                        ];
+                    }
                 }
             }
-
-            return null;
-        } catch (\Exception $e) {
-            return null;
-        }
+        });
     }
 
     /**
@@ -287,8 +272,8 @@ class OrderImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFai
             'nama_variasi' => trim($data['nama_variasi'] ?? ''),
             'jumlah' => intval($data['jumlah'] ?? 0),
             'returned_quantity' => isset($data['returned_quantity']) ? intval($data['returned_quantity']) : 0,
-            'pesananselesai' => trim($data['pesananselesai'] ?? ''),
-            'total_harga_produk' => $this->parseInteger($data['total_harga_produk'] ?? 0), // ✅ TAMBAH INI
+            'total_harga_produk' => $this->parseInteger($data['total_harga_produk'] ?? 0),
+            'periode_id' => isset($data['periode_id']) ? $this->parseInteger($data['periode_id']) : null, // ✅ TAMBAHKAN INI
         ];
     }
 

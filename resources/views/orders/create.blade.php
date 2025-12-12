@@ -88,15 +88,32 @@
                                     <div class="form-text">Total harga untuk produk ini (dalam Rupiah)</div>
                                 </div>
 
+                                                                <!-- TAMBAHKAN FIELD PERIODE -->
                                 <div class="col-md-6 mb-3">
-                                    <label for="pesananselesai" class="form-label">Pesanan Selesai</label>
-                                    <input type="datetime-local"
-                                        class="form-control @error('pesananselesai') is-invalid @enderror"
-                                        id="pesananselesai" name="pesananselesai" value="{{ old('pesananselesai') }}">
-                                    @error('pesananselesai')
+                                    <label for="periode_id" class="form-label">Periode</label>
+                                    <select class="form-control @error('periode_id') is-invalid @enderror" id="periode_id"
+                                        name="periode_id">
+                                        <option value="">Pilih Periode (Opsional)</option>
+                                        @php
+                                            $periodes = \App\Models\Periode::orderBy('nama_periode', 'desc')->get();
+                                        @endphp
+                                        @foreach($periodes as $periode)
+                                        <option value="{{ $periode->id }}" {{ old('periode_id')==$periode->id ? 'selected' : '' }}>
+                                            {{ $periode->nama_periode }} ({{ $periode->marketplace }})
+                                        </option>
+                                        @endforeach
+                                    </select>
+                                    @error('periode_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    <div class="form-text">Pilih periode untuk order ini</div>
                                 </div>
+                            </div>
+
+                            <!-- Validasi client-side untuk returned_quantity -->
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Perhatian:</strong> Returned quantity tidak boleh lebih besar dari jumlah.
                             </div>
 
                             <div class="d-flex justify-content-end gap-2">
@@ -113,4 +130,53 @@
             </div>
         </div>
     </div>
+
+    <script>
+    // Validasi client-side untuk returned_quantity
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const jumlahInput = document.getElementById('jumlah');
+        const returnedInput = document.getElementById('returned_quantity');
+
+        form.addEventListener('submit', function(e) {
+            const jumlah = parseInt(jumlahInput.value) || 0;
+            const returned = parseInt(returnedInput.value) || 0;
+
+            if (returned > jumlah) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validasi Gagal',
+                    text: 'Returned quantity tidak boleh lebih besar dari jumlah',
+                    confirmButtonColor: '#3085d6'
+                });
+                returnedInput.focus();
+            }
+        });
+
+        // Real-time validation
+        returnedInput.addEventListener('input', function() {
+            const jumlah = parseInt(jumlahInput.value) || 0;
+            const returned = parseInt(this.value) || 0;
+
+            if (returned > jumlah) {
+                this.classList.add('is-invalid');
+                // Tampilkan pesan error kecil
+                let errorDiv = this.nextElementSibling;
+                if (!errorDiv || !errorDiv.classList.contains('invalid-feedback')) {
+                    errorDiv = document.createElement('div');
+                    errorDiv.className = 'invalid-feedback';
+                    this.parentNode.insertBefore(errorDiv, this.nextSibling);
+                }
+                errorDiv.textContent = 'Tidak boleh lebih besar dari jumlah';
+            } else {
+                this.classList.remove('is-invalid');
+                const errorDiv = this.nextElementSibling;
+                if (errorDiv && errorDiv.classList.contains('invalid-feedback')) {
+                    errorDiv.textContent = '';
+                }
+            }
+        });
+    });
+    </script>
 </x-app-layout>

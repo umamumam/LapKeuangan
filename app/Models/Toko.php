@@ -1,48 +1,38 @@
 <?php
-// app/Models/Toko.php
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Toko extends Model
 {
     use HasFactory;
 
     protected $fillable = ['nama'];
-
     protected $table = 'tokos';
 
-    public function incomes()
+    public function periodes(): HasMany
     {
-        return $this->hasMany(Income::class);
+        return $this->hasMany(Periode::class);
     }
 
-    // ===============================================================================
-    public function getTotalPenghasilanAttribute()
+    public function periodesShopee(): HasMany
     {
-        return $this->incomes->sum('total_penghasilan');
+        return $this->periodes()->where('marketplace', 'Shopee');
     }
 
-    public function getJumlahTransaksiAttribute()
+    public function periodesTiktok(): HasMany
     {
-        return $this->incomes->count();
+        return $this->periodes()->where('marketplace', 'Tiktok');
     }
 
-    public function getRataRataPenghasilanAttribute()
+    public function activePeriodes()
     {
-        $jumlahTransaksi = $this->jumlah_transaksi;
-        return $jumlahTransaksi > 0 ? $this->total_penghasilan / $jumlahTransaksi : 0;
-    }
-
-    public function scopeWithTotalPenghasilan($query)
-    {
-        return $query->withSum('incomes', 'total_penghasilan');
-    }
-
-    public function scopeWithJumlahTransaksi($query)
-    {
-        return $query->withCount('incomes');
+        $today = now()->format('Y-m-d');
+        return $this->periodes()
+                    ->where('tanggal_mulai', '<=', $today)
+                    ->where('tanggal_selesai', '>=', $today);
     }
 }
