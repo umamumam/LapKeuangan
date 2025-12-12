@@ -149,69 +149,77 @@ class OrderController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv|max:5120'
+            'file' => 'required|mimes:xlsx,xls,csv|max:5120',
+            'default_periode_id' => 'nullable|exists:periodes,id', // TAMBAHKAN
         ]);
 
         try {
-            $import = new OrderImport;
-
-            // Gunakan try-catch untuk import
+            $import = new OrderImport($request->default_periode_id); // TAMBAHKAN parameter
             Excel::import($import, $request->file('file'));
 
-            $failures = $import->failures();
-            $failedOrders = $import->getFailedOrders();
-            $successCount = $import->getRowCount() - count($failures);
+            $failures = $import->getFailedOrders();
+            $successCount = $import->getSuccessCount();
+            $totalRows = $import->getRowCount();
 
-            // Gabungkan failures dengan failed orders
-            $allFailures = [];
+            // Jika ada data yang berhasil diimport
+            if ($successCount > 0) {
+                $message = "Berhasil mengimport {$successCount} data order!";
 
-            // Convert failures to array dengan no_pesanan
-            foreach ($failures as $failure) {
-                $values = $failure->values();
-                $allFailures[] = [
-                    'no_pesanan' => $values['no_pesanan'] ?? 'Tidak diketahui',
-                    'row' => $failure->row(),
-                    'attribute' => $failure->attribute(),
-                    'errors' => $failure->errors(),
-                    'values' => $values,
-                    'reason' => implode(', ', $failure->errors())
-                ];
+                // Jika ada yang gagal, tampilkan detail no_pesanan yang gagal
+                if (count($failures) > 0) {
+                    $failedOrderNumbers = collect($failures)
+                        ->pluck('no_pesanan')
+                        ->filter(function ($value) {
+                            return !empty($value) && $value !== 'Tidak diketahui';
+                        })
+                        ->unique()
+                        ->implode(', ');
+
+                    $failedCount = count($failures);
+                    $message .= " {$failedCount} data gagal diimport.";
+
+                    if (!empty($failedOrderNumbers)) {
+                        $message .= " No. Pesanan yang gagal: " . $failedOrderNumbers;
+                    }
+
+                    return redirect()->route('orders.index')
+                        ->with('success', $message)
+                        ->with('warning', "Beberapa data gagal diimport. Cek detail untuk informasi lebih lanjut.")
+                        ->with('failures', $failures)
+                        ->with('failed_order_numbers', $failedOrderNumbers);
+                }
+
+                return redirect()->route('orders.index')
+                    ->with('success', $message);
             }
 
-            // Tambahkan failed orders dari model
-            foreach ($failedOrders as $failedOrder) {
-                $allFailures[] = [
-                    'no_pesanan' => $failedOrder['no_pesanan'],
-                    'row' => $failedOrder['row'] ?? 'Tidak diketahui',
-                    'attribute' => 'general',
-                    'errors' => [$failedOrder['reason']],
-                    'values' => [
-                        'no_pesanan' => $failedOrder['no_pesanan'],
-                        'nama_produk' => $failedOrder['nama_produk'],
-                        'nama_variasi' => $failedOrder['nama_variasi']
-                    ],
-                    'reason' => $failedOrder['reason']
-                ];
-            }
+            // Jika tidak ada yang berhasil sama sekali
+            if (count($failures) > 0) {
+                $failedOrderNumbers = collect($failures)
+                    ->pluck('no_pesanan')
+                    ->filter(function ($value) {
+                        return !empty($value) && $value !== 'Tidak diketahui';
+                    })
+                    ->unique()
+                    ->implode(', ');
 
-            // Jika ada failures, tampilkan pesan warning
-            if (count($allFailures) > 0) {
-                $failedOrderNumbers = collect($allFailures)->pluck('no_pesanan')->unique()->implode(', ');
+                $message = "Tidak ada data yang berhasil diimport. " . count($failures) . " data gagal.";
 
-                $message = "Berhasil mengimport {$successCount} data. " . count($allFailures) . " data gagal diimport.";
-                $message .= " No. Pesanan yang gagal: " . $failedOrderNumbers;
+                if (!empty($failedOrderNumbers)) {
+                    $message .= " No. Pesanan yang gagal: " . $failedOrderNumbers;
+                }
 
                 return redirect()->route('orders.import.form')
-                    ->with('warning', $message)
-                    ->with('failures', $allFailures)
+                    ->with('error', $message)
+                    ->with('failures', $failures)
                     ->with('failed_order_numbers', $failedOrderNumbers);
             }
 
-            // Jika sukses semua, redirect ke index dengan pesan sukses
-            return redirect()->route('orders.index')
-                ->with('success', "Berhasil mengimport {$successCount} data order!");
+            // Jika file kosong
+            return redirect()->route('orders.import.form')
+                ->with('error', 'File yang diimport tidak mengandung data yang valid.');
         } catch (\Exception $e) {
-            \Log::error('Import Error: ' . $e->getMessage());
+            \Log::error('Import order error: ' . $e->getMessage());
             \Log::error($e->getTraceAsString());
 
             return redirect()->route('orders.import.form')

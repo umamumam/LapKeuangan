@@ -5,18 +5,25 @@ namespace App\Imports;
 use App\Models\Order;
 use App\Models\Produk;
 use App\Models\Periode;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Carbon\Carbon;
 
 class OrderImport implements ToCollection, WithHeadingRow
 {
     private $failedOrders = [];
     private $rowCount = 0;
     private $successCount = 0;
+    private $defaultPeriodeId;
+
+    /**
+     * Constructor untuk menerima default periode_id
+     */
+    public function __construct($defaultPeriodeId = null)
+    {
+        $this->defaultPeriodeId = $defaultPeriodeId;
+    }
 
     public function collection(Collection $rows)
     {
@@ -57,19 +64,8 @@ class OrderImport implements ToCollection, WithHeadingRow
                     continue;
                 }
 
-                // Validasi periode_id jika ada
-                $finalPeriodeId = null;
-                if (!empty($periodeId) && $periodeId !== '') {
-                    if (!Periode::where('id', $periodeId)->exists()) {
-                        $this->failedOrders[] = [
-                            'no_pesanan' => $noPesanan ?? 'Tidak diketahui',
-                            'row' => $rowNumber,
-                            'reason' => 'Periode ID tidak ditemukan: ' . $periodeId
-                        ];
-                        continue;
-                    }
-                    $finalPeriodeId = (int) $periodeId;
-                }
+                // Tentukan periode_id
+                $finalPeriodeId = $this->determinePeriodeId($periodeId, $rowNumber, $noPesanan);
 
                 // Siapkan data untuk disimpan
                 $data = [
@@ -102,6 +98,16 @@ class OrderImport implements ToCollection, WithHeadingRow
                     continue;
                 }
 
+                // Validasi returned_quantity tidak boleh lebih besar dari jumlah
+                if ($data['returned_quantity'] > $data['jumlah']) {
+                    $this->failedOrders[] = [
+                        'no_pesanan' => $data['no_pesanan'] ?? 'Tidak diketahui',
+                        'row' => $rowNumber,
+                        'reason' => 'Returned quantity tidak boleh lebih besar dari jumlah'
+                    ];
+                    continue;
+                }
+
                 // Create order
                 Order::create($data);
                 $this->successCount++;
@@ -116,6 +122,39 @@ class OrderImport implements ToCollection, WithHeadingRow
             }
         }
     }
+
+    /**
+     * Helper untuk menentukan periode_id dari Excel atau default
+     */
+    private function determinePeriodeId($periodeIdFromExcel, $rowNumber, $noPesanan)
+    {
+        // Jika ada periode_id dari Excel
+        if (!empty($periodeIdFromExcel) && $periodeIdFromExcel !== '') {
+            $periodeId = $this->parseInteger($periodeIdFromExcel);
+
+            // Cek apakah periode exists
+            if (Periode::where('id', $periodeId)->exists()) {
+                return $periodeId;
+            } else {
+                $this->failedOrders[] = [
+                    'no_pesanan' => $noPesanan ?? 'Tidak diketahui',
+                    'row' => $rowNumber,
+                    'reason' => 'Periode ID tidak ditemukan dalam database: ' . $periodeIdFromExcel
+                ];
+                return null;
+            }
+        }
+
+        // Jika tidak ada periode_id dari Excel, gunakan default
+        if ($this->defaultPeriodeId && Periode::where('id', $this->defaultPeriodeId)->exists()) {
+            return $this->defaultPeriodeId;
+        }
+
+        // Periode tidak wajib, bisa null
+        return null;
+    }
+
+    // Method helper lainnya tetap sama (getCellValue, parseInteger, dll)
 
     private function getCellValue($row, $possibleKeys)
     {
