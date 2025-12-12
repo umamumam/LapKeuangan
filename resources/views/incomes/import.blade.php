@@ -116,12 +116,17 @@
                             </form>
                         </div>
 
+                        {{-- Di blade import --}}
                         @if(session('failures'))
                         <div class="mt-4">
                             <div class="alert alert-warning alert-dismissible fade show" role="alert">
                                 <h6 class="alert-heading">Import Notice:</h6>
-                                <p class="mb-2">{{ session('success') ?? 'Proses import selesai dengan beberapa
-                                    kegagalan.' }}</p>
+                                <p class="mb-2">{{ session('success') ?? 'Proses import selesai dengan beberapa kegagalan.' }}</p>
+                                @if(session('failed_order_numbers'))
+                                <p class="mb-1">
+                                    <strong>No. Pesanan yang gagal:</strong> {{ session('failed_order_numbers') }}
+                                </p>
+                                @endif
                                 <p class="mb-0">
                                     <strong>{{ count(session('failures')) }} data</strong> gagal diimport.
                                     <button type="button" class="btn btn-sm btn-outline-warning ms-1"
@@ -136,7 +141,7 @@
 
                             <div class="collapse mt-2" id="importFailures">
                                 <div class="card card-body">
-                                    <h6>Data yang Gagal:</h6>
+                                    <h6>Data yang Gagal (Detail):</h6>
                                     <div class="table-responsive">
                                         <table class="table table-sm table-bordered">
                                             <thead>

@@ -80,7 +80,7 @@ class IncomeImport implements ToCollection, WithHeadingRow
                         'max:100',
                     ],
                     'no_pengajuan' => 'nullable|string|max:100',
-                    'total_penghasilan' => 'required|integer|min:0',
+                    'total_penghasilan' => 'required|integer',
                     'periode_id' => 'nullable|exists:periodes,id',
                     'created_at' => 'required|date',
                     // updated_at TIDAK divalidasi karena otomatis = created_at
@@ -89,7 +89,6 @@ class IncomeImport implements ToCollection, WithHeadingRow
                     // 'no_pesanan.unique' => 'Nomor pesanan sudah ada dalam database',
                     'total_penghasilan.required' => 'Total penghasilan wajib diisi',
                     'total_penghasilan.integer' => 'Total penghasilan harus berupa angka',
-                    'total_penghasilan.min' => 'Total penghasilan minimal 0',
                     'periode_id.exists' => 'Periode ID tidak valid atau tidak ditemukan',
                     'created_at.required' => 'Tanggal dibuat wajib diisi',
                     'created_at.date' => 'Format tanggal dibuat tidak valid',

@@ -196,7 +196,6 @@ class IncomeController extends Controller
 
             $failures = $import->getFailedOrders();
             $successCount = $import->getSuccessCount();
-            $totalRows = $import->getRowCount();
 
             // Jika ada data yang berhasil diimport
             if ($successCount > 0) {
@@ -221,9 +220,10 @@ class IncomeController extends Controller
 
                     return redirect()->route('incomes.index')
                         ->with('success', $message)
-                        ->with('warning', "Beberapa data gagal diimport. Cek detail untuk informasi lebih lanjut.")
+                        ->with('warning', "{$failedCount} data gagal diimport. No. Pesanan yang gagal: " . $failedOrderNumbers) // UBAH DI SINI
                         ->with('failures', $failures)
-                        ->with('failed_order_numbers', $failedOrderNumbers);
+                        ->with('failed_order_numbers', $failedOrderNumbers)
+                        ->with('failed_count', $failedCount); // TAMBAHKAN
                 }
 
                 return redirect()->route('incomes.index')
@@ -240,7 +240,8 @@ class IncomeController extends Controller
                     ->unique()
                     ->implode(', ');
 
-                $message = "Tidak ada data yang berhasil diimport. " . count($failures) . " data gagal.";
+                $failedCount = count($failures); // TAMBAHKAN
+                $message = "Tidak ada data yang berhasil diimport. {$failedCount} data gagal."; // GUNAKAN VARIABLE
 
                 if (!empty($failedOrderNumbers)) {
                     $message .= " No. Pesanan yang gagal: " . $failedOrderNumbers;
@@ -249,7 +250,8 @@ class IncomeController extends Controller
                 return redirect()->route('incomes.import.form')
                     ->with('error', $message)
                     ->with('failures', $failures)
-                    ->with('failed_order_numbers', $failedOrderNumbers);
+                    ->with('failed_order_numbers', $failedOrderNumbers)
+                    ->with('failed_count', $failedCount); // TAMBAHKAN
             }
 
             // Jika file kosong
