@@ -13,20 +13,16 @@ return new class extends Migration
     {
         Schema::create('monthly_finances', function (Blueprint $table) {
             $table->id();
-            $table->date('periode_awal');
-            $table->date('periode_akhir');
-            $table->string('nama_periode', 50);
-            $table->bigInteger('total_pendapatan_shopee')->default(0);
-            $table->bigInteger('total_pendapatan_tiktok')->default(0);
+            $table->foreignId('periode_id')->constrained('periodes')->onDelete('cascade');
+            $table->bigInteger('total_pendapatan')->default(0);
             $table->bigInteger('operasional')->default(0);
-            $table->bigInteger('iklan_shopee')->default(0);
-            $table->bigInteger('iklan_tiktok')->default(0);
-            $table->decimal('rasio_admin_layanan_shopee', 5, 2)->default(0);
-            $table->decimal('rasio_admin_layanan_tiktok', 5, 2)->default(0);
+            $table->bigInteger('iklan')->default(0);
+            $table->decimal('rasio_admin_layanan', 5, 2)->default(0);
             $table->text('keterangan')->nullable();
             $table->timestamps();
-            $table->unique('nama_periode');
-            $table->index(['periode_awal', 'periode_akhir']);
+
+            $table->unique('periode_id');
+            $table->index('periode_id');
         });
     }
 

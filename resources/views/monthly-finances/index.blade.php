@@ -18,17 +18,8 @@
                     @endif
 
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-chart-line"></i> Data Keuangan Bulanan</h5>
+                        <h5 class="mb-0"><i class="fas fa-chart-line"></i> Data Summary & Output</h5>
                         <div class="d-flex gap-2">
-                            <a href="{{ route('monthly-finances.export') }}" class="btn btn-success btn-sm">
-                                <i class="fas fa-download"></i> Export Excel
-                            </a>
-                            <a href="{{ route('monthly-finances.rekap') }}" class="btn btn-info btn-sm">
-                                <i class="fas fa-chart-bar"></i> Rekap
-                            </a>
-                            <a href="{{ route('monthly-summaries.index') }}" class="btn btn-warning btn-sm">
-                                <i class="fas fa-database"></i> Manage Summary
-                            </a>
                             <a href="{{ route('monthly-finances.create') }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-plus"></i> Tambah Data
                             </a>
@@ -38,137 +29,117 @@
                         <div class="table-responsive">
                             <table id="res-config" class="display table table-striped table-hover dt-responsive nowrap"
                                 style="width: 100%">
-                                <thead class="table-light">
+                                <thead class="table-primary">
                                     <tr>
                                         <th>No</th>
                                         <th>Periode</th>
+                                        <th>Toko</th>
+                                        <th>Marketplace</th>
                                         <th>Total Pendapatan</th>
                                         <th>Total Penghasilan</th>
                                         <th>HPP</th>
                                         <th>Operasional</th>
                                         <th>Iklan</th>
                                         <th>Laba/Rugi</th>
-                                        {{-- <th>Status Data</th> --}}
                                         <th width="140">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($finances as $finance)
+                                    @foreach ($monthlyFinances as $monthly)
                                     @php
-                                    $hasSummary = !is_null($finance->summary);
-                                    $dataStatus = $hasSummary ? 'success' : 'warning';
-                                    $dataText = $hasSummary ? 'Lengkap' : 'Perlu Sync';
+                                        $periode = $monthly->periode;
+                                        $toko = $periode ? $periode->toko : null;
+                                        $totalBiaya = $monthly->operasional + $monthly->iklan;
+                                        if($periode) {
+                                            $labaBersih = $periode->total_penghasilan - $periode->total_hpp_produk - $totalBiaya;
+                                        } else {
+                                            $labaBersih = $monthly->total_pendapatan - $totalBiaya;
+                                        }
                                     @endphp
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         <td>
-                                            <strong>{{ $finance->nama_periode }}</strong>
+                                            @if($periode)
+                                            <strong>{{ $periode->nama_periode }}</strong>
                                             <br>
                                             <small class="text-muted">
-                                                {{ $finance->periode_awal->format('d/m/Y') }} - {{
-                                                $finance->periode_akhir->format('d/m/Y') }}
+                                                {{ $periode->tanggal_mulai->format('d/m/Y') }} -
+                                                {{ $periode->tanggal_selesai->format('d/m/Y') }}
                                             </small>
-                                        </td>
-                                        <td>Rp {{ number_format($finance->total_pendapatan, 0, ',', '.') }}
-                                            <br>
-                                            <strong>
-                                                <span class="badge bg-warning text-dark">
-                                                    Shopee: Rp {{ number_format($finance->total_pendapatan_shopee, 0,
-                                                    ',', '.') }}
-                                                </span>
-                                                <br>
-                                                <span class="badge bg-dark">
-                                                    Tiktok: Rp {{ number_format($finance->total_pendapatan_tiktok, 0,
-                                                    ',', '.') }}
-                                                </span>
-                                            </strong>
-                                        </td>
-                                        <td>Rp {{ number_format($finance->total_penghasilan, 0, ',', '.') }}
-                                            <br>
-                                            <strong>
-                                                <span class="badge bg-warning text-dark">
-                                                    Shopee: Rp {{ number_format($finance->total_penghasilan_shopee, 0,
-                                                    ',', '.') }}
-                                                </span>
-                                                <br>
-                                                <span class="badge bg-dark">
-                                                    Tiktok: Rp {{ number_format($finance->total_penghasilan_tiktok, 0,
-                                                    ',', '.') }}
-                                                </span>
-                                            </strong>
-                                        </td>
-                                        <td>Rp {{ number_format($finance->hpp, 0, ',', '.') }}
-                                            <br>
-                                            <strong>
-                                                <span class="badge bg-warning text-dark">
-                                                    Shopee: Rp {{ number_format($finance->hpp_shopee, 0,
-                                                    ',', '.') }}
-                                                </span>
-                                                <br>
-                                                <span class="badge bg-dark">
-                                                    Tiktok: Rp {{ number_format($finance->hpp_tiktok, 0,
-                                                    ',', '.') }}
-                                                </span>
-                                            </strong>
+                                            @else
+                                            <span class="text-muted">-</span>
+                                            @endif
                                         </td>
                                         <td>
-                                            <div class="text-primary">
-                                                Rp {{ number_format($finance->operasional, 0, ',', '.') }}
-                                            </div>
+                                            @if($toko)
+                                                {{ $toko->nama }}
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
                                         </td>
                                         <td>
-                                            Rp {{ number_format($finance->total_iklan, 0, ',', '.') }}
-                                            <br>
-                                            <small class="text-muted">
-                                                S: Rp {{ number_format($finance->iklan_shopee, 0, ',', '.') }}<br>
-                                                T: Rp {{ number_format($finance->iklan_tiktok, 0, ',', '.') }}
-                                            </small>
-                                        </td>
-                                        <td>
-                                            <span
-                                                class="badge bg-{{ $finance->laba_rugi >= 0 ? 'success' : 'danger' }}">
-                                                <strong>Rp {{ number_format($finance->laba_rugi, 0, ',', '.') }}</strong>
+                                            @if($periode)
+                                            <span class="badge bg-{{ $periode->marketplace == 'Shopee' ? 'warning text-dark' : 'dark' }}">
+                                                {{ $periode->marketplace }}
                                             </span>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <!-- KOREKSI DI SINI: Hapus tag <td> berlebih -->
+                                        <td>Rp {{ number_format($monthly->total_pendapatan, 0, ',', '.') }}</td>
+                                        <td>
+                                            @if($periode)
+                                                Rp {{ number_format($periode->total_penghasilan, 0, ',', '.') }}
+                                                <br>
+                                                <small class="text-muted">
+                                                    <div class="text-primary">Income: {{ $periode->jumlah_income }}</div>
+                                                </small>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($periode)
+                                                Rp {{ number_format($periode->total_hpp_produk, 0, ',', '.') }}
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td>Rp {{ number_format($monthly->operasional, 0, ',', '.') }}</td>
+                                        <td>Rp {{ number_format($monthly->iklan, 0, ',', '.') }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ $labaBersih >= 0 ? 'success' : 'danger' }}">
+                                                <strong>Rp {{ number_format($labaBersih, 0, ',', '.') }}</strong>
+                                            </span>
+                                            {{-- @if($periode)
                                             <br>
                                             <small class="text-muted">
                                                 <div class="text-primary">
-                                                    S: Rp {{ number_format($finance->laba_rugi_net_shopee ?? 0, 0, ',',
-                                                    '.') }}
+                                                    S: Rp {{ number_format($periode->total_penghasilan_shopee - $periode->total_hpp_shopee, 0, ',', '.') }}
                                                 </div>
                                                 <div class="text-danger">
-                                                    T: Rp {{ number_format($finance->laba_rugi_net_tiktok ?? 0, 0, ',',
-                                                    '.') }}
+                                                    T: Rp {{ number_format($periode->total_penghasilan_tiktok - $periode->total_hpp_tiktok, 0, ',', '.') }}
                                                 </div>
                                             </small>
+                                            @endif --}}
                                         </td>
-                                        {{-- <td>
-                                            <span class="badge bg-{{ $dataStatus }}">
-                                                {{ $dataText }}
-                                            </span>
-                                        </td> --}}
                                         <td>
                                             <div class="d-flex gap-1">
-                                                <a href="{{ route('monthly-finances.show', $finance->id) }}"
+                                                <a href="{{ route('monthly-finances.show', $monthly->id) }}"
                                                     class="btn btn-info btn-sm" title="Lihat Detail">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="{{ route('monthly-finances.edit', $finance->id) }}"
+                                                <a href="{{ route('monthly-finances.edit', $monthly->id) }}"
                                                     class="btn btn-warning btn-sm" title="Edit">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                @if(!$hasSummary)
-                                                <a href="{{ route('monthly-finances.sync', $finance->id) }}"
-                                                    class="btn btn-success btn-sm" title="Sync Data"
-                                                    onclick="return confirm('Generate summary data untuk {{ $finance->nama_periode }}?')">
-                                                    <i class="fas fa-sync"></i>
-                                                </a>
-                                                @endif
-                                                <form action="{{ route('monthly-finances.destroy', $finance->id) }}"
+                                                <form action="{{ route('monthly-finances.destroy', $monthly->id) }}"
                                                     method="POST" class="d-inline">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="btn btn-danger btn-sm"
-                                                        onclick="return confirm('Hapus data {{ $finance->nama_periode }}?')"
+                                                        onclick="return confirm('Hapus data keuangan bulanan ini?')"
                                                         title="Hapus">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
@@ -181,9 +152,9 @@
                             </table>
                         </div>
 
-                        @if($finances->isEmpty())
+                        @if($monthlyFinances->isEmpty())
                         <div class="text-center py-4">
-                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
                             <p class="text-muted">Belum ada data keuangan bulanan.</p>
                             <a href="{{ route('monthly-finances.create') }}" class="btn btn-primary">
                                 <i class="fas fa-plus"></i> Tambah Data Pertama

@@ -3,18 +3,15 @@
         <div class="pc-content">
             <div class="col-sm-12">
                 <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-edit"></i> Edit Data Keuangan - {{ $monthlyFinance->nama_periode }}</h5>
-                        <a href="{{ route('monthly-finances.show', $monthlyFinance->id) }}" class="btn btn-secondary btn-sm">
-                            <i class="fas fa-arrow-left"></i> Kembali
-                        </a>
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-edit"></i> Edit Data Summary & Output</h5>
                     </div>
                     <div class="card-body">
                         @if($errors->any())
                         <div class="alert alert-danger">
                             <ul class="mb-0">
                                 @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
+                                <li>{{ $error }}</li>
                                 @endforeach
                             </ul>
                         </div>
@@ -23,122 +20,18 @@
                         <form action="{{ route('monthly-finances.update', $monthlyFinance->id) }}" method="POST">
                             @csrf
                             @method('PUT')
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="periode_awal" class="form-label">Periode Awal *</label>
-                                        <input type="date" class="form-control @error('periode_awal') is-invalid @enderror"
-                                               id="periode_awal" name="periode_awal"
-                                               value="{{ old('periode_awal', $monthlyFinance->periode_awal->format('Y-m-d')) }}" required>
-                                        @error('periode_awal')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="periode_akhir" class="form-label">Periode Akhir *</label>
-                                        <input type="date" class="form-control @error('periode_akhir') is-invalid @enderror"
-                                               id="periode_akhir" name="periode_akhir"
-                                               value="{{ old('periode_akhir', $monthlyFinance->periode_akhir->format('Y-m-d')) }}" required>
-                                        @error('periode_akhir')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                        <div class="form-text">Nama periode: <strong id="nama-periode-preview">{{ $monthlyFinance->nama_periode }}</strong></div>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <!-- Tambahan kolom untuk Shopee -->
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="total_pendapatan_shopee" class="form-label">Pendapatan Shopee *</label>
-                                        <input type="number" class="form-control @error('total_pendapatan_shopee') is-invalid @enderror"
-                                               id="total_pendapatan_shopee" name="total_pendapatan_shopee"
-                                               value="{{ old('total_pendapatan_shopee', $monthlyFinance->total_pendapatan_shopee) }}" required min="0" step="1">
-                                        @error('total_pendapatan_shopee')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="rasio_admin_layanan_shopee" class="form-label">Rasio Admin Shopee (%) *</label>
-                                        <input type="number" step="0.01" class="form-control @error('rasio_admin_layanan_shopee') is-invalid @enderror"
-                                               id="rasio_admin_layanan_shopee" name="rasio_admin_layanan_shopee"
-                                               value="{{ old('rasio_admin_layanan_shopee', $monthlyFinance->rasio_admin_layanan_shopee) }}" required min="0" max="100">
-                                        @error('rasio_admin_layanan_shopee')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="iklan_shopee" class="form-label">Iklan Shopee *</label>
-                                        <input type="number" class="form-control @error('iklan_shopee') is-invalid @enderror"
-                                               id="iklan_shopee" name="iklan_shopee"
-                                               value="{{ old('iklan_shopee', $monthlyFinance->iklan_shopee) }}" required min="0" step="1">
-                                        @error('iklan_shopee')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Tambahan kolom untuk Tiktok -->
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="total_pendapatan_tiktok" class="form-label">Pendapatan Tiktok *</label>
-                                        <input type="number" class="form-control @error('total_pendapatan_tiktok') is-invalid @enderror"
-                                               id="total_pendapatan_tiktok" name="total_pendapatan_tiktok"
-                                               value="{{ old('total_pendapatan_tiktok', $monthlyFinance->total_pendapatan_tiktok) }}" required min="0" step="1">
-                                        @error('total_pendapatan_tiktok')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="rasio_admin_layanan_tiktok" class="form-label">Rasio Admin Tiktok (%) *</label>
-                                        <input type="number" step="0.01" class="form-control @error('rasio_admin_layanan_tiktok') is-invalid @enderror"
-                                               id="rasio_admin_layanan_tiktok" name="rasio_admin_layanan_tiktok"
-                                               value="{{ old('rasio_admin_layanan_tiktok', $monthlyFinance->rasio_admin_layanan_tiktok) }}" required min="0" max="100">
-                                        @error('rasio_admin_layanan_tiktok')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="iklan_tiktok" class="form-label">Iklan Tiktok *</label>
-                                        <input type="number" class="form-control @error('iklan_tiktok') is-invalid @enderror"
-                                               id="iklan_tiktok" name="iklan_tiktok"
-                                               value="{{ old('iklan_tiktok', $monthlyFinance->iklan_tiktok) }}" required min="0" step="1">
-                                        @error('iklan_tiktok')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Kolom yang sudah ada (untuk backward compatibility) -->
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="total_pendapatan" class="form-label">Total Pendapatan (Otomatis)</label>
-                                        <input type="number" class="form-control" id="total_pendapatan" readonly
-                                               value="{{ old('total_pendapatan', $monthlyFinance->total_pendapatan) }}">
-                                        <div class="form-text">Pendapatan Shopee + Tiktok</div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="rasio_admin_layanan" class="form-label">Rasio Admin Rata-rata (Otomatis)</label>
-                                        <input type="number" class="form-control" id="rasio_admin_layanan" readonly
-                                               value="{{ old('rasio_admin_layanan', $monthlyFinance->rasio_admin_layanan) }}">
-                                        <div class="form-text">Rata-rata tertimbang Shopee & Tiktok</div>
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Periode:</strong> {{ $periode->nama_periode }} -
+                                        {{ $periode->toko->nama_toko }} ({{ $periode->marketplace }})
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ $periode->tanggal_mulai->format('d/m/Y') }} -
+                                            {{ $periode->tanggal_selesai->format('d/m/Y') }}
+                                        </small>
                                     </div>
                                 </div>
                             </div>
@@ -146,42 +39,81 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="operasional" class="form-label">Biaya Operasional *</label>
-                                        <input type="number" class="form-control @error('operasional') is-invalid @enderror"
-                                               id="operasional" name="operasional"
-                                               value="{{ old('operasional', $monthlyFinance->operasional) }}" required min="0" step="1">
+                                        <label for="total_pendapatan" class="form-label">Total Pendapatan <span
+                                                class="text-danger">*</span></label>
+                                        <input type="number" name="total_pendapatan" id="total_pendapatan"
+                                            class="form-control @error('total_pendapatan') is-invalid @enderror"
+                                            value="{{ old('total_pendapatan', $monthlyFinance->total_pendapatan) }}"
+                                            required min="0">
+                                        @error('total_pendapatan')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="operasional" class="form-label">Biaya Operasional <span
+                                                class="text-danger">*</span></label>
+                                        <input type="number" name="operasional" id="operasional"
+                                            class="form-control @error('operasional') is-invalid @enderror"
+                                            value="{{ old('operasional', $monthlyFinance->operasional) }}" required
+                                            min="0">
                                         @error('operasional')
-                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
-                                        <div class="form-text">Gaji, listrik, internet, transportasi, packing, dll</div>
                                     </div>
                                 </div>
+
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="iklan" class="form-label">Total Iklan (Otomatis)</label>
-                                        <input type="number" class="form-control" id="iklan" readonly
-                                               value="{{ old('iklan', $monthlyFinance->total_iklan) }}">
-                                        <div class="form-text">Iklan Shopee + Tiktok</div>
+                                        <label for="iklan" class="form-label">Biaya Iklan <span
+                                                class="text-danger">*</span></label>
+                                        <input type="number" name="iklan" id="iklan"
+                                            class="form-control @error('iklan') is-invalid @enderror"
+                                            value="{{ old('iklan', $monthlyFinance->iklan) }}" required min="0">
+                                        @error('iklan')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="rasio_admin_layanan" class="form-label">Rasio Admin Layanan (%)
+                                            <span class="text-danger">*</span></label>
+                                        <input type="number" step="0.01" name="rasio_admin_layanan"
+                                            id="rasio_admin_layanan"
+                                            class="form-control @error('rasio_admin_layanan') is-invalid @enderror"
+                                            value="{{ old('rasio_admin_layanan', $monthlyFinance->rasio_admin_layanan) }}"
+                                            required min="0" max="100">
+                                        @error('rasio_admin_layanan')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        <label for="keterangan" class="form-label">Keterangan</label>
+                                        <textarea name="keterangan" id="keterangan"
+                                            class="form-control @error('keterangan') is-invalid @enderror"
+                                            rows="3">{{ old('keterangan', $monthlyFinance->keterangan) }}</textarea>
+                                        @error('keterangan')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label for="keterangan" class="form-label">Keterangan</label>
-                                <textarea class="form-control @error('keterangan') is-invalid @enderror"
-                                          id="keterangan" name="keterangan" rows="3">{{ old('keterangan', $monthlyFinance->keterangan) }}</textarea>
-                                @error('keterangan')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="d-flex gap-2">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> Update Data
-                                </button>
-                                <a href="{{ route('monthly-finances.show', $monthlyFinance->id) }}" class="btn btn-secondary">
-                                    <i class="fas fa-times"></i> Batal
+                            <div class="d-flex justify-content-between mt-4">
+                                <a href="{{ route('monthly-finances.show', $monthlyFinance->id) }}"
+                                    class="btn btn-secondary">
+                                    <i class="fas fa-times me-2"></i> Batal
                                 </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i> Perbarui
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -191,72 +123,52 @@
     </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const periodeAwal = document.getElementById('periode_awal');
-        const namaPeriodePreview = document.getElementById('nama-periode-preview');
+        document.addEventListener('DOMContentLoaded', function() {
+        // Realtime calculation preview
+        const totalPendapatanInput = document.getElementById('total_pendapatan');
+        const operasionalInput = document.getElementById('operasional');
+        const iklanInput = document.getElementById('iklan');
+        const rasioInput = document.getElementById('rasio_admin_layanan');
 
-        // Elements for Shopee
-        const pendapatanShopee = document.getElementById('total_pendapatan_shopee');
-        const rasioShopee = document.getElementById('rasio_admin_layanan_shopee');
-        const iklanShopee = document.getElementById('iklan_shopee');
+        const biayaAdminSpan = document.querySelector('[data-biaya-admin]');
+        const totalBiayaSpan = document.querySelector('[data-total-biaya]');
+        const labaRugiSpan = document.querySelector('[data-laba-rugi]');
 
-        // Elements for Tiktok
-        const pendapatanTiktok = document.getElementById('total_pendapatan_tiktok');
-        const rasioTiktok = document.getElementById('rasio_admin_layanan_tiktok');
-        const iklanTiktok = document.getElementById('iklan_tiktok');
+        function updatePreview() {
+            const totalPendapatan = parseFloat(totalPendapatanInput.value) || 0;
+            const operasional = parseFloat(operasionalInput.value) || 0;
+            const iklan = parseFloat(iklanInput.value) || 0;
+            const rasio = parseFloat(rasioInput.value) || 0;
 
-        // Auto-calculated fields
-        const totalPendapatan = document.getElementById('total_pendapatan');
-        const rataRataRasio = document.getElementById('rasio_admin_layanan');
-        const totalIklan = document.getElementById('iklan');
+            // Calculate biaya admin
+            const biayaAdmin = totalPendapatan * (rasio / 100);
+            const totalBiaya = operasional + iklan + biayaAdmin;
 
-        function updateNamaPeriode() {
-            if (periodeAwal.value) {
-                const date = new Date(periodeAwal.value);
-                const month = date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
-                namaPeriodePreview.textContent = month;
+            // Simulate laba rugi calculation
+            // Note: Actual calculation uses data from periode which is not available here
+            // This is just a preview based on input values
+            const labaRugi = totalPendapatan - totalBiaya;
+
+            // Update preview if elements exist
+            if(biayaAdminSpan) {
+                biayaAdminSpan.textContent = 'Rp ' + biayaAdmin.toLocaleString('id-ID');
+            }
+            if(totalBiayaSpan) {
+                totalBiayaSpan.textContent = 'Rp ' + totalBiaya.toLocaleString('id-ID');
+            }
+            if(labaRugiSpan) {
+                labaRugiSpan.textContent = 'Rp ' + labaRugi.toLocaleString('id-ID');
+                labaRugiSpan.className = labaRugi >= 0 ? 'text-success' : 'text-danger';
             }
         }
 
-        function updateCalculatedFields() {
-            // Calculate total pendapatan
-            const shopeePendapatan = parseInt(pendapatanShopee.value) || 0;
-            const tiktokPendapatan = parseInt(pendapatanTiktok.value) || 0;
-            const totalPendapatanValue = shopeePendapatan + tiktokPendapatan;
-            totalPendapatan.value = totalPendapatanValue;
-
-            // Calculate total iklan
-            const shopeeIklan = parseInt(iklanShopee.value) || 0;
-            const tiktokIklan = parseInt(iklanTiktok.value) || 0;
-            const totalIklanValue = shopeeIklan + tiktokIklan;
-            totalIklan.value = totalIklanValue;
-
-            // Calculate weighted average rasio
-            const shopeeRasio = parseFloat(rasioShopee.value) || 0;
-            const tiktokRasio = parseFloat(rasioTiktok.value) || 0;
-
-            if (totalPendapatanValue > 0) {
-                const adminShopee = shopeePendapatan * (shopeeRasio / 100);
-                const adminTiktok = tiktokPendapatan * (tiktokRasio / 100);
-                const totalAdmin = adminShopee + adminTiktok;
-                const weightedAverage = (totalAdmin / totalPendapatanValue) * 100;
-                rataRataRasio.value = weightedAverage.toFixed(2);
-            } else {
-                rataRataRasio.value = 0;
-            }
-        }
-
-        // Initialize events
-        periodeAwal.addEventListener('change', updateNamaPeriode);
-
-        // Add event listeners for calculations
-        [pendapatanShopee, pendapatanTiktok, rasioShopee, rasioTiktok, iklanShopee, iklanTiktok].forEach(input => {
-            input.addEventListener('input', updateCalculatedFields);
+        // Add event listeners
+        [totalPendapatanInput, operasionalInput, iklanInput, rasioInput].forEach(input => {
+            input.addEventListener('input', updatePreview);
         });
 
-        // Initialize on page load
-        updateNamaPeriode();
-        updateCalculatedFields();
+        // Initial update
+        updatePreview();
     });
     </script>
 </x-app-layout>

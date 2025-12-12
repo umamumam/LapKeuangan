@@ -66,6 +66,11 @@ class Periode extends Model
         return $this->hasMany(Income::class);
     }
 
+    public function monthlyFinance()
+    {
+        return $this->hasOne(MonthlyFinance::class);
+    }
+
     public function scopeNotGenerated($query)
     {
         return $query->where('is_generated', false);

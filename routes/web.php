@@ -41,39 +41,39 @@ Route::middleware('auth')->group(function () {
     Route::post('/orders/delete-by-periode', [OrderController::class, 'deleteByPeriode'])->name('orders.delete.by.periode'); // DITAMBAHKAN
     Route::resource('orders', OrderController::class);
     // API untuk get periode data
-    Route::get('/api/periodes', function() {
+    Route::get('/api/periodes', function () {
         $periodes = App\Models\Periode::orderBy('nama_periode', 'desc')->get();
         return response()->json($periodes);
     });
 
     // API untuk hitung order per periode
-    Route::get('/api/orders/count-by-periode/{periodeId}', function($periodeId) {
+    Route::get('/api/orders/count-by-periode/{periodeId}', function ($periodeId) {
         $count = App\Models\Order::where('periode_id', $periodeId)->count();
         return response()->json(['count' => $count]);
     });
 
-Route::get('/incomes/calculate/{income}', [IncomeController::class, 'calculateTotal'])
-    ->name('incomes.calculate');
+    Route::get('/incomes/calculate/{income}', [IncomeController::class, 'calculateTotal'])
+        ->name('incomes.calculate');
 
-Route::get('/incomes/create-from-order/{noPesanan}', [IncomeController::class, 'createFromOrder'])
-    ->name('incomes.create-from-order');
+    Route::get('/incomes/create-from-order/{noPesanan}', [IncomeController::class, 'createFromOrder'])
+        ->name('incomes.create-from-order');
 
-Route::get('/incomes/hasil', [IncomeController::class, 'hasil'])->name('incomes.hasil');
-Route::get('/incomes/detailhasil', [IncomeController::class, 'detailhasil'])->name('incomes.detailhasil');
-Route::get('/incomes/export-hasil', [IncomeController::class, 'exportHasil'])->name('incomes.export-hasil');
-Route::get('/incomes/export', [IncomeController::class, 'export'])->name('incomes.export');
-Route::get('/incomes/import/form', [IncomeController::class, 'importForm'])->name('incomes.import.form');
-Route::post('/incomes/import', [IncomeController::class, 'import'])->name('incomes.import');
-Route::get('/incomes/download-template', [IncomeController::class, 'downloadTemplate'])->name('incomes.download-template');
+    Route::get('/incomes/hasil', [IncomeController::class, 'hasil'])->name('incomes.hasil');
+    Route::get('/incomes/detailhasil', [IncomeController::class, 'detailhasil'])->name('incomes.detailhasil');
+    Route::get('/incomes/export-hasil', [IncomeController::class, 'exportHasil'])->name('incomes.export-hasil');
+    Route::get('/incomes/export', [IncomeController::class, 'export'])->name('incomes.export');
+    Route::get('/incomes/import/form', [IncomeController::class, 'importForm'])->name('incomes.import.form');
+    Route::post('/incomes/import', [IncomeController::class, 'import'])->name('incomes.import');
+    Route::get('/incomes/download-template', [IncomeController::class, 'downloadTemplate'])->name('incomes.download-template');
 
-// Rute untuk operasi massal (bulk operations)
-Route::delete('/incomes/delete-all', [IncomeController::class, 'deleteAll'])->name('incomes.deleteAll');
-Route::post('/incomes/delete-by-periode', [IncomeController::class, 'deleteByPeriode'])->name('incomes.delete.by.periode');
-Route::post('/incomes/delete-by-multiple-periode', [IncomeController::class, 'deleteByMultiplePeriode'])->name('incomes.delete.by.multiple.periode');
-Route::post('/incomes/bulk-attach-periode', [IncomeController::class, 'bulkAttachToPeriode'])->name('incomes.bulk.attach.periode');
+    // Rute untuk operasi massal (bulk operations)
+    Route::delete('/incomes/delete-all', [IncomeController::class, 'deleteAll'])->name('incomes.deleteAll');
+    Route::post('/incomes/delete-by-periode', [IncomeController::class, 'deleteByPeriode'])->name('incomes.delete.by.periode');
+    Route::post('/incomes/delete-by-multiple-periode', [IncomeController::class, 'deleteByMultiplePeriode'])->name('incomes.delete.by.multiple.periode');
+    Route::post('/incomes/bulk-attach-periode', [IncomeController::class, 'bulkAttachToPeriode'])->name('incomes.bulk.attach.periode');
 
-// Rute resource untuk CRUD standar
-Route::resource('incomes', IncomeController::class);
+    // Rute resource untuk CRUD standar
+    Route::resource('incomes', IncomeController::class);
 
     Route::get('/monthly-finances/{monthlyFinance}/calculate', [MonthlyFinanceController::class, 'calculate'])->name('monthly-finances.calculate');
     Route::get('/monthly-finances/rekap', [MonthlyFinanceController::class, 'rekap'])->name('monthly-finances.rekap');

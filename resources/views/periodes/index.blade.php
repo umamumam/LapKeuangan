@@ -78,7 +78,7 @@
                                         <th>Marketplace</th>
                                         <th>Penghasilan</th>
                                         <th>HPP</th>
-                                        <th>Laba</th>
+                                        <th>Laba Kotor</th>
                                         <th>Status</th>
                                         <th width="140">Aksi</th>
                                     </tr>
