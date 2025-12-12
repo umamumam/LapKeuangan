@@ -95,7 +95,7 @@
                             <tbody>
                                 @foreach($incomes as $income)
                                 @php
-                                    $totalHpp = $income->orders->sum(function ($order) {
+                                    $totalHpp = $income->orders->where('periode_id', $income->periode_id)->sum(function ($order) {
                                         $netQuantity = $order->jumlah - $order->returned_quantity;
                                         return $netQuantity * $order->produk->hpp_produk;
                                     });
