@@ -100,7 +100,7 @@ class Income extends Model
      */
     public function getTotalHppAttribute()
     {
-        return $this->orders->sum(function ($order) {
+        return $this->orders->where('periode_id', $this->periode_id)->sum(function ($order) {
             $netQuantity = $order->jumlah - $order->returned_quantity;
             return $netQuantity * $order->produk->hpp_produk;
         });
@@ -143,7 +143,9 @@ class Income extends Model
      */
     public function getJumlahOrderAttribute()
     {
-        return $this->orders->count();
+        return $this->orders
+            ->where('periode_id', $this->periode_id)
+            ->count();
     }
 
     /**
@@ -151,7 +153,7 @@ class Income extends Model
      */
     public function getTotalNetQuantityAttribute()
     {
-        return $this->orders->sum(function ($order) {
+        return $this->orders->where('periode_id', $this->periode_id)->sum(function ($order) {
             return $order->jumlah - $order->returned_quantity;
         });
     }

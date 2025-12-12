@@ -113,17 +113,18 @@ class IncomeController extends Controller
         try {
             DB::beginTransaction();
 
-            $income->load(['orders.produk']);
-            $total = $income->orders->sum(function ($order) {
-                $netQuantity = $order->jumlah - $order->returned_quantity;
-                return $netQuantity * $order->produk->hpp_produk;
-            });
+            $total = $income->orders
+                ->where('periode_id', $income->periode_id)
+                ->sum(function ($order) {
+                    $netQuantity = $order->jumlah - $order->returned_quantity;
+                    return $netQuantity * $order->produk->hpp_produk;
+                });
 
             $income->update(['total_penghasilan' => $total]);
             DB::commit();
 
             return redirect()->route('incomes.show', $income)
-                ->with('success', 'Total penghasilan berhasil dihitung otomatis: Rp ' . number_format($total));
+                ->with('success', 'Total penghasilan berhasil dihitung otomatis dari order dengan periode yang sama: Rp ' . number_format($total));
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()

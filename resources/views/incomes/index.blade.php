@@ -115,7 +115,7 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="badge bg-info">{{ $income->orders->count() }} item</span>
+                                        <span class="badge bg-info">{{ $income->orders->where('periode_id', $income->periode_id)->count() }} item</span>
                                     </td>
                                     <td>
                                         @if($income->periode)
