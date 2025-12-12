@@ -85,7 +85,7 @@ class OrderImport implements ToCollection, WithHeadingRow
                     'produk_id' => 'required|exists:produks,id',
                     'jumlah' => 'required|integer|min:1',
                     'returned_quantity' => 'nullable|integer|min:0',
-                    'total_harga_produk' => 'required|integer|min:0',
+                    'total_harga_produk' => 'required|integer',
                     'periode_id' => 'nullable|exists:periodes,id',
                 ]);
 

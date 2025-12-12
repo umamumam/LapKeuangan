@@ -120,32 +120,48 @@
                             </form>
                         </div>
 
+                        {{-- Di blade orders/import.blade.php --}}
                         @if(session('failures'))
                         <div class="mt-4">
                             <div class="alert alert-warning alert-dismissible fade show" role="alert">
                                 <h6 class="alert-heading">Import Notice:</h6>
-                                <p class="mb-2">{{ session('success') ?? 'Proses import selesai dengan beberapa
-                                    kegagalan.' }}</p>
+
+                                @if(session('failed_count'))
+                                <p class="mb-1">
+                                    <i class="fas fa-times-circle text-danger me-1"></i>
+                                    <strong>Gagal:</strong> {{ session('failed_count') }} data
+                                </p>
+                                @endif
+
+                                @if(session('failed_order_numbers'))
+                                <p class="mb-2">
+                                    <i class="fas fa-exclamation-triangle text-warning me-1"></i>
+                                    <strong>No. Pesanan yang gagal:</strong> {{ session('failed_order_numbers') }}
+                                </p>
+                                @endif
+
                                 <p class="mb-0">
-                                    <strong>{{ count(session('failures')) }} data</strong> gagal diimport.
-                                    <button type="button" class="btn btn-sm btn-outline-warning ms-1"
-                                        data-bs-toggle="collapse" data-bs-target="#importFailures"
-                                        onclick="event.preventDefault(); event.stopPropagation();">
-                                        Lihat Detail
+                                    <button type="button" class="btn btn-sm btn-outline-warning"
+                                        data-bs-toggle="collapse" data-bs-target="#importFailures">
+                                        <i class="fas fa-list me-1"></i> Lihat Detail Gagal
                                     </button>
                                 </p>
+
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"
                                     style="top: 1rem; right: 1rem;"></button>
                             </div>
 
                             <div class="collapse mt-2" id="importFailures">
                                 <div class="card card-body">
-                                    <h6>Data yang Gagal:</h6>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="mb-0">Data yang Gagal (Detail):</h6>
+                                        <span class="badge bg-danger">{{ count(session('failures')) }} data</span>
+                                    </div>
                                     <div class="table-responsive">
                                         <table class="table table-sm table-bordered">
-                                            <thead>
+                                            <thead class="table-light">
                                                 <tr>
-                                                    <th>Baris</th>
+                                                    <th width="80">Baris</th>
                                                     <th>No Pesanan</th>
                                                     <th>Alasan</th>
                                                 </tr>
@@ -153,13 +169,22 @@
                                             <tbody>
                                                 @foreach(session('failures') as $failure)
                                                 <tr>
-                                                    <td>{{ $failure['row'] }}</td>
-                                                    <td>{{ $failure['no_pesanan'] }}</td>
+                                                    <td class="text-center">
+                                                        <span class="badge bg-secondary">#{{ $failure['row'] }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <strong>{{ $failure['no_pesanan'] }}</strong>
+                                                    </td>
                                                     <td class="text-danger small">{{ $failure['reason'] }}</td>
                                                 </tr>
                                                 @endforeach
                                             </tbody>
                                         </table>
+                                    </div>
+                                    <div class="mt-2 text-end">
+                                        <small class="text-muted">
+                                            Total {{ count(session('failures')) }} data gagal diimport
+                                        </small>
                                     </div>
                                 </div>
                             </div>

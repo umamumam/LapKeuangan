@@ -150,11 +150,11 @@ class OrderController extends Controller
     {
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv|max:5120',
-            'default_periode_id' => 'nullable|exists:periodes,id', // TAMBAHKAN
+            'default_periode_id' => 'nullable|exists:periodes,id',
         ]);
 
         try {
-            $import = new OrderImport($request->default_periode_id); // TAMBAHKAN parameter
+            $import = new OrderImport($request->default_periode_id);
             Excel::import($import, $request->file('file'));
 
             $failures = $import->getFailedOrders();
@@ -184,9 +184,10 @@ class OrderController extends Controller
 
                     return redirect()->route('orders.index')
                         ->with('success', $message)
-                        ->with('warning', "Beberapa data gagal diimport. Cek detail untuk informasi lebih lanjut.")
+                        ->with('warning', "{$failedCount} data gagal diimport. No. Pesanan yang gagal: " . $failedOrderNumbers) // UBAH DI SINI
                         ->with('failures', $failures)
-                        ->with('failed_order_numbers', $failedOrderNumbers);
+                        ->with('failed_order_numbers', $failedOrderNumbers)
+                        ->with('failed_count', $failedCount); // TAMBAHKAN
                 }
 
                 return redirect()->route('orders.index')
@@ -203,7 +204,8 @@ class OrderController extends Controller
                     ->unique()
                     ->implode(', ');
 
-                $message = "Tidak ada data yang berhasil diimport. " . count($failures) . " data gagal.";
+                $failedCount = count($failures); // TAMBAHKAN
+                $message = "Tidak ada data yang berhasil diimport. {$failedCount} data gagal."; // GUNAKAN VARIABLE
 
                 if (!empty($failedOrderNumbers)) {
                     $message .= " No. Pesanan yang gagal: " . $failedOrderNumbers;
@@ -212,7 +214,8 @@ class OrderController extends Controller
                 return redirect()->route('orders.import.form')
                     ->with('error', $message)
                     ->with('failures', $failures)
-                    ->with('failed_order_numbers', $failedOrderNumbers);
+                    ->with('failed_order_numbers', $failedOrderNumbers)
+                    ->with('failed_count', $failedCount); // TAMBAHKAN
             }
 
             // Jika file kosong
