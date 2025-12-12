@@ -150,8 +150,8 @@ class PeriodeController extends Controller
                 ], 400);
             }
 
-            // Gunakan helper untuk generate data
-            $result = $this->generateOrUpdatePeriodeData($periode, false);
+            // Generate data
+            $this->calculateAndSavePeriodeData($periode, false);
 
             DB::commit();
 
@@ -180,16 +180,8 @@ class PeriodeController extends Controller
 
             $periode = Periode::findOrFail($id);
 
-            // Cek apakah sudah di-generate sebelumnya
-            if (!$periode->is_generated) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Periode belum di-generate sebelumnya. Gunakan generate terlebih dahulu.'
-                ], 400);
-            }
-
-            // Gunakan helper untuk update data (regenerate)
-            $result = $this->generateOrUpdatePeriodeData($periode, true);
+            // Regenerate data
+            $this->calculateAndSavePeriodeData($periode, true);
 
             DB::commit();
 
@@ -207,136 +199,115 @@ class PeriodeController extends Controller
         }
     }
 
-    private function generateOrUpdatePeriodeData(Periode $periode, bool $isRegenerate = false)
+    /**
+     * Menghitung dan menyimpan data periode
+     */
+
+    private function calculateAndSavePeriodeData(Periode $periode, bool $isRegenerate = false)
     {
-        try {
-            // 1. Hitung data dari tabel orders dengan JOIN ke produks
-            $ordersData = DB::table('orders')
-                ->leftJoin('produks', 'orders.produk_id', '=', 'produks.id')
-                ->where('orders.periode_id', $periode->id)
-                ->selectRaw('
-                    COUNT(*) as jumlah_order,
-                    SUM(orders.jumlah) as total_jumlah,
-                    SUM(orders.returned_quantity) as total_returned,
-                    SUM(orders.total_harga_produk) as total_harga_produk,
-                    SUM(orders.jumlah * produks.hpp_produk) as total_hpp
-                ')
-                ->first();
+        // Reset semua data ke 0 sebelum menghitung ulang
+        $updateData = [
+            // Data dari orders
+            'total_harga_produk' => 0,
+            'jumlah_order' => 0,
+            'returned_quantity' => 0,
+            'total_hpp_produk' => 0,
 
-            // 2. Hitung data dari tabel incomes
-            $incomesData = DB::table('incomes')
-                ->where('periode_id', $periode->id)
-                ->selectRaw('
-                    COUNT(*) as jumlah_income,
-                    SUM(total_penghasilan) as total_penghasilan
-                ')
-                ->first();
+            // Data dari incomes
+            'total_penghasilan' => 0,
+            'jumlah_income' => 0,
 
-            // 3. Siapkan data untuk update
-            $updateData = [
-                'jumlah_order' => $ordersData->jumlah_order ?? 0,
-                'returned_quantity' => $ordersData->total_returned ?? 0,
-                'total_harga_produk' => $ordersData->total_harga_produk ?? 0,
-                'total_hpp_produk' => $ordersData->total_hpp ?? 0,
+            // Data per marketplace
+            'total_penghasilan_shopee' => 0,
+            'total_income_count_shopee' => 0,
+            'total_hpp_shopee' => 0,
 
-                'jumlah_income' => $incomesData->jumlah_income ?? 0,
-                'total_penghasilan' => $incomesData->total_penghasilan ?? 0,
-            ];
+            'total_penghasilan_tiktok' => 0,
+            'total_income_count_tiktok' => 0,
+            'total_hpp_tiktok' => 0,
+        ];
 
-            // Jika regenerate, update timestamp generated_at
-            if ($isRegenerate) {
-                $updateData['generated_at'] = now();
-            } else {
-                // Jika generate pertama kali
-                $updateData['is_generated'] = true;
-                $updateData['generated_at'] = now();
-            }
+        // 1. HITUNG DATA DARI ORDERS
+        $orders = Order::with('produk')
+            ->where('periode_id', $periode->id)
+            ->get();
 
-            // 4. Set data per marketplace berdasarkan marketplace periode
-            if ($periode->marketplace === 'Shopee') {
-                $updateData['total_penghasilan_shopee'] = $incomesData->total_penghasilan ?? 0;
-                $updateData['total_income_count_shopee'] = $incomesData->jumlah_income ?? 0;
-                $updateData['total_hpp_shopee'] = $ordersData->total_hpp ?? 0;
-
-                $updateData['total_penghasilan_tiktok'] = 0;
-                $updateData['total_income_count_tiktok'] = 0;
-                $updateData['total_hpp_tiktok'] = 0;
-            } else {
-                $updateData['total_penghasilan_tiktok'] = $incomesData->total_penghasilan ?? 0;
-                $updateData['total_income_count_tiktok'] = $incomesData->jumlah_income ?? 0;
-                $updateData['total_hpp_tiktok'] = $ordersData->total_hpp ?? 0;
-
-                $updateData['total_penghasilan_shopee'] = 0;
-                $updateData['total_income_count_shopee'] = 0;
-                $updateData['total_hpp_shopee'] = 0;
-            }
-
-            // 5. Update periode
-            $periode->update($updateData);
-
-            return [
-                'success' => true,
-                'message' => $isRegenerate ? 'Data berhasil di-update' : 'Data berhasil di-generate'
-            ];
-        } catch (\Exception $e) {
-            return [
-                'success' => false,
-                'message' => ($isRegenerate ? 'Regenerate' : 'Generate') . ' gagal: ' . $e->getMessage()
-            ];
+        if ($orders->count() > 0) {
+            $updateData['jumlah_order'] = $orders->count();
+            $updateData['total_harga_produk'] = $orders->sum('total_harga_produk');
+            $updateData['returned_quantity'] = $orders->sum('returned_quantity');
         }
+
+        // 2. HITUNG DATA DARI INCOMES (termasuk HPP)
+        $incomes = Income::with(['orders.produk'])
+            ->where('periode_id', $periode->id)
+            ->get();
+
+        if ($incomes->count() > 0) {
+            $updateData['jumlah_income'] = $incomes->count();
+            $updateData['total_penghasilan'] = $incomes->sum('total_penghasilan');
+
+            // PERHITUNGAN HPP BERDASARKAN INCOME
+            $updateData['total_hpp_produk'] = $incomes->sum(function ($income) use ($periode) {
+                // Filter orders yang terkait dengan periode ini
+                $incomeOrders = $income->orders->where('periode_id', $periode->id);
+
+                // Hitung HPP dari semua orders yang terkait dengan income ini DAN periode ini
+                return $incomeOrders->sum(function ($order) {
+                    if ($order->produk && $order->produk->hpp_produk) {
+                        $netQuantity = $order->jumlah - ($order->returned_quantity ?? 0);
+                        return $netQuantity * $order->produk->hpp_produk;
+                    }
+                    return 0;
+                });
+            });
+        }
+
+        // 3. SET DATA PER MARKETPLACE
+        if ($periode->marketplace === 'Shopee') {
+            $updateData['total_penghasilan_shopee'] = $updateData['total_penghasilan'];
+            $updateData['total_income_count_shopee'] = $updateData['jumlah_income'];
+            $updateData['total_hpp_shopee'] = $updateData['total_hpp_produk'];
+        } else {
+            $updateData['total_penghasilan_tiktok'] = $updateData['total_penghasilan'];
+            $updateData['total_income_count_tiktok'] = $updateData['jumlah_income'];
+            $updateData['total_hpp_tiktok'] = $updateData['total_hpp_produk'];
+        }
+
+        // 4. SET STATUS GENERATE
+        if (!$isRegenerate) {
+            $updateData['is_generated'] = true;
+        }
+        $updateData['generated_at'] = now();
+
+        // 5. UPDATE PERIODE
+        $periode->update($updateData);
+
+        return $updateData;
     }
 
-    // /**
-    //  * Generate atau regenerate semua periode (pending dan sudah ada)
-    //  */
-    // public function generateOrRegenerateAll()
-    // {
-    //     try {
-    //         $allPeriodes = Periode::all();
-    //         $generatedCount = 0;
-    //         $regeneratedCount = 0;
-    //         $errors = [];
+    /**
+     * Sync data related untuk regenerate (menghubungkan data yang belum terhubung)
+     */
+    private function syncRelatedData(Periode $periode)
+    {
+        // Sync orders berdasarkan tanggal dan toko
+        Order::where('periode_id', null)
+            ->where('toko_id', $periode->toko_id)
+            ->whereBetween('created_at', [$periode->tanggal_mulai, $periode->tanggal_selesai])
+            ->update(['periode_id' => $periode->id]);
 
-    //         foreach ($allPeriodes as $periode) {
-    //             $isRegenerate = $periode->is_generated;
+        // Sync incomes berdasarkan no_pesanan dari orders yang sudah di-update
+        $orderNos = Order::where('periode_id', $periode->id)
+            ->pluck('no_pesanan')
+            ->unique()
+            ->toArray();
 
-    //             $result = $this->generateOrUpdatePeriodeData($periode, $isRegenerate);
-
-    //             if ($result['success']) {
-    //                 if ($isRegenerate) {
-    //                     $regeneratedCount++;
-    //                 } else {
-    //                     $generatedCount++;
-    //                 }
-    //             } else {
-    //                 $errors[] = $periode->nama_periode . ' (' . $periode->marketplace . '): ' . $result['message'];
-    //             }
-    //         }
-
-    //         $message = "Berhasil generate $generatedCount periode baru dan regenerate $regeneratedCount periode yang sudah ada";
-
-    //         if (!empty($errors)) {
-    //             $message .= " (Dengan beberapa error: " . implode(', ', array_slice($errors, 0, 3)) . ")";
-    //             if (count($errors) > 3) {
-    //                 $message .= " dan " . (count($errors) - 3) . " error lainnya";
-    //             }
-    //         }
-
-    //         return response()->json([
-    //             'success' => ($generatedCount + $regeneratedCount) > 0,
-    //             'message' => $message,
-    //             'generated_count' => $generatedCount,
-    //             'regenerated_count' => $regeneratedCount,
-    //             'total' => $allPeriodes->count(),
-    //             'errors' => $errors
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Gagal generate/regenerate semua: ' . $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
+        if (!empty($orderNos)) {
+            Income::whereIn('no_pesanan', $orderNos)
+                ->update(['periode_id' => $periode->id]);
+        }
+    }
 
     /**
      * Regenerate semua periode yang sudah di-generate
@@ -344,19 +315,22 @@ class PeriodeController extends Controller
     public function regenerateAll()
     {
         try {
-            $generatedPeriodes = Periode::generated()->get();
+            DB::beginTransaction();
+
+            $generatedPeriodes = Periode::where('is_generated', true)->get();
             $regeneratedCount = 0;
             $errors = [];
 
             foreach ($generatedPeriodes as $periode) {
-                $result = $this->generateOrUpdatePeriodeData($periode, true);
-
-                if ($result['success']) {
+                try {
+                    $this->calculateAndSavePeriodeData($periode, true);
                     $regeneratedCount++;
-                } else {
-                    $errors[] = $periode->nama_periode . ' (' . $periode->marketplace . '): ' . $result['message'];
+                } catch (\Exception $e) {
+                    $errors[] = $periode->nama_periode . ' (' . $periode->marketplace . '): ' . $e->getMessage();
                 }
             }
+
+            DB::commit();
 
             $message = "Berhasil regenerate $regeneratedCount periode";
 
@@ -375,6 +349,7 @@ class PeriodeController extends Controller
                 'errors' => $errors
             ]);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal regenerate semua: ' . $e->getMessage()
@@ -385,6 +360,8 @@ class PeriodeController extends Controller
     public function generateCurrentMonth()
     {
         try {
+            DB::beginTransaction();
+
             $currentYear = date('Y');
             $currentMonth = date('m');
 
@@ -424,11 +401,11 @@ class PeriodeController extends Controller
 
                     if ($existing) {
                         // Jika sudah ada, regenerate (update data)
-                        $result = $this->generateOrUpdatePeriodeData($existing, true);
-                        if ($result['success']) {
+                        try {
+                            $this->calculateAndSavePeriodeData($existing, true);
                             $updatedCount++;
-                        } else {
-                            $errors[] = $result['message'];
+                        } catch (\Exception $e) {
+                            $errors[] = $toko->nama . ' ' . $marketplace . ': ' . $e->getMessage();
                         }
                         continue;
                     }
@@ -445,14 +422,16 @@ class PeriodeController extends Controller
                     ]);
 
                     // Generate data untuk periode baru
-                    $result = $this->generateOrUpdatePeriodeData($periode, false);
-                    if ($result['success']) {
+                    try {
+                        $this->calculateAndSavePeriodeData($periode, false);
                         $generatedCount++;
-                    } else {
-                        $errors[] = $result['message'];
+                    } catch (\Exception $e) {
+                        $errors[] = $toko->nama . ' ' . $marketplace . ': ' . $e->getMessage();
                     }
                 }
             }
+
+            DB::commit();
 
             $message = "Berhasil generate $generatedCount periode baru dan update $updatedCount periode yang sudah ada";
 
@@ -468,6 +447,7 @@ class PeriodeController extends Controller
                 'errors' => $errors
             ]);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal generate bulan berjalan: ' . $e->getMessage()
@@ -477,14 +457,31 @@ class PeriodeController extends Controller
 
     public function show($id)
     {
-        $periode = Periode::with(['toko', 'orders', 'incomes'])->findOrFail($id);
+        $periode = Periode::with(['toko', 'orders.produk', 'incomes'])->findOrFail($id);
+
+        // Hitung ulang untuk verifikasi
+        $ordersCount = $periode->orders->count();
+        $incomesCount = $periode->incomes->count();
+
+        $totalHargaProduk = $periode->orders->sum('total_harga_produk');
+        $totalPenghasilan = $periode->incomes->sum('total_penghasilan');
+
+        $totalReturn = $periode->orders->sum('returned_quantity');
+
+        // Hitung total HPP dengan rumus yang benar
+        $totalHpp = $periode->orders->sum(function ($order) {
+            $netQuantity = $order->jumlah - $order->returned_quantity;
+            return $netQuantity * $order->produk->hpp_produk;
+        });
 
         $stats = [
-            'orders_count' => $periode->orders->count(),
-            'incomes_count' => $periode->incomes->count(),
-            'total_harga_produk' => $periode->orders->sum('total_harga_produk'),
-            'total_penghasilan' => $periode->incomes->sum('total_penghasilan'),
-            'total_return' => $periode->orders->sum('returned_quantity'),
+            'orders_count' => $ordersCount,
+            'incomes_count' => $incomesCount,
+            'total_harga_produk' => $totalHargaProduk,
+            'total_penghasilan' => $totalPenghasilan,
+            'total_hpp' => $totalHpp,
+            'total_return' => $totalReturn,
+            'laba_bersih' => $totalPenghasilan - $totalHpp,
         ];
 
         return view('periodes.show', compact('periode', 'stats'));
@@ -495,6 +492,10 @@ class PeriodeController extends Controller
         try {
             $periode = Periode::findOrFail($id);
             $namaPeriode = $periode->nama_periode;
+
+            // Hapus periode_id dari orders dan incomes terkait
+            Order::where('periode_id', $periode->id)->update(['periode_id' => null]);
+            Income::where('periode_id', $periode->id)->update(['periode_id' => null]);
 
             $periode->delete();
 
@@ -513,18 +514,22 @@ class PeriodeController extends Controller
     public function generateAllPending()
     {
         try {
-            $pendingPeriodes = Periode::notGenerated()->get();
+            DB::beginTransaction();
+
+            $pendingPeriodes = Periode::where('is_generated', false)->get();
             $generatedCount = 0;
             $errors = [];
 
             foreach ($pendingPeriodes as $periode) {
-                $result = $this->generateOrUpdatePeriodeData($periode, false);
-                if ($result['success']) {
+                try {
+                    $this->calculateAndSavePeriodeData($periode, false);
                     $generatedCount++;
-                } else {
-                    $errors[] = $result['message'];
+                } catch (\Exception $e) {
+                    $errors[] = $periode->nama_periode . ' (' . $periode->marketplace . '): ' . $e->getMessage();
                 }
             }
+
+            DB::commit();
 
             $message = "Berhasil generate $generatedCount periode yang pending";
 
@@ -543,9 +548,63 @@ class PeriodeController extends Controller
                 'errors' => $errors
             ]);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal generate semua: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Sync all orders and incomes to appropriate periods
+     */
+    public function syncAllData()
+    {
+        try {
+            DB::beginTransaction();
+
+            $periodes = Periode::all();
+            $syncedOrders = 0;
+            $syncedIncomes = 0;
+
+            foreach ($periodes as $periode) {
+                // Sync orders based on date range and toko
+                $ordersUpdated = Order::where('periode_id', null)
+                    ->where('toko_id', $periode->toko_id)
+                    ->whereBetween('created_at', [$periode->tanggal_mulai, $periode->tanggal_selesai])
+                    ->update(['periode_id' => $periode->id]);
+
+                $syncedOrders += $ordersUpdated;
+
+                // Sync incomes based on order numbers
+                $orderNos = Order::where('periode_id', $periode->id)
+                    ->pluck('no_pesanan')
+                    ->unique()
+                    ->toArray();
+
+                if (!empty($orderNos)) {
+                    $incomesUpdated = Income::whereIn('no_pesanan', $orderNos)
+                        ->where('periode_id', null)
+                        ->update(['periode_id' => $periode->id]);
+
+                    $syncedIncomes += $incomesUpdated;
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil sync data: $syncedOrders orders dan $syncedIncomes incomes terhubung ke periode",
+                'synced_orders' => $syncedOrders,
+                'synced_incomes' => $syncedIncomes
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal sync data: ' . $e->getMessage()
             ], 500);
         }
     }

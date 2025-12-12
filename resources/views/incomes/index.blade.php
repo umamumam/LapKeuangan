@@ -52,8 +52,11 @@
                             </span>
                             <!-- Income Bulan Ini -->
                             <span class="badge bg-success ms-2">
-                                <i class="fas fa-calendar-check me-1"></i> Bulan Ini: Rp {{ number_format($totalIncomeBulanIni, 0, ',', '.') }}
+                                <i class="fas fa-calendar-check me-1"></i> Penghasilan Bulan Ini: Rp {{ number_format($totalIncomeBulanIni, 0, ',', '.') }}
                             </span>
+                            {{-- <span class="badge bg-info ms-2">
+                                <i class="fas fa-box me-1"></i> HPP Bulan Ini: Rp {{ number_format($totalIncomeBulanIni, 0, ',', '.') }}
+                            </span> --}}
                         </div>
                         <div class="d-flex gap-2">
                             <a href="{{ route('incomes.import.form') }}" class="btn btn-info btn-sm">

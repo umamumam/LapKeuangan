@@ -20,23 +20,23 @@ return new class extends Migration
             $table->enum('marketplace', ['Shopee', 'Tiktok']);
 
             // Jumlah data dari orders
-            $table->integer('total_harga_produk')->default(0);
+            $table->bigInteger('total_harga_produk')->default(0);
             $table->integer('jumlah_order')->default(0);
             $table->integer('returned_quantity')->default(0);
-            $table->integer('total_hpp_produk')->default(0);
+            $table->bigInteger('total_hpp_produk')->default(0);
 
             // Data dari incomes
-            $table->integer('total_penghasilan')->default(0);
+            $table->bigInteger('total_penghasilan')->default(0);
             $table->integer('jumlah_income')->default(0);
 
             // Data per marketplace (untuk laporan detail)
-            $table->integer('total_penghasilan_shopee')->default(0);
+            $table->bigInteger('total_penghasilan_shopee')->default(0);
             $table->integer('total_income_count_shopee')->default(0);
-            $table->integer('total_hpp_shopee')->default(0);
+            $table->bigInteger('total_hpp_shopee')->default(0);
 
-            $table->integer('total_penghasilan_tiktok')->default(0);
+            $table->bigInteger('total_penghasilan_tiktok')->default(0);
             $table->integer('total_income_count_tiktok')->default(0);
-            $table->integer('total_hpp_tiktok')->default(0);
+            $table->bigInteger('total_hpp_tiktok')->default(0);
 
             // Status untuk tombol generate
             $table->boolean('is_generated')->default(false);
