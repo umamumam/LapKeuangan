@@ -139,7 +139,8 @@ class OrderController extends Controller
      */
     public function importForm()
     {
-        return view('orders.import');
+        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
+        return view('orders.import', compact('periodes'));
     }
 
     /**
