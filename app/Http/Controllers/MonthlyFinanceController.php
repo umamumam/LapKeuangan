@@ -59,13 +59,17 @@ class MonthlyFinanceController extends Controller
     public function show(MonthlyFinance $monthlyFinance)
     {
         $monthlyFinance->load('periode.toko');
+        $periode = $monthlyFinance->periode;
 
-        // Hitung laba bersih
-        $biayaAdmin = $monthlyFinance->total_pendapatan * ($monthlyFinance->rasio_admin_layanan / 100);
-        $totalBiaya = $monthlyFinance->operasional + $monthlyFinance->iklan + $biayaAdmin;
-        $labaBersih = $monthlyFinance->total_pendapatan - $totalBiaya;
+        $totalBiaya = $monthlyFinance->operasional + $monthlyFinance->iklan;
+        if($periode) {
+            $labaBersih = $periode->total_penghasilan - $periode->total_hpp_produk - $totalBiaya;
+            $rasioLaba = ($labaBersih / $monthlyFinance->total_pendapatan) * 100;
+        } else {
+            $labaBersih = $monthlyFinance->total_pendapatan - $totalBiaya;
+        }
 
-        return view('monthly-finances.show', compact('monthlyFinance', 'biayaAdmin', 'totalBiaya', 'labaBersih'));
+        return view('monthly-finances.show', compact('monthlyFinance', 'totalBiaya', 'labaBersih', 'periode', 'rasioLaba'));
     }
 
     /**
