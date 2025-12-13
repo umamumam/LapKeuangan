@@ -224,13 +224,15 @@
                                             </tr>
                                             <tr>
                                                 <th>AOV Aktual</th>
-                                                <td class="text-end">Rp {{ number_format($monthlyFinance->operasional,
-                                                    0, ',', '.') }}</td>
+                                                <td class="text-end">
+                                                    -
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <th>Basket Size Aktual</th>
-                                                <td class="text-end">Rp {{ number_format($monthlyFinance->iklan, 0, ',',
-                                                    '.') }}</td>
+                                                <td class="text-end">
+                                                    -
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <th>ROAS Aktual</th>
