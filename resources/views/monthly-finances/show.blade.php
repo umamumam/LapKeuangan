@@ -236,7 +236,7 @@
                                                 <th>Basket Size Aktual</th>
                                                 <td class="text-end">
                                                     @if($periode && $periode->jumlah_order > 0)
-                                                        {{ number_format($periode->total_harga_produk / $periode->jumlah_order) }}
+                                                        {{ number_format(($periode->total_jumlah - $periode->returned_quantity) / $periode->jumlah_order, 2) }}
                                                     @else
                                                         -
                                                     @endif

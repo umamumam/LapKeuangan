@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MonthlyFinance;
 use App\Models\Periode;
 use Illuminate\Http\Request;
+use App\Models\MonthlyFinance;
+use Illuminate\Support\Facades\DB;
 
 class MonthlyFinanceController extends Controller
 {
@@ -58,7 +59,14 @@ class MonthlyFinanceController extends Controller
      */
     public function show(MonthlyFinance $monthlyFinance)
     {
-        $monthlyFinance->load('periode.toko');
+        $monthlyFinance->load([
+            'periode' => function($query) {
+                $query->withCount(['orders as total_jumlah' => function($q) {
+                    $q->select(DB::raw('COALESCE(SUM(jumlah), 0)'));
+                }]);
+            },
+            'periode.toko'
+        ]);
         $periode = $monthlyFinance->periode;
 
         $totalBiaya = $monthlyFinance->operasional + $monthlyFinance->iklan;
