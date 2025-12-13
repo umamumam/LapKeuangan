@@ -225,13 +225,21 @@
                                             <tr>
                                                 <th>AOV Aktual</th>
                                                 <td class="text-end">
-                                                    -
+                                                    @if($periode && $periode->jumlah_income > 0)
+                                                        Rp {{ number_format($periode->total_penghasilan / $periode->jumlah_income, 0, ',', '.') }}
+                                                    @else
+                                                        -
+                                                    @endif
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th>Basket Size Aktual</th>
                                                 <td class="text-end">
-                                                    -
+                                                    @if($periode && $periode->jumlah_order > 0)
+                                                        {{ number_format($periode->total_harga_produk / $periode->jumlah_order) }}
+                                                    @else
+                                                        -
+                                                    @endif
                                                 </td>
                                             </tr>
                                             <tr>
