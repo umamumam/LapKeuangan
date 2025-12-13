@@ -25,56 +25,45 @@
                             <!-- Detail Perhitungan -->
                             <div class="row mt-4">
                                 <div class="col-md-12">
-                                    <h6 class="border-bottom pb-2 mb-3">
-                                        <i class="fas fa-calculator me-2"></i>Detail Perhitungan
-                                    </h6>
-                                    <div class="alert alert-info">
-                                        <strong>Rumus Perhitungan:</strong><br>
-                                        <small>
-                                            1. Biaya Admin = Total Pendapatan × (Rasio Admin / 100)<br>
-                                            2. Total Biaya = Operasional + Iklan + Biaya Admin<br>
-                                            3. Laba/Rugi = Total Penghasilan (dari Periode) - Total HPP (dari Periode) -
-                                            Total Biaya
-                                        </small>
-                                    </div>
 
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="card bg-light">
                                                 <div class="card-body text-center">
-                                                    <h6 class="card-title">Pendapatan Bersih</h6>
+                                                    <h6 class="card-title">Total Pendapatan</h6>
+                                                    <h4 class="{{ $labaBersih >= 0 ? 'text-info' : 'text-danger' }}">
+                                                        Rp {{number_format($monthlyFinance->total_pendapatan, 0, ',', '.') }}
+                                                    </h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center">
+                                                    <h6 class="card-title">Total Penghasilan</h6>
                                                     <h4 class="{{ $labaBersih >= 0 ? 'text-success' : 'text-danger' }}">
-                                                        {{ $labaBersih >= 0 ? '+' : '' }}Rp {{
-                                                        number_format($labaBersih, 0, ',', '.') }}
+                                                        Rp {{ number_format($periode->total_penghasilan, 0, ',', '.') }}
                                                     </h4>
-                                                    <small class="text-muted">Setelah dikurangi semua biaya</small>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="card bg-light">
                                                 <div class="card-body text-center">
-                                                    <h6 class="card-title">Margin Laba</h6>
+                                                    <h6 class="card-title">Total HPP</h6>
                                                     <h4>
-                                                        @if($monthlyFinance->periode && $periode->total_penghasilan > 0)
-                                                        {{ number_format(($labaBersih / $periode->total_penghasilan) *
-                                                        100, 2) }}%
-                                                        @else
-                                                        0%
-                                                        @endif
+                                                        Rp {{ number_format($periode->total_hpp_produk, 0, ',', '.') }}
                                                     </h4>
-                                                    <small class="text-muted">Persentase dari total penghasilan</small>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="card bg-light">
                                                 <div class="card-body text-center">
-                                                    <h6 class="card-title">Biaya Admin</h6>
+                                                    <h6 class="card-title">Laba / Rugi</h6>
                                                     <h4 class="text-primary">
-                                                        {{ number_format($monthlyFinance->rasio_admin_layanan, 2) }}%
+                                                        Rp {{ number_format($labaBersih, 0, ',', '.') }}
                                                     </h4>
-                                                    <small class="text-muted">Dari total pendapatan</small>
                                                 </div>
                                             </div>
                                         </div>
