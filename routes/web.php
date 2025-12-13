@@ -62,6 +62,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/incomes/detailhasil', [IncomeController::class, 'detailhasil'])->name('incomes.detailhasil');
     Route::get('/incomes/export-hasil', [IncomeController::class, 'exportHasil'])->name('incomes.export-hasil');
     Route::get('/incomes/export', [IncomeController::class, 'export'])->name('incomes.export');
+    Route::post('/incomes/export/periode', [IncomeController::class, 'exportPeriode'])->name('incomes.export.periode');
     Route::get('/incomes/import/form', [IncomeController::class, 'importForm'])->name('incomes.import.form');
     Route::post('/incomes/import', [IncomeController::class, 'import'])->name('incomes.import');
     Route::get('/incomes/download-template', [IncomeController::class, 'downloadTemplate'])->name('incomes.download-template');

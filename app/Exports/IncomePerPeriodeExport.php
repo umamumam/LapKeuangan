@@ -7,17 +7,28 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
-class IncomeExport implements FromCollection, WithHeadings, WithMapping
+class IncomePerPeriodeExport implements FromCollection, WithHeadings, WithMapping
 {
+    protected $periodeId;
+
+    public function __construct($periodeId)
+    {
+        $this->periodeId = $periodeId;
+    }
+
     public function collection()
     {
-        // Load orders + produk biar tidak N+1 query
-        return Income::with(['orders.produk', 'periode'])->get();
+        // Hanya ambil income dengan periode_id yang dipilih
+        return Income::with(['orders.produk', 'periode.toko'])
+            ->where('periode_id', $this->periodeId)
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
     public function headings(): array
     {
         return [
+            'No',
             'No Pesanan',
             'No Pengajuan',
             'Total Penghasilan',
@@ -32,9 +43,12 @@ class IncomeExport implements FromCollection, WithHeadings, WithMapping
 
     public function map($income): array
     {
+        static $index = 0;
+        $index++;
+
         // Hitung HPP persis seperti di Blade
         $totalHpp = $income->orders
-            ->where('periode_id', $income->periode_id)
+            ->where('periode_id', $this->periodeId) // Pakai periode_id dari constructor
             ->sum(function ($order) {
                 $netQuantity = $order->jumlah - $order->returned_quantity;
                 return $netQuantity * $order->produk->hpp_produk;
@@ -43,15 +57,16 @@ class IncomeExport implements FromCollection, WithHeadings, WithMapping
         $laba = $income->total_penghasilan - $totalHpp;
 
         return [
+            $index,
             $income->no_pesanan,
-            $income->no_pengajuan,
+            $income->no_pengajuan ?? '-',
             $income->total_penghasilan,
             $totalHpp,
             $laba,
-            $income->orders->where('periode_id', $income->periode_id)->count(),
-            $income->periode->nama_periode ?? '-',
-            $income->periode->marketplace ?? '-',
-            $income->periode->toko->nama ?? '-',
+            $income->orders->where('periode_id', $this->periodeId)->count(),
+            $income->periode ? $income->periode->nama_periode : '-',
+            $income->periode ? $income->periode->marketplace : '-',
+            $income->periode && $income->periode->toko ? $income->periode->toko->nama : '-',
         ];
     }
 }

@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Income;
-use App\Models\Periode;
 use App\Models\Toko;
 use App\Models\Order;
+use App\Models\Income;
+use App\Models\Periode;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Exports\IncomeExport;
-use App\Exports\IncomeResultExport;
 use App\Imports\IncomeImport;
+use Illuminate\Support\Facades\DB;
+use App\Exports\IncomeResultExport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\IncomePerPeriodeExport;
 
 class IncomeController extends Controller
 {
@@ -176,6 +177,16 @@ class IncomeController extends Controller
     public function export()
     {
         return Excel::download(new IncomeExport, 'incomes-' . date('Y-m-d-H-i-s') . '.xlsx');
+    }
+
+    public function exportPeriode(Request $request)
+    {
+        $request->validate([
+            'periode_id' => 'required|exists:periodes,id'
+        ]);
+        $periode = Periode::findOrFail($request->periode_id);
+        $filename = 'income-periode-' . str_replace(' ', '-', $periode->nama_periode) . '-' . date('Y-m-d-H-i-s') . '.xlsx';
+        return Excel::download(new IncomePerPeriodeExport($request->periode_id), $filename);
     }
 
     public function importForm()
