@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TokoController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\RekapController;
 use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\SampelController;
@@ -130,6 +131,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/regenerate/all', [PeriodeController::class, 'regenerateAll'])->name('regenerate.all');
         Route::post('/generate-or-regenerate/all', [PeriodeController::class, 'generateOrRegenerateAll'])->name('generate.or.regenerate.all');
     });
+    Route::resource('rekaps', RekapController::class);
 });
 
 require __DIR__ . '/auth.php';

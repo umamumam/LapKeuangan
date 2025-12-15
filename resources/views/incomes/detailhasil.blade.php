@@ -2,318 +2,226 @@
     <div class="pc-container">
         <div class="pc-content">
             <div class="col-sm-12">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Hasil Analisis Income (Detail)</h5>
+                <div class="card shadow-sm border-0"> <div class="card-header d-flex justify-content-between align-items-center border-bottom bg-white p-3">
+                        <h5 class="mb-0 text-dark"><i class="fas fa-chart-line me-2 text-primary"></i> Hasil Analisis Income (Detail)</h5>
                         <div class="d-flex gap-2">
-                            <a href="{{ route('incomes.export-hasil') }}?{{ http_build_query(request()->query()) }}"
-                                class="btn btn-success btn-sm">
-                                <i class="fas fa-download"></i> Export Excel
+                            @if(request('periode_id'))
+                            <a href="{{ route('incomes.export-hasil') }}?periode_id={{ request('periode_id') }}"
+                                class="btn btn-outline-success btn-sm">
+                                <i class="fas fa-download me-1"></i> Export Excel
                             </a>
-                            <a href="{{ route('incomes.index') }}" class="btn btn-secondary btn-sm">
-                                <i class="fas fa-arrow-left"></i> Kembali ke Income
+                            @endif
+                            <a href="{{ route('incomes.index') }}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-arrow-left me-1"></i> Kembali
                             </a>
                         </div>
                     </div>
+
                     <div class="card-body">
-                        <!-- Filter Section -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-light">
-                                <h6 class="mb-0"><i class="fas fa-filter"></i> Filter Data</h6>
-                            </div>
-                            <div class="card-body">
-                                <form method="GET" action="{{ route('incomes.detailhasil') }}">
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="mb-3">
-                                                <label for="toko_id" class="form-label">Filter Toko</label>
-                                                <select class="form-control" id="toko_id" name="toko_id">
-                                                    <option value="">Semua Toko</option>
-                                                    @foreach($tokos as $toko)
-                                                    <option value="{{ $toko->id }}" {{ request('toko_id')==$toko->id ?
-                                                        'selected' : '' }}>
-                                                        {{ $toko->nama }}
-                                                    </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <div class="mb-3">
-                                                <label for="marketplace" class="form-label">Marketplace</label>
-                                                <select class="form-control" id="marketplace" name="marketplace">
-                                                    <option value="">All Marketplace</option>
-                                                    <option value="Shopee" {{ request('marketplace') == 'Shopee' ? 'selected' : '' }}>Shopee</option>
-                                                    <option value="Tiktok" {{ request('marketplace') == 'Tiktok' ? 'selected' : '' }}>Tiktok Shop</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <div class="mb-3">
-                                                <label for="start_date" class="form-label">Tanggal Mulai</label>
-                                                <input type="date" class="form-control" id="start_date"
-                                                    name="start_date"
-                                                    value="{{ request('start_date', $startDate ?? '') }}">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <div class="mb-3">
-                                                <label for="end_date" class="form-label">Tanggal Akhir</label>
-                                                <input type="date" class="form-control" id="end_date" name="end_date"
-                                                    value="{{ request('end_date', $endDate ?? '') }}">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="mb-3">
-                                                <label class="form-label">&nbsp;</label>
-                                                <div class="d-grid gap-2">
-                                                    <button type="submit" class="btn btn-primary">
-                                                        <i class="fas fa-search"></i> Filter
-                                                    </button>
-                                                    <a href="{{ route('incomes.detailhasil') }}" class="btn btn-secondary">
-                                                        <i class="fas fa-refresh"></i> Reset
-                                                    </a>
-                                                </div>
-                                            </div>
+                        <div class="p-3 mb-4 rounded border bg-light-subtle">
+                            <h6 class="pb-2 mb-3 border-bottom text-dark"><i class="fas fa-filter me-2 text-secondary"></i> Filter Data</h6>
+                            <form method="GET" action="{{ route('incomes.detailhasil') }}">
+                                <div class="row align-items-end">
+                                    <div class="col-md-8">
+                                        <div class="mb-3">
+                                            <label for="periode_id" class="form-label small text-muted">Pilih Periode</label>
+                                            <select class="form-control form-select form-select-sm" id="periode_id"
+                                                name="periode_id" required>
+                                                <option value="">-- Pilih Periode --</option>
+                                                @foreach($periodes as $periode)
+                                                <option value="{{ $periode->id }}" {{
+                                                    request('periode_id')==$periode->id ? 'selected' : '' }}>
+                                                    {{ $periode->nama_periode }}
+                                                    @if($periode->toko)
+                                                    ({{ $periode->toko->nama }})
+                                                    @endif
+                                                </option>
+                                                @endforeach
+                                            </select>
                                         </div>
                                     </div>
-                                </form>
-                            </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3 d-flex gap-2">
+                                            <button type="submit" class="btn btn-primary btn-sm w-100">
+                                                <i class="fas fa-search me-1"></i> Tampilkan
+                                            </button>
+                                            @if(request('periode_id'))
+                                            <a href="{{ route('incomes.detailhasil') }}"
+                                                class="btn btn-outline-secondary btn-sm flex-shrink-0" title="Reset Filter">
+                                                <i class="fas fa-refresh"></i>
+                                            </a>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        @if(!request('periode_id') && $incomes->isEmpty())
+                        <div class="text-center py-5 border rounded bg-white">
+                            <i class="fas fa-filter fa-4x text-secondary mb-3"></i>
+                            <h4 class="text-dark">Silakan Pilih Periode</h4>
+                            <p class="text-muted">Pilih periode dari *dropdown* di atas untuk menampilkan detail analisis
+                                income.</p>
+                        </div>
+                        @elseif(request('periode_id'))
+                        @php
+                        $periodeTerpilih = $periodes->firstWhere('id', request('periode_id'));
+                        $totalPersentase = $totalPenghasilan > 0 ? ($totalLaba / $totalPenghasilan) * 100 : 0;
+                        @endphp
+
+                        <div class="alert alert-light border-start border-3 border-primary shadow-sm mb-4 py-2">
+                            <h6 class="mb-0 text-dark fw-bold">
+                                <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                                **Periode Analisis**: {{ $periodeTerpilih->nama_periode ?? 'Periode Tidak
+                                Ditemukan' }}
+                            </h6>
+                            @if($periodeTerpilih && $periodeTerpilih->toko)
+                            <small class="text-muted">Toko: **{{ $periodeTerpilih->toko->nama }}**</small>
+                            @endif
                         </div>
 
-                        <!-- Summary Cards -->
                         <div class="row mb-4">
-                            @php
-                            $totalPenghasilan = $incomes->sum('total_penghasilan');
-                            $totalHpp = $incomes->sum('total_hpp');
-                            $totalLaba = $incomes->sum('laba');
-                            $totalPersentase = $totalPenghasilan > 0 ? ($totalLaba / $totalPenghasilan) * 100 : 0;
-
-                            // Hitung statistik per marketplace
-                            $shopeeIncomes = $incomes->where('marketplace', 'Shopee');
-                            $tiktokIncomes = $incomes->where('marketplace', 'Tiktok');
-                            $shopeeTotal = $shopeeIncomes->sum('total_penghasilan');
-                            $tiktokTotal = $tiktokIncomes->sum('total_penghasilan');
-                            $shopeeCount = $shopeeIncomes->count();
-                            $tiktokCount = $tiktokIncomes->count();
-
-                            // Info filter aktif
-                            $filterAktif = [];
-                            if (request('toko_id')) {
-                            $tokoTerpilih = $tokos->firstWhere('id', request('toko_id'));
-                            $filterAktif[] = 'Toko: ' . ($tokoTerpilih->nama ?? 'Tidak Ditemukan');
-                            }
-                            if (request('marketplace')) {
-                            $filterAktif[] = 'Marketplace: ' . request('marketplace');
-                            }
-                            if (request('start_date')) {
-                            $filterAktif[] = 'Dari: ' . \Carbon\Carbon::parse(request('start_date'))->format('d/m/Y');
-                            }
-                            if (request('end_date')) {
-                            $filterAktif[] = 'Sampai: ' . \Carbon\Carbon::parse(request('end_date'))->format('d/m/Y');
-                            }
-                            @endphp
-
-                            @if(count($filterAktif) > 0)
-                            <div class="col-12 mb-3">
-                                <div class="alert alert-info py-2">
-                                    <small>
-                                        <i class="fas fa-info-circle"></i>
-                                        Filter aktif: {{ implode(' | ', $filterAktif) }}
-                                    </small>
-                                </div>
-                            </div>
-                            @endif
-
-                            <div class="col-md-3">
-                                <div class="card border-primary h-100">
-                                    <div class="card-body text-center">
-                                        <div class="fs-2 text-primary mb-2">
-                                            <i class="fas fa-money-bill-wave"></i>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 shadow-sm border-0 border-top border-2 border-primary">
+                                    <div class="card-body text-center p-3"> <div class="fs-4 text-primary mb-1"> <i class="fas fa-money-bill-wave"></i>
                                         </div>
-                                        <h6 class="card-title text-primary">Total Penghasilan</h6>
-                                        <h4 class="mb-0">Rp {{ number_format($totalPenghasilan, 0, ',', '.') }}</h4>
-                                        <small class="text-muted">{{ $incomes->count() }} pesanan</small>
-                                        <div class="mt-2">
-                                            <strong>
-                                                <span class="badge bg-warning">Shopee: {{ $shopeeCount }}</span>
-                                                <span class="badge bg-info ms-1">Tiktok: {{ $tiktokCount }}</span>
-                                            </strong>
-                                        </div>
+                                        <p class="card-title text-uppercase small text-muted mb-1">Total Penghasilan</p>
+                                        <h4 class="mb-0 text-dark fw-bold">Rp {{ number_format($totalPenghasilan, 0, ',', '.') }}</h4>
+                                        <small class="text-secondary">{{ $incomes->total() }} Data Income</small>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="col-md-3">
-                                <div class="card border-info h-100">
-                                    <div class="card-body text-center">
-                                        <div class="fs-2 text-info mb-2">
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 shadow-sm border-0 border-top border-2 border-info">
+                                    <div class="card-body text-center p-3">
+                                        <div class="fs-4 text-info mb-1">
                                             <i class="fas fa-cubes"></i>
                                         </div>
-                                        <h6 class="card-title text-info">Total HPP</h6>
-                                        <h4 class="mb-0">Rp {{ number_format($totalHpp, 0, ',', '.') }}</h4>
-                                        <small class="text-muted">{{ number_format($totalHpp > 0 ? ($totalHpp /
-                                            $totalPenghasilan) * 100 : 0, 1) }}% dari penghasilan</small>
-                                        <div class="mt-2">
-                                            <strong>
-                                                <span class="badge bg-warning">Rp {{ number_format($shopeeIncomes->sum('total_hpp'), 0, ',', '.') }}</span>
-                                                <span class="badge bg-info ms-1">Rp {{ number_format($tiktokIncomes->sum('total_hpp'), 0, ',', '.') }}</span>
-                                            </strong>
-                                        </div>
+                                        <p class="card-title text-uppercase small text-muted mb-1">Total HPP</p>
+                                        <h4 class="mb-0 text-dark fw-bold">Rp {{ number_format($totalHpp, 0, ',', '.') }}</h4>
+                                        <small class="text-secondary">Rasio: {{ number_format($totalPenghasilan > 0 ?
+                                            ($totalHpp / $totalPenghasilan) * 100 : 0, 1) }}%</small>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="col-md-3">
-                                <div class="card border-{{ $totalLaba >= 0 ? 'success' : 'danger' }} h-100">
-                                    <div class="card-body text-center">
-                                        <div class="fs-2 text-{{ $totalLaba >= 0 ? 'success' : 'danger' }} mb-2">
-                                            <i class="fas {{ $totalLaba >= 0 ? 'fa-chart-line' : 'fa-chart-bar' }}"></i>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 shadow-sm border-0 border-top border-2 border-{{ $totalLaba >= 0 ? 'success' : 'danger' }}">
+                                    <div class="card-body text-center p-3">
+                                        <div class="fs-4 text-{{ $totalLaba >= 0 ? 'success' : 'danger' }} mb-1">
+                                            <i class="fas {{ $totalLaba >= 0 ? 'fa-hand-holding-usd' : 'fa-exclamation-triangle' }}"></i>
                                         </div>
-                                        <h6 class="card-title text-{{ $totalLaba >= 0 ? 'success' : 'danger' }}">Total
-                                            Laba/Rugi</h6>
-                                        <h4 class="mb-0">Rp {{ number_format($totalLaba, 0, ',', '.') }}</h4>
-                                        <small class="text-muted">{{ number_format($totalPersentase, 1) }}%</small>
-                                        <div class="mt-2">
-                                            <small>
-                                                @php
-                                                    $shopeeLaba = $shopeeIncomes->sum('laba');
-                                                    $tiktokLaba = $tiktokIncomes->sum('laba');
-                                                @endphp
-                                                <span class="badge bg-{{ $shopeeLaba >= 0 ? 'success' : 'danger' }}">
-                                                    Shopee: Rp {{ number_format($shopeeLaba, 0, ',', '.') }}
-                                                </span>
-                                                <span class="badge bg-{{ $tiktokLaba >= 0 ? 'success' : 'danger' }} ms-1">
-                                                    Tiktok: Rp {{ number_format($tiktokLaba, 0, ',', '.') }}
-                                                </span>
-                                            </small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-3">
-                                <div class="card border-secondary h-100">
-                                    <div class="card-body text-center">
-                                        <div class="fs-2 text-secondary mb-2">
-                                            <i class="fas fa-store"></i>
-                                        </div>
-                                        <h6 class="card-title text-secondary">Statistik Marketplace</h6>
-                                        <div class="row text-start">
-                                            <div class="col-6">
-                                                <h6 class="mb-1">Shopee</h6>
-                                                <p class="mb-0">
-                                                    <strong>
-                                                        <span class="badge bg-warning">Rp {{ number_format($shopeeTotal, 0, ',', '.') }}</span>
-                                                    </strong>
-                                                    <small>{{ $shopeeCount }} pesanan</small>
-                                                </p>
-                                            </div>
-                                            <div class="col-6">
-                                                <h6 class="mb-1">Tiktok</h6>
-                                                <p class="mb-0">
-                                                    <strong>
-                                                        <span class="badge bg-info">Rp {{ number_format($tiktokTotal, 0, ',', '.') }}</span>
-                                                    </strong>
-                                                    <small>{{ $tiktokCount }} pesanan</small>
-                                                </p>
-                                            </div>
-                                        </div>
+                                        <p class="card-title text-uppercase small text-muted mb-1">Total Laba/Rugi</p>
+                                        <h4 class="mb-0 text-dark fw-bold">Rp {{ number_format($totalLaba, 0, ',', '.') }}</h4>
+                                        <small class="text-muted">Margin Bersih: **<span class="text-{{ $totalLaba >= 0 ? 'success' : 'danger' }}">{{ number_format($totalPersentase, 1)
+                                                }}%</span>**</small>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Table Hasil -->
-                        <div class="table-responsive">
-                            <table id="res-config" class="display table table-striped table-hover dt-responsive nowrap"
-                                style="width: 100%">
-                                <thead class="table-light">
-                                    <tr>
+                        <div class="table-responsive shadow-sm border rounded">
+                            <table class="table table-sm table-striped table-hover mb-0">
+                                <thead class="table-light border-bottom border-dark"> <tr class="text-uppercase small">
                                         <th>No</th>
                                         <th>No Pesanan</th>
                                         <th>No Pengajuan</th>
-                                        <th>Marketplace</th>
-                                        <th>Total Penghasilan</th>
-                                        <th>HPP</th>
-                                        <th>Laba/Rugi</th>
-                                        <th>Persentase</th>
-                                        <th>Toko</th>
-                                        <th>Tanggal</th>
-                                        <th>Aksi</th>
+                                        <th class="text-end">Penghasilan</th>
+                                        <th class="text-end">HPP</th>
+                                        <th class="text-end">Laba/Rugi</th>
+                                        <th class="text-center">Margin</th>
+                                        <th class="text-center">Tanggal</th>
+                                        <th class="text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($incomes as $income)
+                                    @if($incomes->isEmpty())
                                     <tr>
-                                        <td>{{ $loop->iteration }}</td>
-                                        <td>
-                                            <strong>{{ $income->no_pesanan }}</strong>
+                                        <td colspan="9" class="text-center py-4 text-muted">
+                                            <i class="fas fa-info-circle me-1"></i> Tidak ditemukan data income untuk
+                                            periode ini.
                                         </td>
-                                        <td>{{ $income->no_pengajuan ?? '-' }}</td>
-                                        <td>
-                                            <span class="badge bg-{{ $income->marketplace == 'Shopee' ? 'warning' : 'info' }}">
-                                                {{ $income->marketplace }}
+                                    </tr>
+                                    @else
+                                    @foreach ($incomes as $income)
+                                    @php
+                                    $hpp = $income->orders->sum(function($order) {
+                                    if ($order->produk) {
+                                    $netQuantity = $order->jumlah - $order->returned_quantity;
+                                    return $netQuantity * $order->produk->hpp_produk;
+                                    }
+                                    return 0;
+                                    });
+                                    $laba = $income->total_penghasilan - $hpp;
+                                    $margin = $income->total_penghasilan > 0 ? ($laba / $income->total_penghasilan) *
+                                    100 : 0;
+                                    @endphp
+                                    <tr>
+                                        <td class="small">{{ ($incomes->currentPage() - 1) * $incomes->perPage() + $loop->iteration }}
+                                        </td>
+                                        <td class="small">
+                                            <span class="text-dark">{{ $income->no_pesanan }}</span>
+                                        </td>
+                                        <td class="small">{{ $income->no_pengajuan ?? '-' }}</td>
+                                        <td class="text-end small text-dark">Rp {{ number_format($income->total_penghasilan, 0, ',',
+                                            '.') }}</td>
+                                        <td class="text-end small text-dark">Rp {{ number_format($hpp, 0, ',', '.') }}</td>
+                                        <td class="text-end">
+                                            <span class="badge text-{{ $laba >= 0 ? 'success' : 'danger' }} fw-bold p-0 bg-transparent">
+                                                Rp {{ number_format($laba, 0, ',', '.') }}
                                             </span>
                                         </td>
-                                        <td>Rp {{ number_format($income->total_penghasilan, 0, ',', '.') }}</td>
-                                        <td>Rp {{ number_format($income->total_hpp, 0, ',', '.') }}</td>
-                                        <td>
-                                            <span class="badge bg-{{ $income->laba >= 0 ? 'success' : 'danger' }}">
-                                                Rp {{ number_format($income->laba, 0, ',', '.') }}
+                                        <td class="text-center">
+                                            <span class="badge text-{{ $margin >= 0 ? 'info' : 'warning' }} p-0 bg-transparent">
+                                                {{ number_format($margin, 1) }}%
                                             </span>
                                         </td>
-                                        <td>
-                                            <span
-                                                class="badge bg-{{ $income->persentase_laba >= 0 ? 'info' : 'warning' }}">
-                                                {{ number_format($income->persentase_laba, 1) }}%
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-primary">
-                                                {{ $income->toko->nama ?? 'Tidak Ditemukan' }}
-                                            </span>
-                                        </td>
-                                        <td>{{ $income->created_at->format('d/m/Y H:i') }}</td>
-                                        <td>
+                                        <td class="text-center small text-muted">{{ $income->created_at->format('d/m/Y') }}</td>
+                                        <td class="text-center">
                                             <a href="{{ route('incomes.show', $income->id) }}"
-                                                class="btn btn-info btn-sm" title="Lihat Detail">
-                                                <i class="fas fa-eye"></i>
+                                                class="btn btn-outline-info btn-xs" title="Lihat Detail">
+                                                <i class="fas fa-eye small"></i>
                                             </a>
                                         </td>
                                     </tr>
                                     @endforeach
+                                    @endif
                                 </tbody>
-                                <tfoot class="table-secondary">
-                                    <tr>
-                                        <th colspan="4" class="text-end">TOTAL:</th>
-                                        <th>Rp {{ number_format($totalPenghasilan, 0, ',', '.') }}</th>
-                                        <th>Rp {{ number_format($totalHpp, 0, ',', '.') }}</th>
-                                        <th>
-                                            <span class="badge bg-{{ $totalLaba >= 0 ? 'success' : 'danger' }}">
+                                @if(!$incomes->isEmpty())
+                                <tfoot class="bg-light fw-bold border-top">
+                                    <tr class="small">
+                                        <th colspan="3" class="text-end text-dark">GRAND TOTAL:</th>
+                                        <th class="text-end text-primary">Rp {{ number_format($totalPenghasilan, 0,
+                                            ',', '.') }}</th>
+                                        <th class="text-end text-info">Rp {{ number_format($totalHpp, 0, ',', '.') }}</th>
+                                        <th class="text-end">
+                                            <span class="text-{{ $totalLaba >= 0 ? 'success' : 'danger' }} fs-6">
                                                 Rp {{ number_format($totalLaba, 0, ',', '.') }}
                                             </span>
                                         </th>
-                                        <th>
-                                            <span class="badge bg-{{ $totalPersentase >= 0 ? 'info' : 'warning' }}">
+                                        <th class="text-center">
+                                            <span class="text-{{ $totalPersentase >= 0 ? 'info' : 'warning' }} fs-6">
                                                 {{ number_format($totalPersentase, 1) }}%
                                             </span>
                                         </th>
-                                        <th colspan="3"></th>
+                                        <th colspan="2"></th>
                                     </tr>
                                 </tfoot>
+                                @endif
                             </table>
-                        </div>
 
-                        @if($incomes->isEmpty())
-                        <div class="text-center py-5">
-                            <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
-                            <h5 class="text-muted">Tidak ada data</h5>
-                            <p class="text-muted">Tidak ditemukan data income dengan filter yang dipilih.</p>
-                            <a href="{{ route('incomes.detailhasil') }}" class="btn btn-primary">
-                                <i class="fas fa-refresh"></i> Tampilkan Semua Data
-                            </a>
-                        </div>
+                            <div class="d-flex justify-content-between align-items-center p-2 border-top bg-white">
+                                <div class="small text-muted">
+                                    Menampilkan {{ $incomes->firstItem() ?? 0 }} - {{ $incomes->lastItem() ?? 0 }}
+                                    dari **{{ $incomes->total() }}** data
+                                </div>
+                                <div class="pagination-container">
+                                    {{ $incomes->appends(request()->query())->links('pagination::bootstrap-5') }}
+                                    </div>
+                            </div>
+                            </div>
+
                         @endif
                     </div>
                 </div>

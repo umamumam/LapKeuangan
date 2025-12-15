@@ -28,6 +28,11 @@ class Toko extends Model
         return $this->periodes()->where('marketplace', 'Tiktok');
     }
 
+    public function rekaps()
+    {
+        return $this->hasMany(Rekap::class);
+    }
+
     public function activePeriodes()
     {
         $today = now()->format('Y-m-d');

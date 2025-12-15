@@ -41,7 +41,7 @@
                                         <th>Operasional</th>
                                         <th>Iklan</th>
                                         <th>Laba/Rugi</th>
-                                        <th width="140">Aksi</th>
+                                        <th>Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>

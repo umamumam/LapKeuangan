@@ -332,47 +332,40 @@ class IncomeController extends Controller
 
     public function detailhasil(Request $request)
     {
-        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
-
-        $query = Income::with(['orders.produk', 'periode.toko'])
+        $periodes = Periode::with('toko')->orderBy('nama_periode', 'desc')->get();
+        $query = Income::with(['periode.toko'])
             ->orderBy('created_at', 'desc');
 
         if ($request->has('periode_id') && $request->periode_id != '') {
             $query->where('periode_id', $request->periode_id);
+        } else {
+            // Default: tampilkan data terbaru dengan pagination
+            // Bisa juga menampilkan pesan atau memilih periode default
         }
 
-        $startDate = $request->start_date;
-        $endDate = $request->end_date;
-
-        if (!$request->has('start_date') && !$request->has('end_date')) {
-            $startDate = now()->startOfMonth()->toDateString();
-            $endDate = now()->endOfMonth()->toDateString();
-        }
-
-        if ($startDate) {
-            $query->whereDate('created_at', '>=', $startDate);
-        }
-
-        if ($endDate) {
-            $query->whereDate('created_at', '<=', $endDate);
-        }
-
-        $incomes = $query->get()->map(function ($income) {
-            $totalHpp = $income->orders->sum(function ($order) {
+        $incomes = $query->paginate(100);
+        $totalPenghasilan = $incomes->sum('total_penghasilan');
+        $totalHpp = $incomes->sum(function($income) {
+            return $income->orders->sum(function($order) {
                 $netQuantity = $order->jumlah - $order->returned_quantity;
                 return $netQuantity * $order->produk->hpp_produk;
             });
-
-            $laba = $income->total_penghasilan - $totalHpp;
-
-            $income->total_hpp = $totalHpp;
-            $income->laba = $laba;
-            $income->persentase_laba = $income->total_penghasilan > 0 ? ($laba / $income->total_penghasilan) * 100 : 0;
-
-            return $income;
+        });
+        $totalLaba = $incomes->sum(function($income) use ($totalHpp) {
+            return $income->total_penghasilan -
+                $income->orders->sum(function($order) {
+                    $netQuantity = $order->jumlah - $order->returned_quantity;
+                    return $netQuantity * $order->produk->hpp_produk;
+                });
         });
 
-        return view('incomes.detailhasil', compact('incomes', 'periodes', 'startDate', 'endDate'));
+        return view('incomes.detailhasil', compact(
+            'incomes',
+            'periodes',
+            'totalPenghasilan',
+            'totalHpp',
+            'totalLaba'
+        ));
     }
 
     public function exportHasil()
