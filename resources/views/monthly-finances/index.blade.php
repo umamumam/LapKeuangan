@@ -20,6 +20,9 @@
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="fas fa-chart-line"></i> Data Summary & Output</h5>
                         <div class="d-flex gap-2">
+                            <a href="{{ route('rekaps.index') }}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-chart-bar"></i> Rekap
+                            </a>
                             <a href="{{ route('monthly-finances.create') }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-plus"></i> Tambah Data
                             </a>
