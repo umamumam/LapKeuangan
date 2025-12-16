@@ -131,6 +131,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/regenerate/all', [PeriodeController::class, 'regenerateAll'])->name('regenerate.all');
         Route::post('/generate-or-regenerate/all', [PeriodeController::class, 'generateOrRegenerateAll'])->name('generate.or.regenerate.all');
     });
+    Route::get('/rekaps/hasil', [RekapController::class, 'hasil'])->name('rekaps.hasil');
     Route::resource('rekaps', RekapController::class);
 });
 

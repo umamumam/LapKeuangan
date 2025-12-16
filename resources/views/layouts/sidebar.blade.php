@@ -62,10 +62,16 @@
                         <span class="pc-mtext">Summary & Output</span>
                     </a>
                 </li>
-                <li class="pc-item">
+                {{-- <li class="pc-item">
                     <a href="/rekaps" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-chart-bar"></i></span>
                         <span class="pc-mtext">Rekap</span>
+                    </a>
+                </li> --}}
+                <li class="pc-item">
+                    <a href="/rekaps/hasil" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-chart-line"></i></span>
+                        <span class="pc-mtext">Rekap Hasil</span>
                     </a>
                 </li>
 
