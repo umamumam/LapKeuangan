@@ -114,18 +114,143 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-12 col-xl-4">
-                    <h5 class="mb-3">Income Overview</h5>
+                <div class="col-md-12 col-xl-4" style="margin-top: 25px;">
+                    <h5 class="mb-3">Data Lainnya</h5>
+                    <div class="card">
+                        <div class="list-group list-group-flush">
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <div class="avtar avtar-s rounded-circle text-success bg-light-success">
+                                            <i class="ti ti-database f-18"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-1">Total Data Sampel</h6>
+                                        <p class="mb-0 text-muted">{{ $dataLainnya['last_update_sampel'] }}</p>
+                                    </div>
+                                    <div class="flex-shrink-0 text-end">
+                                        <h6 class="mb-1">{{ number_format($dataLainnya['total_sampel']) }}</h6>
+                                        <p class="mb-0 text-muted">Data</p>
+                                    </div>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <div class="avtar avtar-s rounded-circle text-primary bg-light-primary">
+                                            <i class="ti ti-truck-delivery f-18"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-1">Total Pengiriman Sampel Affiliate</h6>
+                                        <p class="mb-0 text-muted">{{ $dataLainnya['last_update_pengiriman_sampel'] }}
+                                        </p>
+                                    </div>
+                                    <div class="flex-shrink-0 text-end">
+                                        <h6 class="mb-1">{{ number_format($dataLainnya['total_pengiriman_sampel']) }}
+                                        </h6>
+                                        <p class="mb-0 text-muted">Pengiriman</p>
+                                    </div>
+                                </div>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <div class="avtar avtar-s rounded-circle text-danger bg-light-danger">
+                                            <i class="ti ti-file-report f-18"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-1">Total Daftar Banding</h6>
+                                        <p class="mb-0 text-muted">{{ $dataLainnya['last_update_banding'] }}</p>
+                                    </div>
+                                    <div class="flex-shrink-0 text-end">
+                                        <h6 class="mb-1">{{ number_format($dataLainnya['total_banding']) }}</h6>
+                                        <p class="mb-0 text-muted">Banding</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12 col-xl-12">
+                    <h5 class="mb-3">&nbsp;</h5>
                     <div class="card">
                         <div class="card-body">
-                            <h6 class="mb-2 f-w-400 text-muted">This Week Statistics</h6>
-                            <h3 class="mb-3">$7,650</h3>
-                            <div id="income-overview-chart"></div>
+                            <h6 class="mb-2 f-w-400 text-muted">Produk Best Seller (6 Bulan Terakhir)</h6>
+
+                            @if($bestSellerProducts->count() > 0)
+                            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                <table class="table table-hover table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center" width="40">#</th>
+                                            <th>Produk</th>
+                                            <th class="text-center">Terjual</th>
+                                            <th class="text-center">Pendapatan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($bestSellerProducts as $index => $product)
+                                        <tr>
+                                            <td class="text-center align-middle">
+                                                <span class="badge bg-primary">{{ $index + 1 }}</span>
+                                            </td>
+                                            <td class="align-middle">
+                                                <div class="fw-semibold" style="font-size: 0.9rem;">
+                                                    {{ $product->nama_produk }}
+                                                </div>
+                                                @if($product->nama_variasi)
+                                                <small class="text-muted">Varian: {{ $product->nama_variasi
+                                                    }}</small><br>
+                                                @endif
+                                                @if($product->sku_induk)
+                                                <small class="text-muted">SKU: {{ $product->sku_induk }}</small>
+                                                @endif
+                                            </td>
+                                            <td class="text-center align-middle">
+                                                <span class="badge bg-success rounded-pill" style="font-size: 0.85rem;">
+                                                    {{ number_format($product->total_terjual) }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center align-middle">
+                                                <span class="fw-bold text-primary" style="font-size: 0.85rem;">
+                                                    Rp {{ number_format($product->total_pendapatan, 0, ',', '.') }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                            @else
+                            <div class="text-center py-4">
+                                <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Belum ada data penjualan dalam 6 bulan terakhir</p>
+                            </div>
+                            @endif
+
+                            <!-- Tambahan: Ringkasan statistik -->
+                            <div class="mt-3 pt-3 border-top">
+                                <div class="row">
+                                    <div class="col-6 text-center">
+                                        <small class="text-muted">Total Produk</small>
+                                        <h5 class="mb-0">{{ $bestSellerProducts->count() }}</h5>
+                                    </div>
+                                    <div class="col-6 text-center">
+                                        <small class="text-muted">Total Terjual</small>
+                                        <h5 class="mb-0">
+                                            {{ number_format($bestSellerProducts->sum('total_terjual')) }}
+                                        </h5>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-12 col-xl-8">
+                {{-- <div class="col-md-12 col-xl-8">
                     <h5 class="mb-3">Recent Orders</h5>
                     <div class="card tbl-card">
                         <div class="card-body">
@@ -324,7 +449,7 @@
                             </a>
                         </div>
                     </div>
-                </div>
+                </div> --}}
             </div>
         </div>
     </div>
