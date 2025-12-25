@@ -10,6 +10,7 @@ use App\Http\Controllers\SampelController;
 use App\Http\Controllers\BandingController;
 use App\Http\Controllers\PeriodeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MonthlyFinanceController;
 use App\Http\Controllers\MonthlySummaryController;
 use App\Http\Controllers\PengirimanSampelController;
@@ -18,9 +19,9 @@ Route::get('/', function () {
     return view('auth.login');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
