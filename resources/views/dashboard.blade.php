@@ -61,17 +61,17 @@
 
                 <div class="col-md-12 col-xl-8">
                     <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h5 class="mb-0">Unique Visitor</h5>
+                        <h5 class="mb-0">Grafik Pendapatan & Penghasilan</h5>
                         <ul class="nav nav-pills justify-content-end mb-0" id="chart-tab-tab" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="chart-tab-home-tab" data-bs-toggle="pill"
                                     data-bs-target="#chart-tab-home" type="button" role="tab"
-                                    aria-controls="chart-tab-home" aria-selected="true">Month</button>
+                                    aria-controls="chart-tab-home" aria-selected="true">Pendapatan</button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="chart-tab-profile-tab" data-bs-toggle="pill"
                                     data-bs-target="#chart-tab-profile" type="button" role="tab"
-                                    aria-controls="chart-tab-profile" aria-selected="false">Week</button>
+                                    aria-controls="chart-tab-profile" aria-selected="false">Penghasilan</button>
                             </li>
                         </ul>
                     </div>
