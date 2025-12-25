@@ -66,7 +66,6 @@
     <!-- [Page Specific JS] start -->
     <script src="{{ asset('mantis/assets/js/plugins/apexcharts.min.js') }}"></script>
     {{-- <script src="{{ asset('mantis/assets/js/pages/dashboard-default.js') }}"></script> awalnyaa ini--}}
-    <script src="{{ asset('mantis/assets/js/pages/dashboard-lf.js') }}"></script>
     <!-- [Page Specific JS] end -->
 
     <!-- Required Js -->

@@ -7,6 +7,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function floatchart() {
     (function () {
+        // Data dari controller yang di-pass ke JavaScript
+        const chartData = window.chartData || {
+            pendapatan_shopee: [1342319476,0,0,0,0,0,0,0,0,0,0,0],
+            pendapatan_tiktok: [0,0,0,0,0,0,0,0,0,0,0,0],
+            penghasilan_shopee: [0,0,0,0,0,0,0,0,0,0,0,0],
+            penghasilan_tiktok: [0,0,0,0,0,0,0,0,0,0,0,0],
+            bulan_labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        };
+
+        // Chart untuk Pendapatan
         var options = {
             chart: {
                 height: 450,
@@ -21,21 +31,41 @@ function floatchart() {
             colors: ['#1890ff', '#13c2c2'],
             series: [{
                 name: 'Shopee',
-                data: [76, 85, 101, 50, 87, 105, 91, 100, 94, 86, 115, 35]
+                data: chartData.pendapatan_shopee
             }, {
                 name: 'Tiktok',
-                data: [50, 60, 150, 35, 60, 36, 26, 45, 65, 52, 53, 100]
+                data: chartData.pendapatan_tiktok
             }],
             stroke: {
                 curve: 'smooth',
                 width: 2
             },
             xaxis: {
-                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                categories: chartData.bulan_labels,
+            },
+            yaxis: {
+                title: {
+                    text: 'Juta Rupiah'
+                },
+                labels: {
+                    formatter: function(value) {
+                        return value.toFixed(2);
+                    }
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: function(value) {
+                        return 'Rp ' + value.toLocaleString('id-ID', {minimumFractionDigits: 2}) + ' juta';
+                    }
+                }
             }
         };
-        var chart = new ApexCharts(document.querySelector('#visitor-chart'), options);
+
+        var chart = new ApexCharts(document.querySelector('#visitor-chart-1'), options);
         chart.render();
+
+        // Chart untuk Penghasilan
         var options1 = {
             chart: {
                 height: 450,
@@ -50,21 +80,39 @@ function floatchart() {
             colors: ['#1890ff', '#13c2c2'],
             series: [{
                 name: 'Shopee',
-                data: [76, 85, 101, 98, 87, 105, 91, 114, 94, 86, 115, 35]
+                data: chartData.penghasilan_shopee
             }, {
                 name: 'Tiktok',
-                data: [110, 60, 150, 35, 60, 36, 26, 45, 65, 52, 53, 41]
+                data: chartData.penghasilan_tiktok
             }],
             stroke: {
                 curve: 'smooth',
                 width: 2
             },
             xaxis: {
-                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                categories: chartData.bulan_labels,
+            },
+            yaxis: {
+                title: {
+                    text: 'Juta Rupiah'
+                },
+                labels: {
+                    formatter: function(value) {
+                        return value.toFixed(2);
+                    }
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: function(value) {
+                        return 'Rp ' + value.toLocaleString('id-ID', {minimumFractionDigits: 2}) + ' juta';
+                    }
+                }
             }
         };
-        var chart = new ApexCharts(document.querySelector('#visitor-chart-1'), options1);
-        chart.render();
+
+        var chart1 = new ApexCharts(document.querySelector('#visitor-chart'), options1);
+        chart1.render();
     })();
 
     (function () {

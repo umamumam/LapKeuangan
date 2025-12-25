@@ -62,6 +62,29 @@
                 <div class="col-md-12 col-xl-8">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <h5 class="mb-0">Grafik Pendapatan & Penghasilan</h5>
+
+                        <!-- Filter Form -->
+                        <form method="GET" action="{{ route('dashboard') }}" class="row g-2">
+                            <div class="col-auto">
+                                <select name="toko_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                                    @foreach($tokos as $toko)
+                                    <option value="{{ $toko->id }}" {{ $tokoId==$toko->id ? 'selected' : '' }}>
+                                        {{ $toko->nama }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-auto">
+                                <select name="tahun" class="form-select form-select-sm" onchange="this.form.submit()">
+                                    @foreach($tahunList as $tahunItem)
+                                    <option value="{{ $tahunItem }}" {{ $tahun==$tahunItem ? 'selected' : '' }}>
+                                        {{ $tahunItem }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </form>
+
                         <ul class="nav nav-pills justify-content-end mb-0" id="chart-tab-tab" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="chart-tab-home-tab" data-bs-toggle="pill"
@@ -75,6 +98,7 @@
                             </li>
                         </ul>
                     </div>
+
                     <div class="card">
                         <div class="card-body">
                             <div class="tab-content" id="chart-tab-tabContent">
@@ -304,4 +328,319 @@
             </div>
         </div>
     </div>
+    <script>
+        window.chartData = @json($chartData);
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <script>
+        'use strict';
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(function () {
+                floatchart();
+            }, 500);
+        });
+
+        function floatchart() {
+            // Pastikan chartData tersedia dari controller
+            const chartData = window.chartData || {
+                pendapatan_shopee: [0,0,0,0,0,0,0,0,0,0,0,0],
+                pendapatan_tiktok: [0,0,0,0,0,0,0,0,0,0,0,0],
+                penghasilan_shopee: [0,0,0,0,0,0,0,0,0,0,0,0],
+                penghasilan_tiktok: [0,0,0,0,0,0,0,0,0,0,0,0],
+                bulan_labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            };
+
+            // Chart untuk Pendapatan
+            if (document.querySelector('#visitor-chart-1')) {
+                var options = {
+                    chart: {
+                        height: 450,
+                        type: 'area',
+                        toolbar: {
+                            show: false
+                        }
+                    },
+                    title: {
+                        text: 'Grafik Pendapatan Shopee & TikTok',
+                        align: 'left',
+                        margin: 10,
+                        style: {
+                            fontSize: '16px',
+                            fontWeight: '600'
+                        }
+                    },
+                    dataLabels: {
+                        enabled: false
+                    },
+                    colors: ['#fa8c16', '#000000'],
+                    series: [{
+                        name: 'Shopee',
+                        data: chartData.pendapatan_shopee
+                    }, {
+                        name: 'Tiktok',
+                        data: chartData.pendapatan_tiktok
+                    }],
+                    stroke: {
+                        curve: 'smooth',
+                        width: 2
+                    },
+                    xaxis: {
+                        categories: chartData.bulan_labels,
+                    },
+                    yaxis: {
+                        title: {
+                            text: 'Rupiah'
+                        },
+                        labels: {
+                            formatter: function(value) {
+                                return value.toLocaleString('id-ID');
+                            }
+                        }
+                    },
+                    tooltip: {
+                        y: {
+                            formatter: function(value) {
+                                return 'Rp ' + value.toLocaleString('id-ID');
+                            }
+                        }
+                    }
+                };
+
+                var chart = new ApexCharts(document.querySelector('#visitor-chart-1'), options);
+                chart.render();
+            }
+
+            // Chart untuk Penghasilan
+            if (document.querySelector('#visitor-chart')) {
+                var options1 = {
+                    chart: {
+                        height: 450,
+                        type: 'area',
+                        toolbar: {
+                            show: false
+                        }
+                    },
+                    title: {
+                        text: 'Grafik Penghasilan Shopee & TikTok',
+                        align: 'left',
+                        margin: 10,
+                        style: {
+                            fontSize: '16px',
+                            fontWeight: '600'
+                        }
+                    },
+                    dataLabels: {
+                        enabled: false
+                    },
+                    colors: ['#fa8c16', '#000000'],
+                    series: [{
+                        name: 'Shopee',
+                        data: chartData.penghasilan_shopee
+                    }, {
+                        name: 'Tiktok',
+                        data: chartData.penghasilan_tiktok
+                    }],
+                    stroke: {
+                        curve: 'smooth',
+                        width: 2
+                    },
+                    xaxis: {
+                        categories: chartData.bulan_labels,
+                    },
+                    yaxis: {
+                        title: {
+                            text: 'Rupiah'
+                        },
+                        labels: {
+                            formatter: function(value) {
+                                return value.toLocaleString('id-ID');
+                            }
+                        }
+                    },
+                    tooltip: {
+                        y: {
+                            formatter: function(value) {
+                                return 'Rp ' + value.toLocaleString('id-ID');
+                            }
+                        }
+                    }
+                };
+
+                var chart1 = new ApexCharts(document.querySelector('#visitor-chart'), options1);
+                chart1.render();
+            }
+
+            // Chart lainnya (income overview, analytics, sales report)
+            (function () {
+                if (document.querySelector('#income-overview-chart')) {
+                    var options = {
+                        chart: {
+                            type: 'bar',
+                            height: 365,
+                            toolbar: {
+                                show: false
+                            }
+                        },
+                        colors: ['#13c2c2'],
+                        plotOptions: {
+                            bar: {
+                                columnWidth: '45%',
+                                borderRadius: 4
+                            }
+                        },
+                        dataLabels: {
+                            enabled: false
+                        },
+                        series: [{
+                            data: [80, 95, 70, 42, 65, 55, 78]
+                        }],
+                        stroke: {
+                            curve: 'smooth',
+                            width: 2
+                        },
+                        xaxis: {
+                            categories: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
+                            axisBorder: {
+                                show: false
+                            },
+                            axisTicks: {
+                                show: false
+                            }
+                        },
+                        yaxis: {
+                            show: false
+                        },
+                        grid: {
+                            show: false
+                        }
+                    };
+                    var chart = new ApexCharts(document.querySelector('#income-overview-chart'), options);
+                    chart.render();
+                }
+            })();
+
+            (function () {
+                if (document.querySelector('#analytics-report-chart')) {
+                    var options = {
+                        chart: {
+                            type: 'line',
+                            height: 340,
+                            toolbar: {
+                                show: false
+                            }
+                        },
+                        colors: ['#faad14'],
+                        plotOptions: {
+                            bar: {
+                                columnWidth: '45%',
+                                borderRadius: 4
+                            }
+                        },
+                        stroke: {
+                            curve: 'smooth',
+                            width: 1.5
+                        },
+                        grid: {
+                            strokeDashArray: 4
+                        },
+                        series: [{
+                            data: [58, 90, 38, 83, 63, 75, 35, 55]
+                        }],
+                        xaxis: {
+                            type: 'datetime',
+                            categories: [
+                                '2018-05-19T00:00:00.000Z',
+                                '2018-06-19T00:00:00.000Z',
+                                '2018-07-19T01:30:00.000Z',
+                                '2018-08-19T02:30:00.000Z',
+                                '2018-09-19T03:30:00.000Z',
+                                '2018-10-19T04:30:00.000Z',
+                                '2018-11-19T05:30:00.000Z',
+                                '2018-12-19T06:30:00.000Z'
+                            ],
+                            labels: {
+                                format: 'MMM'
+                            },
+                            axisBorder: {
+                                show: false
+                            },
+                            axisTicks: {
+                                show: false
+                            }
+                        },
+                        yaxis: {
+                            show: false
+                        },
+                    };
+                    var chart = new ApexCharts(document.querySelector('#analytics-report-chart'), options);
+                    chart.render();
+                }
+            })();
+
+            (function () {
+                if (document.querySelector('#sales-report-chart')) {
+                    var options = {
+                        chart: {
+                            type: 'bar',
+                            height: 430,
+                            toolbar: {
+                                show: false
+                            }
+                        },
+                        plotOptions: {
+                            bar: {
+                                columnWidth: '30%',
+                                borderRadius: 4
+                            }
+                        },
+                        stroke: {
+                            show: true,
+                            width: 8,
+                            colors: ['transparent']
+                        },
+                        dataLabels: {
+                            enabled: false
+                        },
+                        legend: {
+                            position: 'top',
+                            horizontalAlign: 'right',
+                            show: true,
+                            fontFamily: `'Public Sans', sans-serif`,
+                            offsetX: 10,
+                            offsetY: 10,
+                            labels: {
+                                useSeriesColors: false
+                            },
+                            markers: {
+                                width: 10,
+                                height: 10,
+                                radius: '50%',
+                                offsexX: 2,
+                                offsexY: 2
+                            },
+                            itemMargin: {
+                                horizontal: 15,
+                                vertical: 5
+                            }
+                        },
+                        colors: ['#faad14', '#1890ff'],
+                        series: [{
+                            name: 'Net Profit',
+                            data: [180, 90, 135, 114, 120, 145]
+                        }, {
+                            name: 'Revenue',
+                            data: [120, 45, 78, 150, 168, 99]
+                        }],
+                        xaxis: {
+                            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+                        },
+                    };
+                    var chart = new ApexCharts(document.querySelector('#sales-report-chart'), options);
+                    chart.render();
+                }
+            })();
+        }
+    </script>
 </x-app-layout>
