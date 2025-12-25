@@ -1,9 +1,10 @@
 <nav class="pc-sidebar">
     <div class="navbar-wrapper">
         <div class="m-header">
-            <a href="../dashboard/index.html" class="b-brand text-primary">
+            <a href="/dashboard" class="b-brand text-primary" style="display: flex; align-items: center;">
                 <!-- ========   Change your logo from here   ============ -->
-                <img src="{{ asset('mantis/assets/images/logo-dark.svg') }}" alt="Logo">
+                <img src="{{ asset('LF.jpg') }}" alt="Logo" width="60px">
+                <span style="font-size: 1.2em; font-weight: bold; font-family: 'Arial Black', Arial, sans-serif; margin-top: 15px;">Lidya Fashion</span>
             </a>
         </div>
         <div class="navbar-content">

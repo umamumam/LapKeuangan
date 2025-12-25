@@ -16,7 +16,7 @@
     <meta name="author" content="CodedThemes">
 
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('mantis/assets/images/favicon.svg') }}" type="image/x-icon">
+    <link rel="icon" href="{{ asset('LF1.png') }}" type="image/x-icon">
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap"

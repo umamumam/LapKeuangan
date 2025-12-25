@@ -12,7 +12,7 @@
         content="Mantis, Dashboard UI Kit, Bootstrap 5, Admin Template, Admin Dashboard, CRM, CMS, Bootstrap Admin Template">
     <meta name="author" content="CodedThemes">
 
-    <link rel="icon" href="{{ asset('mantis/assets/images/favicon.svg') }}" type="image/x-icon">
+    <link rel="icon" href="{{ asset('LF1.png') }}" type="image/x-icon">
 
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap"
@@ -45,7 +45,7 @@
             <div class="auth-form">
                 <div class="auth-header">
                     {{-- PATH LOGO TELAH DIPERBAIKI --}}
-                    <a href="#"><img src="{{ asset('mantis/assets/images/logo-dark.svg') }}" alt="logo"></a>
+                    <a href="#"><img src="{{ asset('LFL1.png') }}" alt="Logo" width="250px"></a>
                 </div>
                 <div class="card my-5">
                     <div class="card-body">
@@ -79,7 +79,7 @@
                 </div>
                 <div class="auth-footer row">
                     <div class="col my-1">
-                        <p class="m-0">Copyright © <a href="#">mfthlmm</a></p>
+                        <p class="m-0">Copyright © <a href="#">Lidya Fashion</a></p>
                     </div>
                     <div class="col-auto my-1">
                         <ul class="list-inline footer-link mb-0">
