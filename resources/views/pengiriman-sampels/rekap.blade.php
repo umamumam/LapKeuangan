@@ -56,8 +56,8 @@
                                     <div class="card-body p-3">
                                         <div class="d-flex justify-content-between">
                                             <div>
-                                                <h4 class="mb-0 text-success">{{ $totalJumlah }}</h4>
-                                                <small class="text-muted">Total Jumlah</small>
+                                                <h4 class="mb-0 text-success">{{ $totalJumlahSampel }}</h4>
+                                                <small class="text-muted">Total Jml Sampel</small>
                                             </div>
                                             <div class="align-self-center text-success">
                                                 <i class="fas fa-boxes fa-2x"></i>
@@ -137,7 +137,7 @@
 
                             <!-- Tab 1: Rekap per Sampel -->
                             <div class="tab-pane fade show active" id="sampel" role="tabpanel">
-                                @if($rekapPerSampel->count() > 0)
+                                @if(count($rekapPerSampel) > 0)
                                 <div class="table-responsive">
                                     <table class="table table-striped table-hover">
                                         <thead class="table-primary">
@@ -149,37 +149,41 @@
                                                 <th>Jumlah Kirim</th>
                                                 <th>Total Jumlah</th>
                                                 <th>Total HPP</th>
-                                                <th>Total Ongkir</th>
-                                                <th>Total Biaya</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach($rekapPerSampel as $sampel)
-                                            <tr>
-                                                <td>{{ $loop->iteration }}</td>
-                                                <td>
-                                                    <span class="badge bg-info">{{ $sampel['nama_sampel'] }}</span>
-                                                </td>
-                                                <td>{{ $sampel['ukuran'] }}</td>
-                                                <td>Rp {{ number_format($sampel['harga'], 0, ',', '.') }}</td>
-                                                <td>
-                                                    <span class="badge bg-primary">{{ $sampel['jumlah_pengiriman'] }}</span>
-                                                </td>
-                                                <td>{{ $sampel['total_jumlah'] }}</td>
-                                                <td>Rp {{ number_format($sampel['total_hpp'], 0, ',', '.') }}</td>
-                                                <td>Rp {{ number_format($sampel['total_ongkir'], 0, ',', '.') }}</td>
-                                                <td><strong>Rp {{ number_format($sampel['total_biaya'], 0, ',', '.') }}</strong></td>
-                                            </tr>
+                                            @php
+                                                $totalJumlahKirim = 0;
+                                                $totalAllJumlah = 0;
+                                                $totalAllHpp = 0;
+                                            @endphp
+                                            @foreach($rekapPerSampel as $index => $sampel)
+                                                @php
+                                                    $totalJumlahKirim += $sampel['jumlah_pengiriman'];
+                                                    $totalAllJumlah += $sampel['total_jumlah'];
+                                                    $totalAllHpp += $sampel['total_hpp'];
+                                                @endphp
+                                                <tr>
+                                                    <td>{{ $loop->iteration }}</td>
+                                                    <td>
+                                                        <span class="badge bg-info">{{ $sampel['nama_sampel'] }}</span>
+                                                    </td>
+                                                    <td>{{ $sampel['ukuran'] }}</td>
+                                                    <td>Rp {{ number_format($sampel['harga'], 0, ',', '.') }}</td>
+                                                    <td>
+                                                        <span class="badge bg-primary">{{ $sampel['jumlah_pengiriman'] }}</span>
+                                                    </td>
+                                                    <td>{{ $sampel['total_jumlah'] }}</td>
+                                                    <td>Rp {{ number_format($sampel['total_hpp'], 0, ',', '.') }}</td>
+                                                </tr>
                                             @endforeach
                                         </tbody>
                                         <tfoot class="table-secondary">
                                             <tr>
                                                 <th colspan="4" class="text-end">Total:</th>
-                                                <th>{{ $rekapPerSampel->sum('jumlah_pengiriman') }}</th>
-                                                <th>{{ $rekapPerSampel->sum('total_jumlah') }}</th>
-                                                <th>Rp {{ number_format($rekapPerSampel->sum('total_hpp'), 0, ',', '.') }}</th>
-                                                <th>Rp {{ number_format($rekapPerSampel->sum('total_ongkir'), 0, ',', '.') }}</th>
-                                                <th>Rp {{ number_format($rekapPerSampel->sum('total_biaya'), 0, ',', '.') }}</th>
+                                                <th>{{ $totalJumlahKirim }}</th>
+                                                <th>{{ $totalAllJumlah }}</th>
+                                                <th>Rp {{ number_format($totalAllHpp, 0, ',', '.') }}</th>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -219,10 +223,33 @@
                                                 <td>{{ $pengiriman->no_resi }}</td>
                                                 <td>{{ $pengiriman->penerima }}</td>
                                                 <td>
-                                                    <span class="badge bg-info">{{ $pengiriman->sampel->nama }}</span>
-                                                    <small class="d-block text-muted">{{ $pengiriman->sampel->ukuran }}</small>
+                                                    @php
+                                                        $sampelDetails = [];
+                                                        for ($i = 1; $i <= 5; $i++) {
+                                                            $sampel = $pengiriman->{"sampel{$i}"};
+                                                            $jumlah = $pengiriman->{"jumlah{$i}"} ?? 0;
+                                                            if ($sampel && $jumlah > 0) {
+                                                                $sampelDetails[] = $sampel->nama . ' (x' . $jumlah . ')';
+                                                            }
+                                                        }
+                                                    @endphp
+                                                    @if(count($sampelDetails) > 0)
+                                                        @foreach($sampelDetails as $detail)
+                                                            <span class="badge bg-info d-block mb-1">{{ $detail }}</span>
+                                                        @endforeach
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
                                                 </td>
-                                                <td>{{ $pengiriman->jumlah }}</td>
+                                                <td>
+                                                    @php
+                                                        $totalJumlah = 0;
+                                                        for ($i = 1; $i <= 5; $i++) {
+                                                            $totalJumlah += $pengiriman->{"jumlah{$i}"} ?? 0;
+                                                        }
+                                                    @endphp
+                                                    {{ $totalJumlah }}
+                                                </td>
                                                 <td>Rp {{ number_format($pengiriman->totalhpp, 0, ',', '.') }}</td>
                                                 <td>Rp {{ number_format($pengiriman->ongkir, 0, ',', '.') }}</td>
                                                 <td><strong>Rp {{ number_format($pengiriman->total_biaya, 0, ',', '.') }}</strong></td>
@@ -233,7 +260,7 @@
                                         <tfoot class="table-secondary">
                                             <tr>
                                                 <th colspan="5" class="text-end">Total:</th>
-                                                <th>{{ $totalJumlah }}</th>
+                                                <th>{{ $totalJumlahSampel }}</th>
                                                 <th>Rp {{ number_format($totalHpp, 0, ',', '.') }}</th>
                                                 <th>Rp {{ number_format($totalOngkir, 0, ',', '.') }}</th>
                                                 <th>Rp {{ number_format($totalBiaya, 0, ',', '.') }}</th>
@@ -252,7 +279,7 @@
 
                             <!-- Tab 3: Rekap per User -->
                             <div class="tab-pane fade" id="user" role="tabpanel">
-                                @if($rekapPerUser->count() > 0)
+                                @if(count($rekapPerUser) > 0)
                                 <div class="table-responsive">
                                     <table class="table table-striped table-hover">
                                         <thead class="table-primary">
@@ -260,37 +287,66 @@
                                                 <th>#</th>
                                                 <th>Username</th>
                                                 <th>Jumlah Kirim</th>
-                                                <th>Total Jumlah</th>
+                                                <th>Total Jumlah Sampel</th>
                                                 <th>Total HPP</th>
                                                 <th>Total Ongkir</th>
                                                 <th>Total Biaya</th>
                                             </tr>
                                         </thead>
                                         <tbody>
+                                            @php
+                                                $totalUserKirim = 0;
+                                                $totalUserJumlah = 0;
+                                                $totalUserHpp = 0;
+                                                $totalUserOngkir = 0;
+                                                $totalUserBiaya = 0;
+                                            @endphp
                                             @foreach($rekapPerUser as $user)
-                                            <tr>
-                                                <td>{{ $loop->iteration }}</td>
-                                                <td>
-                                                    <span class="badge bg-secondary">{{ $user['username'] }}</span>
-                                                </td>
-                                                <td>
-                                                    <span class="badge bg-primary">{{ $user['jumlah_pengiriman'] }}</span>
-                                                </td>
-                                                <td>{{ $user['total_jumlah'] }}</td>
-                                                <td>Rp {{ number_format($user['total_hpp'], 0, ',', '.') }}</td>
-                                                <td>Rp {{ number_format($user['total_ongkir'], 0, ',', '.') }}</td>
-                                                <td><strong>Rp {{ number_format($user['total_biaya'], 0, ',', '.') }}</strong></td>
-                                            </tr>
+                                                @php
+                                                    $totalUserKirim += $user['jumlah_pengiriman'];
+                                                    $totalUserHpp += $user['total_hpp'];
+                                                    $totalUserOngkir += $user['total_ongkir'];
+                                                    $totalUserBiaya += $user['total_biaya'];
+                                                    // Hitung total jumlah sampel per user
+                                                    $userTotalJumlah = 0;
+                                                @endphp
+                                                <tr>
+                                                    <td>{{ $loop->iteration }}</td>
+                                                    <td>
+                                                        <span class="badge bg-secondary">{{ $user['username'] }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-primary">{{ $user['jumlah_pengiriman'] }}</span>
+                                                    </td>
+                                                    <td>
+                                                        @php
+                                                            // Hitung total jumlah sampel untuk user ini dari data rekapData
+                                                            $userJumlah = 0;
+                                                            foreach ($rekapData as $pengiriman) {
+                                                                if ($pengiriman->username === $user['username']) {
+                                                                    for ($i = 1; $i <= 5; $i++) {
+                                                                        $userJumlah += $pengiriman->{"jumlah{$i}"} ?? 0;
+                                                                    }
+                                                                }
+                                                            }
+                                                            $totalUserJumlah += $userJumlah;
+                                                        @endphp
+                                                        {{ $userJumlah }}
+                                                    </td>
+                                                    <td>Rp {{ number_format($user['total_hpp'], 0, ',', '.') }}</td>
+                                                    <td>Rp {{ number_format($user['total_ongkir'], 0, ',', '.') }}</td>
+                                                    <td><strong>Rp {{ number_format($user['total_biaya'], 0, ',', '.') }}</strong></td>
+                                                </tr>
                                             @endforeach
                                         </tbody>
                                         <tfoot class="table-secondary">
                                             <tr>
                                                 <th colspan="2" class="text-end">Total:</th>
-                                                <th>{{ $rekapPerUser->sum('jumlah_pengiriman') }}</th>
-                                                <th>{{ $rekapPerUser->sum('total_jumlah') }}</th>
-                                                <th>Rp {{ number_format($rekapPerUser->sum('total_hpp'), 0, ',', '.') }}</th>
-                                                <th>Rp {{ number_format($rekapPerUser->sum('total_ongkir'), 0, ',', '.') }}</th>
-                                                <th>Rp {{ number_format($rekapPerUser->sum('total_biaya'), 0, ',', '.') }}</th>
+                                                <th>{{ $totalUserKirim }}</th>
+                                                <th>{{ $totalUserJumlah }}</th>
+                                                <th>Rp {{ number_format($totalUserHpp, 0, ',', '.') }}</th>
+                                                <th>Rp {{ number_format($totalUserOngkir, 0, ',', '.') }}</th>
+                                                <th>Rp {{ number_format($totalUserBiaya, 0, ',', '.') }}</th>
                                             </tr>
                                         </tfoot>
                                     </table>

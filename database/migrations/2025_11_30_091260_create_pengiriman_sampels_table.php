@@ -15,10 +15,26 @@ return new class extends Migration
             $table->id();
             $table->datetime('tanggal');
             $table->string('username');
-            $table->integer('jumlah');
             $table->string('no_resi');
             $table->integer('ongkir');
-            $table->foreignId('sampel_id')->constrained('sampels')->onDelete('cascade');
+
+            // Kolom untuk sampel 1-5
+            $table->foreignId('sampel1_id')->nullable()->constrained('sampels')->onDelete('cascade');
+            $table->integer('jumlah1')->default(0);
+
+            $table->foreignId('sampel2_id')->nullable()->constrained('sampels')->onDelete('cascade');
+            $table->integer('jumlah2')->default(0);
+
+            $table->foreignId('sampel3_id')->nullable()->constrained('sampels')->onDelete('cascade');
+            $table->integer('jumlah3')->default(0);
+
+            $table->foreignId('sampel4_id')->nullable()->constrained('sampels')->onDelete('cascade');
+            $table->integer('jumlah4')->default(0);
+
+            $table->foreignId('sampel5_id')->nullable()->constrained('sampels')->onDelete('cascade');
+            $table->integer('jumlah5')->default(0);
+
+            // Total
             $table->integer('totalhpp');
             $table->integer('total_biaya');
             $table->string('penerima');

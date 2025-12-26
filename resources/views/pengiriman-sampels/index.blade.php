@@ -93,8 +93,8 @@
                                     <th>Tanggal</th>
                                     <th>No. Resi</th>
                                     <th>Penerima</th>
-                                    <th>Sampel</th>
-                                    <th>Jumlah</th>
+                                    <th>Jumlah Sampel</th>
+                                    <th>Total Jumlah</th>
                                     <th>Total HPP</th>
                                     <th>Ongkir</th>
                                     <th>Total Biaya</th>
@@ -104,20 +104,49 @@
                             </thead>
                             <tbody>
                                 @foreach($pengirimanSampels as $pengiriman)
+                                @php
+                                    $sampelDetails = $pengiriman->getSampelDetails();
+                                    $totalJumlah = 0;
+                                    foreach ($sampelDetails as $detail) {
+                                        $totalJumlah += $detail['jumlah'];
+                                    }
+                                @endphp
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
                                     <td>
                                         <strong>{{ $pengiriman->tanggal->format('d/m/Y H:i') }}</strong>
                                     </td>
                                     <td>{{ $pengiriman->no_resi }}</td>
-                                    <td>{{ $pengiriman->penerima }}</td>
                                     <td>
-                                        <span class="badge bg-info">{{ $pengiriman->sampel->nama }}</span>
-                                        <small class="d-block text-muted">Ukuran: {{ $pengiriman->sampel->ukuran }}</small>
+                                        <strong>{{ $pengiriman->penerima }}</strong><br>
+                                        <small class="text-muted">{{ $pengiriman->contact }}</small>
                                     </td>
-                                    <td>{{ $pengiriman->jumlah }}</td>
-                                    <td>Rp {{ number_format($pengiriman->totalhpp, 0, ',', '.') }}</td>
-                                    <td>Rp {{ number_format($pengiriman->ongkir, 0, ',', '.') }}</td>
+                                    <td>
+                                        @if(count($sampelDetails) > 0)
+                                            <div class="mb-1">
+                                                <span class="badge bg-info">{{ count($sampelDetails) }} Sampel</span>
+                                            </div>
+                                            <div class="small">
+                                                @foreach($sampelDetails as $detail)
+                                                    <div class="mb-1">
+                                                        <i class="fas fa-box me-1"></i>
+                                                        {{ $detail['nama'] }} ({{ $detail['jumlah'] }} pcs)
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <span class="badge bg-warning">Tidak ada sampel</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <strong>{{ $totalJumlah }} pcs</strong>
+                                    </td>
+                                    <td>
+                                        Rp {{ number_format($pengiriman->totalhpp, 0, ',', '.') }}
+                                    </td>
+                                    <td>
+                                        Rp {{ number_format($pengiriman->ongkir, 0, ',', '.') }}
+                                    </td>
                                     <td>
                                         <strong>Rp {{ number_format($pengiriman->total_biaya, 0, ',', '.') }}</strong>
                                     </td>
@@ -194,6 +223,7 @@
                             <ul class="mb-0 small">
                                 <li>Pastikan kolom wajib seperti No. Resi sudah terisi</li>
                                 <li>Format tanggal: YYYY-MM-DD HH:MM</li>
+                                <li>Format sampel: ID Sampel (gunakan koma untuk multiple sampel)</li>
                                 <li>Data duplikat akan ditambahkan sebagai data baru</li>
                             </ul>
                         </div>
@@ -247,3 +277,25 @@
     </div>
     @endif
 </x-app-layout>
+
+<!-- DataTables Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    $('#res-config').DataTable({
+        responsive: true,
+        language: {
+            search: "Cari:",
+            lengthMenu: "Tampilkan _MENU_ data",
+            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+            paginate: {
+                first: "Pertama",
+                last: "Terakhir",
+                next: "Berikutnya",
+                previous: "Sebelumnya"
+            }
+        },
+        order: [[1, 'desc']], // Urutkan berdasarkan tanggal (kolom ke-2)
+        pageLength: 25
+    });
+});
+</script>

@@ -14,10 +14,13 @@ class PengirimanSampel extends Model
     protected $fillable = [
         'tanggal',
         'username',
-        'jumlah',
         'no_resi',
         'ongkir',
-        'sampel_id',
+        'sampel1_id', 'jumlah1',
+        'sampel2_id', 'jumlah2',
+        'sampel3_id', 'jumlah3',
+        'sampel4_id', 'jumlah4',
+        'sampel5_id', 'jumlah5',
         'totalhpp',
         'total_biaya',
         'penerima',
@@ -29,16 +32,74 @@ class PengirimanSampel extends Model
         'tanggal' => 'datetime',
     ];
 
-    // Relasi dengan model Sampel
-    public function sampel()
+    // Relasi dengan model Sampel untuk setiap sampel
+    public function sampel1()
     {
-        return $this->belongsTo(Sampel::class);
+        return $this->belongsTo(Sampel::class, 'sampel1_id');
     }
 
-    // Accessor untuk totalhpp (calculated)
+    public function sampel2()
+    {
+        return $this->belongsTo(Sampel::class, 'sampel2_id');
+    }
+
+    public function sampel3()
+    {
+        return $this->belongsTo(Sampel::class, 'sampel3_id');
+    }
+
+    public function sampel4()
+    {
+        return $this->belongsTo(Sampel::class, 'sampel4_id');
+    }
+
+    public function sampel5()
+    {
+        return $this->belongsTo(Sampel::class, 'sampel5_id');
+    }
+
+    // Method untuk mendapatkan semua sampel yang diinput
+    public function getAllSampels()
+    {
+        $sampels = [];
+
+        for ($i = 1; $i <= 5; $i++) {
+            $sampelId = $this->{"sampel{$i}_id"};
+            $jumlah = $this->{"jumlah{$i}"};
+
+            if ($sampelId && $jumlah > 0) {
+                $sampel = Sampel::find($sampelId);
+                if ($sampel) {
+                    $sampels[] = [
+                        'sampel' => $sampel,
+                        'jumlah' => $jumlah,
+                        'subtotal' => $sampel->harga * $jumlah
+                    ];
+                }
+            }
+        }
+
+        return $sampels;
+    }
+
+    // Accessor untuk totalhpp (calculated dari semua sampel)
     public function getTotalhppAttribute()
     {
-        return $this->jumlah * $this->sampel->harga;
+        $total = 0;
+
+        for ($i = 1; $i <= 5; $i++) {
+            $sampelId = $this->{"sampel{$i}_id"};
+            $jumlah = $this->{"jumlah{$i}"};
+
+            if ($sampelId && $jumlah > 0) {
+                $sampel = Sampel::find($sampelId);
+                if ($sampel) {
+                    $total += $sampel->harga * $jumlah;
+                }
+            }
+        }
+
+        return $total;
     }
 
     // Accessor untuk total_biaya (calculated)
@@ -53,13 +114,51 @@ class PengirimanSampel extends Model
         parent::boot();
 
         static::saving(function ($model) {
-            // Hitung totalhpp berdasarkan jumlah dan harga sampel
-            if ($model->sampel && $model->jumlah) {
-                $model->totalhpp = $model->jumlah * $model->sampel->harga;
+            // Hitung totalhpp dari semua sampel
+            $totalhpp = 0;
+
+            for ($i = 1; $i <= 5; $i++) {
+                $sampelId = $model->{"sampel{$i}_id"};
+                $jumlah = $model->{"jumlah{$i}"} ?? 0;
+
+                if ($sampelId && $jumlah > 0) {
+                    $sampel = Sampel::find($sampelId);
+                    if ($sampel) {
+                        $totalhpp += $sampel->harga * $jumlah;
+                    }
+                }
             }
 
-            // Hitung total_biaya
-            $model->total_biaya = $model->totalhpp + $model->ongkir;
+            $model->totalhpp = $totalhpp;
+            $model->total_biaya = $totalhpp + $model->ongkir;
         });
+    }
+
+    // Method untuk mendapatkan detail semua sampel dalam format array
+    public function getSampelDetails()
+    {
+        $details = [];
+
+        for ($i = 1; $i <= 5; $i++) {
+            $sampelId = $this->{"sampel{$i}_id"};
+            $jumlah = $this->{"jumlah{$i}"};
+
+            if ($sampelId && $jumlah > 0) {
+                $sampel = Sampel::find($sampelId);
+                if ($sampel) {
+                    $details[] = [
+                        'nomor' => $i,
+                        'id' => $sampel->id,
+                        'nama' => $sampel->nama,
+                        'ukuran' => $sampel->ukuran,
+                        'harga' => $sampel->harga,
+                        'jumlah' => $jumlah,
+                        'subtotal' => $sampel->harga * $jumlah
+                    ];
+                }
+            }
+        }
+
+        return $details;
     }
 }

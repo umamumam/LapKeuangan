@@ -19,10 +19,30 @@ class Sampel extends Model
         'harga' => 'integer'
     ];
 
-    // Relasi dengan pengiriman
-    public function pengirimanSampels()
+    // Relasi dengan pengiriman (sebagai sampel1-5)
+    public function pengirimanSebagaiSampel1()
     {
-        return $this->hasMany(PengirimanSampel::class);
+        return $this->hasMany(PengirimanSampel::class, 'sampel1_id');
+    }
+
+    public function pengirimanSebagaiSampel2()
+    {
+        return $this->hasMany(PengirimanSampel::class, 'sampel2_id');
+    }
+
+    public function pengirimanSebagaiSampel3()
+    {
+        return $this->hasMany(PengirimanSampel::class, 'sampel3_id');
+    }
+
+    public function pengirimanSebagaiSampel4()
+    {
+        return $this->hasMany(PengirimanSampel::class, 'sampel4_id');
+    }
+
+    public function pengirimanSebagaiSampel5()
+    {
+        return $this->hasMany(PengirimanSampel::class, 'sampel5_id');
     }
 
     // Method untuk mendapatkan opsi sampel

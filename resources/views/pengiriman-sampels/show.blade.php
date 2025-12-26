@@ -31,16 +31,16 @@
                                         <td>{{ $pengirimanSampel->username }}</td>
                                     </tr>
                                     <tr>
-                                        <th>Sampel</th>
+                                        <th>Jumlah Sampel</th>
                                         <td>
-                                            {{ $pengirimanSampel->sampel->nama }} - {{ $pengirimanSampel->sampel->ukuran }}
-                                            <br>
-                                            <small class="text-muted">Harga: Rp {{ number_format($pengirimanSampel->sampel->harga, 0, ',', '.') }}</small>
+                                            @php
+                                                $totalJumlah = 0;
+                                                for ($i = 1; $i <= 5; $i++) {
+                                                    $totalJumlah += $pengirimanSampel->{"jumlah{$i}"} ?? 0;
+                                                }
+                                            @endphp
+                                            {{ $totalJumlah }} item
                                         </td>
-                                    </tr>
-                                    <tr>
-                                        <th>Jumlah</th>
-                                        <td>{{ $pengirimanSampel->jumlah }}</td>
                                     </tr>
                                 </table>
                             </div>
@@ -67,6 +67,60 @@
                                         <td>{{ $pengirimanSampel->contact }}</td>
                                     </tr>
                                 </table>
+                            </div>
+                        </div>
+
+                        <!-- Tampilkan detail sampel 1-5 -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-box"></i> Detail Sampel</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Sampel</th>
+                                                        <th>Ukuran</th>
+                                                        <th>Harga</th>
+                                                        <th>Jumlah</th>
+                                                        <th>Subtotal</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @php
+                                                        $counter = 0;
+                                                    @endphp
+                                                    @for ($i = 1; $i <= 5; $i++)
+                                                        @php
+                                                            $sampel = $pengirimanSampel->{"sampel{$i}"};
+                                                            $jumlah = $pengirimanSampel->{"jumlah{$i}"} ?? 0;
+                                                        @endphp
+                                                        @if ($sampel && $jumlah > 0)
+                                                            @php $counter++; @endphp
+                                                            <tr>
+                                                                <td>{{ $counter }}</td>
+                                                                <td>{{ $sampel->nama }}</td>
+                                                                <td>{{ $sampel->ukuran }}</td>
+                                                                <td>Rp {{ number_format($sampel->harga, 0, ',', '.') }}</td>
+                                                                <td>{{ $jumlah }}</td>
+                                                                <td>Rp {{ number_format($sampel->harga * $jumlah, 0, ',', '.') }}</td>
+                                                            </tr>
+                                                        @endif
+                                                    @endfor
+                                                    @if ($counter == 0)
+                                                        <tr>
+                                                            <td colspan="6" class="text-center">Tidak ada data sampel</td>
+                                                        </tr>
+                                                    @endif
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
