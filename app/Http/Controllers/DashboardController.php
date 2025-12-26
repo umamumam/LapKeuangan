@@ -119,8 +119,14 @@ class DashboardController extends Controller
         $lastBanding = Banding::orderBy('id', 'desc')->first();
         $lastUpdateBanding = $lastBanding ? $lastBanding->created_at->format('d M Y, H:i') : 'Belum ada data';
 
-        $totalPengirimanAffiliate = PengirimanSampel::whereHas('sampel', function ($query) {
-            $query->where('nama', 'like', '%affiliate%');
+        // Hitung total pengiriman yang mengandung sampel affiliate
+        $totalPengirimanAffiliate = PengirimanSampel::where(function ($query) {
+            // Cek di semua kolom sampel_id
+            for ($i = 1; $i <= 5; $i++) {
+                $query->orWhereHas("sampel{$i}", function ($subQuery) {
+                    $subQuery->where('nama', 'like', '%affiliate%');
+                });
+            }
         })->count();
 
         return [
