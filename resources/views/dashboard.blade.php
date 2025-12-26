@@ -130,7 +130,7 @@
                                         <p class="mb-0 text-muted">{{ $dataLainnya['last_update_sampel'] }}</p>
                                     </div>
                                     <div class="flex-shrink-0 text-end">
-                                        <h6 class="mb-1">{{ number_format($dataLainnya['total_sampel']) }}</h6>
+                                        <h6 class="mb-1">{{ number_format($dataLainnya['total_sampel'] ?? '0') }}</h6>
                                         <p class="mb-0 text-muted">Data</p>
                                     </div>
                                 </div>
@@ -148,7 +148,7 @@
                                         </p>
                                     </div>
                                     <div class="flex-shrink-0 text-end">
-                                        <h6 class="mb-1">{{ number_format($dataLainnya['total_pengiriman_sampel']) }}
+                                        <h6 class="mb-1">{{ number_format($dataLainnya['total_pengiriman_sampel'] ?? '0') }}
                                         </h6>
                                         <p class="mb-0 text-muted">Pengiriman</p>
                                     </div>
@@ -166,7 +166,7 @@
                                         <p class="mb-0 text-muted">{{ $dataLainnya['last_update_banding'] }}</p>
                                     </div>
                                     <div class="flex-shrink-0 text-end">
-                                        <h6 class="mb-1">{{ number_format($dataLainnya['total_banding']) }}</h6>
+                                        <h6 class="mb-1">{{ number_format($dataLainnya['total_banding'] ?? '0') }}</h6>
                                         <p class="mb-0 text-muted">Banding</p>
                                     </div>
                                 </div>
