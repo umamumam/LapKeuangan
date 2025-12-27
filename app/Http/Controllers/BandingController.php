@@ -11,10 +11,39 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class BandingController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $bandings = Banding::orderBy('tanggal', 'desc')->get();
-        return view('bandings.index', compact('bandings'));
+        $marketplace = $request->input('marketplace');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        if (!$startDate && !$endDate) {
+            $startDate = now()->startOfMonth()->format('Y-m-d');
+            $endDate = now()->endOfMonth()->format('Y-m-d');
+        }
+
+        $query = Banding::query();
+
+        if ($marketplace && $marketplace !== 'all') {
+            $query->where('marketplace', $marketplace);
+        }
+        if ($startDate) {
+            $query->whereDate('tanggal', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->whereDate('tanggal', '<=', $endDate);
+        }
+
+        $bandings = $query->orderBy('tanggal', 'desc')->get();
+        $marketplaceOptions = Banding::getMarketplaceOptions();
+
+        return view('bandings.index', compact(
+            'bandings',
+            'marketplaceOptions',
+            'marketplace',
+            'startDate',
+            'endDate'
+        ));
     }
 
     public function create()
@@ -96,7 +125,6 @@ class BandingController extends Controller
 
             return redirect()->route('bandings.index')
                 ->with('success', 'Data banding berhasil ditambahkan!');
-
         } catch (\Exception $e) {
             // Return JSON untuk request dari create-with-resi
             if ($request->wantsJson() || $request->ajax()) {
@@ -158,7 +186,6 @@ class BandingController extends Controller
 
             return redirect()->route('bandings.index')
                 ->with('success', 'Data banding berhasil diperbarui!');
-
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Gagal memperbarui data banding: ' . $e->getMessage())
@@ -173,7 +200,6 @@ class BandingController extends Controller
 
             return redirect()->route('bandings.index')
                 ->with('success', 'Data banding berhasil dihapus!');
-
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Gagal menghapus data banding: ' . $e->getMessage());
@@ -195,7 +221,6 @@ class BandingController extends Controller
 
             return redirect()->route('bandings.index')
                 ->with('success', "Semua data banding ($bandingCount data) berhasil dihapus!");
-
         } catch (\Exception $e) {
             \Log::error('Delete All Bandings Error: ' . $e->getMessage());
 
@@ -236,7 +261,6 @@ class BandingController extends Controller
 
             return redirect()->route('bandings.index')
                 ->with('success', $message);
-
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Gagal mengimport data: ' . $e->getMessage())
@@ -267,7 +291,7 @@ class BandingController extends Controller
             ]
         ];
 
-        $export = new BandingExport(collect($sampleData)->map(function($item) {
+        $export = new BandingExport(collect($sampleData)->map(function ($item) {
             return (object) [
                 'tanggal' => $item[0],
                 'status_banding' => $item[1],
@@ -313,7 +337,6 @@ class BandingController extends Controller
                 'success' => true,
                 'data' => $banding
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -358,7 +381,6 @@ class BandingController extends Controller
                 'message' => 'Status berhasil diperbarui!',
                 'data' => $banding
             ]);
-
         } catch (\Exception $e) {
             \Log::error('Update status error: ' . $e->getMessage());
 
