@@ -99,7 +99,6 @@ class PengirimanSampelController extends Controller
 
             return redirect()->route('pengiriman-sampels.index')
                 ->with('success', 'Data pengiriman sampel berhasil ditambahkan.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()
@@ -196,7 +195,6 @@ class PengirimanSampelController extends Controller
 
             return redirect()->route('pengiriman-sampels.index')
                 ->with('success', 'Data pengiriman sampel berhasil diperbarui.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()
@@ -225,7 +223,6 @@ class PengirimanSampelController extends Controller
 
             return redirect()->route('pengiriman-sampels.index')
                 ->with('success', 'Semua data pengiriman sampel (' . $count . ' data) berhasil dihapus.');
-
         } catch (\Exception $e) {
             return redirect()->route('pengiriman-sampels.index')
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
@@ -238,21 +235,47 @@ class PengirimanSampelController extends Controller
     }
 
 
+    // public function import(Request $request)
+    // {
+    //     $request->validate([
+    //         'file' => 'required|mimes:xlsx,xls,csv'
+    //     ]);
+
+    //     try {
+    //         Excel::import(new PengirimanSampelImport, $request->file('file'));
+
+    //         return redirect()->route('pengiriman-sampels.index')
+    //             ->with('success', 'Data pengiriman sampel berhasil diimport.');
+
+    //     } catch (\Exception $e) {
+    //         return redirect()->back()
+    //             ->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+    //     }
+    // }
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv'
+            'file' => 'required|mimes:xlsx,xls,csv|max:10240' // Maksimal 10MB
         ]);
 
         try {
-            Excel::import(new PengirimanSampelImport, $request->file('file'));
+            $import = new PengirimanSampelImport();
+            Excel::import($import, $request->file('file'));
+
+            $successMessage = 'Data pengiriman sampel berhasil diimport.';
+
+            if (session('import_errors')) {
+                return redirect()->route('pengiriman-sampels.index')
+                    ->with('warning', $successMessage . ' Beberapa data memiliki masalah.')
+                    ->with('import_errors', session('import_errors'));
+            }
 
             return redirect()->route('pengiriman-sampels.index')
-                ->with('success', 'Data pengiriman sampel berhasil diimport.');
-
+                ->with('success', $successMessage);
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage())
+                ->withInput();
         }
     }
 
