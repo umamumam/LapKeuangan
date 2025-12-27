@@ -87,7 +87,7 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="status_banding" class="form-label">Status Banding *</label>
+                                        <label for="status_banding" class="form-label">Status Banding</label>
                                         <select class="form-select @error('status_banding') is-invalid @enderror"
                                             id="status_banding" name="status_banding">
                                             <option value="">Pilih Status</option>
@@ -104,7 +104,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="alasan" class="form-label">Alasan *</label>
+                                        <label for="alasan" class="form-label">Alasan</label>
                                         <select class="form-select @error('alasan') is-invalid @enderror" id="alasan"
                                             name="alasan">
                                             <option value="">Pilih Alasan</option>

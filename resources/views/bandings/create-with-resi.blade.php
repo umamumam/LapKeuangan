@@ -38,7 +38,7 @@
                             <!-- Status dan Marketplace -->
                             <div class="row mb-3">
                                 <div class="col-md-4">
-                                    <label for="status_banding" class="form-label">Status Banding <span class="text-danger">*</span></label>
+                                    <label for="status_banding" class="form-label">Status Banding</label>
                                     <select class="form-select" id="status_banding" name="status_banding">
                                         <option value="">Pilih Status</option>
                                         @foreach($statusBandingOptions as $value => $label)
@@ -58,7 +58,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="alasan" class="form-label">Alasan <span class="text-danger">*</span></label>
+                                    <label for="alasan" class="form-label">Alasan</label>
                                     <select class="form-select" id="alasan" name="alasan">
                                         <option value="">Pilih Alasan</option>
                                         @foreach($alasanOptions as $value => $label)
