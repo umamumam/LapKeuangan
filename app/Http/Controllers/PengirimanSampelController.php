@@ -237,11 +237,6 @@ class PengirimanSampelController extends Controller
         return Excel::download(new PengirimanSampelExport, 'pengiriman-sampel-' . date('Y-m-d') . '.xlsx');
     }
 
-    public function importForm()
-    {
-        $sampels = Sampel::all();
-        return view('pengiriman-sampels.import', compact('sampels'));
-    }
 
     public function import(Request $request)
     {
