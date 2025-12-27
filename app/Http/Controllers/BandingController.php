@@ -69,12 +69,12 @@ class BandingController extends Controller
     {
         $request->validate([
             'tanggal' => 'required|date',
-            'status_banding' => 'required|in:Berhasil,Ditinjau,Ditolak',
+            'status_banding' => 'nullable|in:Berhasil,Ditinjau,Ditolak',
             'ongkir' => 'required|in:Dibebaskan,Ditanggung,-',
             'no_resi' => 'nullable|string|max:100',
             'no_pesanan' => 'nullable|string|max:100',
             'no_pengajuan' => 'nullable|string|max:100',
-            'alasan' => 'required|in:Barang Palsu,Tidak Sesuai Ekspektasi Pembeli,Barang Belum Diterima,Cacat,Jumlah Barang Retur Kurang,Bukan Produk Asli Toko',
+            'alasan' => 'nullable|in:Barang Palsu,Tidak Sesuai Ekspektasi Pembeli,Barang Belum Diterima,Cacat,Jumlah Barang Retur Kurang,Bukan Produk Asli Toko',
             'status_penerimaan' => 'required|in:Diterima dengan baik,Cacat,-',
             'username' => 'nullable|string|max:100',
             'nama_pengirim' => 'nullable|string|max:100',
@@ -139,12 +139,12 @@ class BandingController extends Controller
     {
         $request->validate([
             'tanggal' => 'required|date',
-            'status_banding' => 'required|in:Berhasil,Ditinjau,Ditolak',
+            'status_banding' => 'nullable|in:Berhasil,Ditinjau,Ditolak',
             'ongkir' => 'required|in:Dibebaskan,Ditanggung,-',
             'no_resi' => 'nullable|string|max:100',
             'no_pesanan' => 'nullable|string|max:100',
             'no_pengajuan' => 'nullable|string|max:100',
-            'alasan' => 'required|in:Barang Palsu,Tidak Sesuai Ekspektasi Pembeli,Barang Belum Diterima,Cacat,Jumlah Barang Retur Kurang,Bukan Produk Asli Toko',
+            'alasan' => 'nullable|in:Barang Palsu,Tidak Sesuai Ekspektasi Pembeli,Barang Belum Diterima,Cacat,Jumlah Barang Retur Kurang,Bukan Produk Asli Toko',
             'status_penerimaan' => 'required|in:Diterima dengan baik,Cacat,-',
             'username' => 'nullable|string|max:100',
             'nama_pengirim' => 'nullable|string|max:100',

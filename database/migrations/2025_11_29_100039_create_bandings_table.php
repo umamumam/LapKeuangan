@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('bandings', function (Blueprint $table) {
             $table->id();
             $table->datetime('tanggal');
-            $table->enum('status_banding', ['Berhasil', 'Ditinjau', 'Ditolak'])->default('Ditinjau');
+            $table->enum('status_banding', ['Berhasil', 'Ditinjau', 'Ditolak'])->nullable()->default('Ditinjau');
             $table->enum('ongkir', ['Dibebaskan', 'Ditanggung', '-'])->default('-');
             $table->string('no_resi')->nullable();
             $table->string('no_pesanan')->nullable();
@@ -26,7 +26,7 @@ return new class extends Migration
                 'Cacat',
                 'Jumlah Barang Retur Kurang',
                 'Bukan Produk Asli Toko'
-            ]);
+            ])->nullable();
             $table->enum('status_penerimaan', ['Diterima dengan baik', 'Cacat', '-'])->default('-');
             $table->string('username')->nullable();
             $table->string('nama_pengirim')->nullable();
