@@ -14,6 +14,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MonthlyFinanceController;
 use App\Http\Controllers\MonthlySummaryController;
 use App\Http\Controllers\PengirimanSampelController;
+use App\Http\Controllers\PengembalianPenukaranController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -134,6 +135,11 @@ Route::middleware('auth')->group(function () {
     });
     Route::get('/rekaps/hasil', [RekapController::class, 'hasil'])->name('rekaps.hasil');
     Route::resource('rekaps', RekapController::class);
+
+    Route::post('/pengembalian-penukaran/import', [PengembalianPenukaranController::class, 'import'])->name('pengembalian-penukaran.import');
+    Route::get('/pengembalian-penukaran/export', [PengembalianPenukaranController::class, 'export'])->name('pengembalian-penukaran.export');
+    Route::delete('/pengembalian-penukaran/delete-all', [PengembalianPenukaranController::class, 'deleteAll'])->name('pengembalian-penukaran.delete-all');
+    Route::resource('pengembalian-penukaran', PengembalianPenukaranController::class);
 });
 
 require __DIR__ . '/auth.php';
