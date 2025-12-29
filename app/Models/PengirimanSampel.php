@@ -25,12 +25,18 @@ class PengirimanSampel extends Model
         'total_biaya',
         'penerima',
         'contact',
-        'alamat'
+        'alamat',
+        'toko_id',
     ];
 
     protected $casts = [
         'tanggal' => 'datetime',
     ];
+
+    public function toko()
+    {
+        return $this->belongsTo(Toko::class);
+    }
 
     // Relasi dengan model Sampel untuk setiap sampel
     public function sampel1()

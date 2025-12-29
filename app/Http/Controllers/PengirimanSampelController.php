@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PengirimanSampel;
 use App\Models\Sampel;
+use App\Models\Toko; // Tambahkan ini
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Exports\PengirimanSampelExport;
@@ -12,19 +13,46 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class PengirimanSampelController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $pengirimanSampels = PengirimanSampel::with(['sampel1', 'sampel2', 'sampel3', 'sampel4', 'sampel5'])
-            ->orderBy('tanggal', 'desc')
-            ->get();
+        // Tambahkan filter toko
+        $tokoId = $request->input('toko_id');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
 
-        return view('pengiriman-sampels.index', compact('pengirimanSampels'));
+        // Set tanggal default jika kosong (tanggal 1 dan akhir bulan ini)
+        if (!$startDate && !$endDate) {
+            $startDate = now()->startOfMonth()->format('Y-m-d');
+            $endDate = now()->endOfMonth()->format('Y-m-d');
+        }
+
+        $query = PengirimanSampel::with(['sampel1', 'sampel2', 'sampel3', 'sampel4', 'sampel5', 'toko']);
+
+        // Filter toko
+        if ($tokoId && $tokoId !== 'all') {
+            $query->where('toko_id', $tokoId);
+        }
+
+        // Filter tanggal
+        if ($startDate) {
+            $query->whereDate('tanggal', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->whereDate('tanggal', '<=', $endDate);
+        }
+
+        $pengirimanSampels = $query->orderBy('tanggal', 'desc')->get();
+        $tokoOptions = Toko::pluck('nama', 'id'); // Ambil data toko untuk dropdown
+
+        return view('pengiriman-sampels.index', compact('pengirimanSampels', 'tokoOptions', 'tokoId', 'startDate', 'endDate'));
     }
 
     public function create()
     {
         $sampels = Sampel::all();
-        return view('pengiriman-sampels.create', compact('sampels'));
+        $tokoOptions = Toko::pluck('nama', 'id'); // Tambahkan toko options
+
+        return view('pengiriman-sampels.create', compact('sampels', 'tokoOptions'));
     }
 
     public function store(Request $request)
@@ -37,6 +65,7 @@ class PengirimanSampelController extends Controller
             'penerima' => 'required|string|max:255',
             'contact' => 'required|string|max:255',
             'alamat' => 'required|string',
+            'toko_id' => 'required|exists:tokos,id', // Tambahkan validasi toko
 
             // Validasi untuk sampel 1-5
             'sampel1_id' => 'nullable|exists:sampels,id',
@@ -75,6 +104,7 @@ class PengirimanSampelController extends Controller
                 'username' => $validated['username'],
                 'no_resi' => $validated['no_resi'],
                 'ongkir' => $validated['ongkir'],
+                'toko_id' => $validated['toko_id'], // Tambahkan toko_id
 
                 // Data sampel 1-5
                 'sampel1_id' => $validated['sampel1_id'] ?? null,
@@ -109,7 +139,7 @@ class PengirimanSampelController extends Controller
 
     public function show(PengirimanSampel $pengirimanSampel)
     {
-        $pengirimanSampel->load(['sampel1', 'sampel2', 'sampel3', 'sampel4', 'sampel5']);
+        $pengirimanSampel->load(['sampel1', 'sampel2', 'sampel3', 'sampel4', 'sampel5', 'toko']);
         $sampelDetails = $pengirimanSampel->getSampelDetails();
 
         return view('pengiriman-sampels.show', compact('pengirimanSampel', 'sampelDetails'));
@@ -118,9 +148,10 @@ class PengirimanSampelController extends Controller
     public function edit(PengirimanSampel $pengirimanSampel)
     {
         $sampels = Sampel::all();
-        $pengirimanSampel->load(['sampel1', 'sampel2', 'sampel3', 'sampel4', 'sampel5']);
+        $tokoOptions = Toko::pluck('nama', 'id'); // Tambahkan toko options
+        $pengirimanSampel->load(['sampel1', 'sampel2', 'sampel3', 'sampel4', 'sampel5', 'toko']);
 
-        return view('pengiriman-sampels.edit', compact('pengirimanSampel', 'sampels'));
+        return view('pengiriman-sampels.edit', compact('pengirimanSampel', 'sampels', 'tokoOptions'));
     }
 
     public function update(Request $request, PengirimanSampel $pengirimanSampel)
@@ -133,6 +164,7 @@ class PengirimanSampelController extends Controller
             'penerima' => 'required|string|max:255',
             'contact' => 'required|string|max:255',
             'alamat' => 'required|string',
+            'toko_id' => 'required|exists:tokos,id', // Tambahkan validasi toko
 
             // Validasi untuk sampel 1-5
             'sampel1_id' => 'nullable|exists:sampels,id',
@@ -171,6 +203,7 @@ class PengirimanSampelController extends Controller
                 'username' => $validated['username'],
                 'no_resi' => $validated['no_resi'],
                 'ongkir' => $validated['ongkir'],
+                'toko_id' => $validated['toko_id'], // Tambahkan toko_id
 
                 // Data sampel 1-5
                 'sampel1_id' => $validated['sampel1_id'] ?? null,
@@ -234,35 +267,21 @@ class PengirimanSampelController extends Controller
         return Excel::download(new PengirimanSampelExport, 'pengiriman-sampel-' . date('Y-m-d') . '.xlsx');
     }
 
-
-    // public function import(Request $request)
-    // {
-    //     $request->validate([
-    //         'file' => 'required|mimes:xlsx,xls,csv'
-    //     ]);
-
-    //     try {
-    //         Excel::import(new PengirimanSampelImport, $request->file('file'));
-
-    //         return redirect()->route('pengiriman-sampels.index')
-    //             ->with('success', 'Data pengiriman sampel berhasil diimport.');
-
-    //     } catch (\Exception $e) {
-    //         return redirect()->back()
-    //             ->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
-    //     }
-    // }
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv|max:10240' // Maksimal 10MB
+            'file' => 'required|mimes:xlsx,xls,csv|max:10240',
+            'toko_id' => 'required|exists:tokos,id' // Tambahkan validasi toko untuk import
         ]);
 
         try {
-            $import = new PengirimanSampelImport();
+            $tokoId = $request->toko_id; // Ambil toko_id dari form
+            $toko = Toko::find($tokoId);
+
+            $import = new PengirimanSampelImport($tokoId); // Kirim toko_id ke import class
             Excel::import($import, $request->file('file'));
 
-            $successMessage = 'Data pengiriman sampel berhasil diimport.';
+            $successMessage = 'Data pengiriman sampel berhasil diimport ke toko "' . ($toko->nama ?? '') . '".';
 
             if (session('import_errors')) {
                 return redirect()->route('pengiriman-sampels.index')
@@ -330,13 +349,19 @@ class PengirimanSampelController extends Controller
     public function rekap(Request $request)
     {
         $bulan = $request->get('bulan', date('Y-m'));
+        $tokoId = $request->get('toko_id');
 
         // Query data rekap
-        $rekapData = PengirimanSampel::with(['sampel1', 'sampel2', 'sampel3', 'sampel4', 'sampel5'])
+        $query = PengirimanSampel::with(['sampel1', 'sampel2', 'sampel3', 'sampel4', 'sampel5', 'toko'])
             ->whereYear('tanggal', date('Y', strtotime($bulan)))
-            ->whereMonth('tanggal', date('m', strtotime($bulan)))
-            ->orderBy('tanggal', 'desc')
-            ->get();
+            ->whereMonth('tanggal', date('m', strtotime($bulan)));
+
+        // Filter toko
+        if ($tokoId && $tokoId !== 'all') {
+            $query->where('toko_id', $tokoId);
+        }
+
+        $rekapData = $query->orderBy('tanggal', 'desc')->get();
 
         // Hitung total-total
         $totalPengiriman = $rekapData->count();
@@ -395,16 +420,34 @@ class PengirimanSampelController extends Controller
             ];
         })->values();
 
+        // Rekap per toko
+        $rekapPerToko = $rekapData->groupBy('toko_id')->map(function ($items, $tokoId) {
+            $toko = $items->first()->toko ?? null;
+            return [
+                'toko_id' => $tokoId,
+                'nama_toko' => $toko ? $toko->nama : 'Tidak diketahui',
+                'total_hpp' => $items->sum('totalhpp'),
+                'total_ongkir' => $items->sum('ongkir'),
+                'total_biaya' => $items->sum('total_biaya'),
+                'jumlah_pengiriman' => $items->count()
+            ];
+        })->values();
+
+        $tokoOptions = Toko::pluck('nama', 'id');
+
         return view('pengiriman-sampels.rekap', compact(
             'rekapData',
             'rekapPerSampel',
             'rekapPerUser',
+            'rekapPerToko',
             'totalPengiriman',
             'totalJumlahSampel',
             'totalHpp',
             'totalOngkir',
             'totalBiaya',
-            'bulan'
+            'bulan',
+            'tokoId',
+            'tokoOptions'
         ));
     }
 }

@@ -33,11 +33,21 @@ class Toko extends Model
         return $this->hasMany(Rekap::class);
     }
 
+    public function bandings()
+    {
+        return $this->hasMany(Banding::class);
+    }
+
+    public function pengirimanSampels()
+    {
+        return $this->hasMany(PengirimanSampel::class);
+    }
+
     public function activePeriodes()
     {
         $today = now()->format('Y-m-d');
         return $this->periodes()
-                    ->where('tanggal_mulai', '<=', $today)
-                    ->where('tanggal_selesai', '>=', $today);
+            ->where('tanggal_mulai', '<=', $today)
+            ->where('tanggal_selesai', '>=', $today);
     }
 }

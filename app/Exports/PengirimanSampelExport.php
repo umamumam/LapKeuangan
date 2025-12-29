@@ -45,7 +45,8 @@ class PengirimanSampelExport implements FromCollection, WithHeadings, WithMappin
             'Total Biaya',
             'Penerima',
             'Contact',
-            'Alamat'
+            'Alamat',
+            'Toko',
         ];
     }
 
@@ -79,6 +80,7 @@ class PengirimanSampelExport implements FromCollection, WithHeadings, WithMappin
         $row[] = $pengiriman->penerima;
         $row[] = $pengiriman->contact;
         $row[] = $pengiriman->alamat;
+        $row[] = $pengiriman->toko ? $pengiriman->toko->nama : 'N/A';
 
         return $row;
     }

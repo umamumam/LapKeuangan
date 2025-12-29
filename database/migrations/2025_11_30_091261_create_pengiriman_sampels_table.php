@@ -40,6 +40,7 @@ return new class extends Migration
             $table->string('penerima');
             $table->string('contact');
             $table->text('alamat');
+            $table->foreignId('toko_id')->constrained('tokos')->onDelete('cascade');
             $table->timestamps();
 
             // Indexes

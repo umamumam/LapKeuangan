@@ -42,6 +42,12 @@
                                             {{ $totalJumlah }} item
                                         </td>
                                     </tr>
+                                    <tr>
+                                        <th>Toko</th>
+                                        <td>
+                                            <strong>{{ $pengirimanSampel->toko ? $pengirimanSampel->toko->nama : 'N/A' }}</strong>
+                                        </td>
+                                    </tr>
                                 </table>
                             </div>
                             <div class="col-md-6">

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Toko;
 use App\Models\Banding;
 use Illuminate\Http\Request;
 use App\Exports\BandingExport;
@@ -16,13 +17,14 @@ class BandingController extends Controller
         $marketplace = $request->input('marketplace');
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
+        $tokoId = $request->input('toko_id');
 
         if (!$startDate && !$endDate) {
             $startDate = now()->startOfMonth()->format('Y-m-d');
             $endDate = now()->endOfMonth()->format('Y-m-d');
         }
 
-        $query = Banding::query();
+        $query = Banding::query()->with('toko');
 
         if ($marketplace && $marketplace !== 'all') {
             $query->where('marketplace', $marketplace);
@@ -33,16 +35,22 @@ class BandingController extends Controller
         if ($endDate) {
             $query->whereDate('tanggal', '<=', $endDate);
         }
+        if ($tokoId && $tokoId !== 'all') { // Tambahkan filter toko
+            $query->where('toko_id', $tokoId);
+        }
 
         $bandings = $query->orderBy('tanggal', 'desc')->get();
         $marketplaceOptions = Banding::getMarketplaceOptions();
+        $tokoOptions = Toko::pluck('nama', 'id');
 
         return view('bandings.index', compact(
             'bandings',
             'marketplaceOptions',
+            'tokoOptions',
             'marketplace',
             'startDate',
-            'endDate'
+            'endDate',
+            'tokoId'
         ));
     }
 
@@ -53,46 +61,17 @@ class BandingController extends Controller
         $alasanOptions = Banding::getAlasanOptions();
         $marketplaceOptions = Banding::getMarketplaceOptions();
         $statusPenerimaanOptions = Banding::getStatusPenerimaanOptions();
+        $tokoOptions = Toko::pluck('nama', 'id');
 
         return view('bandings.create', compact(
             'statusBandingOptions',
             'ongkirOptions',
             'alasanOptions',
             'marketplaceOptions',
-            'statusPenerimaanOptions'
+            'statusPenerimaanOptions',
+            'tokoOptions'
         ));
     }
-
-    // public function store(Request $request)
-    // {
-    //     $request->validate([
-    //         'tanggal' => 'required|date',
-    //         'status_banding' => 'required|in:Berhasil,Ditinjau,Ditolak',
-    //         'ongkir' => 'required|in:Dibebaskan,Ditanggung,-',
-    //         'no_resi' => 'nullable|string|max:100',
-    //         'no_pesanan' => 'nullable|string|max:100',
-    //         'no_pengajuan' => 'nullable|string|max:100',
-    //         'alasan' => 'required|in:Barang Palsu,Tidak Sesuai Ekspektasi Pembeli,Barang Belum Diterima,Cacat,Jumlah Barang Retur Kurang,Bukan Produk Asli Toko',
-    //         'status_penerimaan' => 'required|in:Diterima dengan baik,Cacat,-',
-    //         'username' => 'nullable|string|max:100',
-    //         'nama_pengirim' => 'nullable|string|max:100',
-    //         'no_hp' => 'nullable|string|max:20',
-    //         'alamat' => 'required|string',
-    //         'marketplace' => 'required|in:Shopee,Tiktok'
-    //     ]);
-
-    //     try {
-    //         Banding::create($request->all());
-
-    //         return redirect()->route('bandings.index')
-    //             ->with('success', 'Data banding berhasil ditambahkan!');
-
-    //     } catch (\Exception $e) {
-    //         return redirect()->back()
-    //             ->with('error', 'Gagal menambahkan data banding: ' . $e->getMessage())
-    //             ->withInput();
-    //     }
-    // }
 
     public function store(Request $request)
     {
@@ -109,7 +88,8 @@ class BandingController extends Controller
             'nama_pengirim' => 'nullable|string|max:100',
             'no_hp' => 'nullable|string|max:20',
             'alamat' => 'required|string',
-            'marketplace' => 'required|in:Shopee,Tiktok'
+            'marketplace' => 'required|in:Shopee,Tiktok',
+            'toko_id' => 'required|exists:tokos,id'
         ]);
 
         try {
@@ -142,6 +122,7 @@ class BandingController extends Controller
 
     public function show(Banding $banding)
     {
+        $banding->load('toko');
         return view('bandings.show', compact('banding'));
     }
 
@@ -152,6 +133,7 @@ class BandingController extends Controller
         $alasanOptions = Banding::getAlasanOptions();
         $marketplaceOptions = Banding::getMarketplaceOptions();
         $statusPenerimaanOptions = Banding::getStatusPenerimaanOptions();
+        $tokoOptions = Toko::pluck('nama', 'id');
 
         return view('bandings.edit', compact(
             'banding',
@@ -159,7 +141,8 @@ class BandingController extends Controller
             'ongkirOptions',
             'alasanOptions',
             'marketplaceOptions',
-            'statusPenerimaanOptions'
+            'statusPenerimaanOptions',
+            'tokoOptions'
         ));
     }
 
@@ -178,7 +161,8 @@ class BandingController extends Controller
             'nama_pengirim' => 'nullable|string|max:100',
             'no_hp' => 'nullable|string|max:20',
             'alamat' => 'required|string',
-            'marketplace' => 'required|in:Shopee,Tiktok'
+            'marketplace' => 'required|in:Shopee,Tiktok',
+            'toko_id' => 'required|exists:tokos,id'
         ]);
 
         try {
@@ -239,17 +223,23 @@ class BandingController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240' // 10MB max
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
+            'toko_id' => 'required|exists:tokos,id' // Validasi toko_id
         ]);
 
         try {
-            $import = new BandingImport();
+            $tokoId = $request->toko_id; // Ambil toko_id dari form
+            $import = new BandingImport($tokoId); // Kirim toko_id ke import class
             Excel::import($import, $request->file('file'));
 
             $successCount = $import->getSuccessCount();
             $failedImports = $import->getFailedImports();
 
-            $message = "Import selesai. Berhasil: {$successCount} data";
+            // Dapatkan nama toko untuk ditampilkan di pesan
+            $toko = \App\Models\Toko::find($tokoId);
+            $tokoNama = $toko ? $toko->nama : 'Toko';
+
+            $message = "Import selesai. Berhasil: {$successCount} data diimport ke toko '{$tokoNama}'";
 
             if (!empty($failedImports)) {
                 $failedCount = count($failedImports);
@@ -287,7 +277,8 @@ class BandingController extends Controller
                 'John Doe',
                 '081234567890',
                 'Jl. Contoh Alamat No. 123, Jakarta',
-                'Shopee'
+                'Shopee',
+                '1'
             ]
         ];
 
@@ -305,7 +296,8 @@ class BandingController extends Controller
                 'nama_pengirim' => $item[9],
                 'no_hp' => $item[10],
                 'alamat' => $item[11],
-                'marketplace' => $item[12]
+                'marketplace' => $item[12],
+                'toko_id' => $item[13]
             ];
         }));
 
@@ -314,6 +306,7 @@ class BandingController extends Controller
 
     public function search()
     {
+        $tokoOptions = Toko::pluck('nama', 'id');
         return view('bandings.search');
     }
 
@@ -324,7 +317,7 @@ class BandingController extends Controller
         ]);
 
         try {
-            $banding = Banding::where('no_resi', $request->no_resi)->first();
+            $banding = Banding::with('toko')->where('no_resi', $request->no_resi)->first();
 
             if (!$banding) {
                 return response()->json([
@@ -352,6 +345,7 @@ class BandingController extends Controller
         $alasanOptions = Banding::getAlasanOptions();
         $marketplaceOptions = Banding::getMarketplaceOptions();
         $statusPenerimaanOptions = Banding::getStatusPenerimaanOptions();
+        $tokoOptions = Toko::pluck('nama', 'id');
 
         return view('bandings.create-with-resi', compact(
             'statusBandingOptions',
@@ -359,6 +353,7 @@ class BandingController extends Controller
             'alasanOptions',
             'marketplaceOptions',
             'statusPenerimaanOptions',
+            'tokoOptions',
             'noResi'
         ));
     }

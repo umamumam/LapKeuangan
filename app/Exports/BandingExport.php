@@ -29,7 +29,8 @@ class BandingExport implements FromCollection, WithHeadings, WithMapping
             'Nama Pengirim',
             'No HP',
             'Alamat',
-            'Marketplace'
+            'Marketplace',
+            'Toko'
         ];
     }
 
@@ -48,7 +49,8 @@ class BandingExport implements FromCollection, WithHeadings, WithMapping
             $banding->nama_pengirim,
             $banding->no_hp,
             $banding->alamat,
-            $banding->marketplace
+            $banding->marketplace,
+            $banding->toko ? $banding->toko->nama : ''
         ];
     }
 }

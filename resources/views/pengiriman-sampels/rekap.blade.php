@@ -10,7 +10,7 @@
                         </a>
                     </div>
                     <div class="card-body">
-                        <!-- Filter Bulan -->
+                        <!-- Filter -->
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <form method="GET" action="{{ route('pengiriman-sampels.rekap') }}" class="d-flex gap-2">
@@ -26,10 +26,46 @@
                                     </div>
                                 </form>
                             </div>
-                            <div class="col-md-6 text-end">
-                                <div class="text-muted">
-                                    <i class="fas fa-calendar me-1"></i>
-                                    Periode: {{ \Carbon\Carbon::parse($bulan)->translatedFormat('F Y') }}
+                            <div class="col-md-6">
+                                <form method="GET" action="{{ route('pengiriman-sampels.rekap') }}" class="d-flex gap-2">
+                                    <div class="flex-grow-1">
+                                        <label for="toko_id" class="form-label">Filter Toko</label>
+                                        <select class="form-control" id="toko_id" name="toko_id" onchange="this.form.submit()">
+                                            <option value="all">Semua Toko</option>
+                                            @foreach($tokoOptions as $id => $nama)
+                                                <option value="{{ $id }}" {{ $tokoId == $id ? 'selected' : '' }}>
+                                                    {{ $nama }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    @if($tokoId)
+                                        <input type="hidden" name="bulan" value="{{ $bulan }}">
+                                    @endif
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Info Filter Aktif -->
+                        <div class="alert alert-info alert-dismissible fade show mb-4" role="alert">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Periode:</strong>
+                                    <span class="badge bg-primary ms-2 me-2">
+                                        {{ \Carbon\Carbon::parse($bulan)->translatedFormat('F Y') }}
+                                    </span>
+                                    @if($tokoId && $tokoId !== 'all')
+                                        @php
+                                            $selectedToko = collect($tokoOptions)->firstWhere('id', $tokoId) ?? $tokoOptions[$tokoId] ?? '';
+                                        @endphp
+                                        <span class="badge bg-success ms-2 me-2">
+                                            Toko: {{ $selectedToko }}
+                                        </span>
+                                    @endif
+                                    <span class="badge bg-secondary ms-2">
+                                        Total Data: {{ $totalPengiriman }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -130,6 +166,11 @@
                                     <i class="fas fa-users me-1"></i> Per User
                                 </button>
                             </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="toko-tab" data-bs-toggle="tab" data-bs-target="#toko" type="button" role="tab">
+                                    <i class="fas fa-store me-1"></i> Per Toko
+                                </button>
+                            </li>
                         </ul>
 
                         <!-- Tab Content -->
@@ -205,6 +246,7 @@
                                             <tr>
                                                 <th>#</th>
                                                 <th>Tanggal</th>
+                                                <th>Toko</th>
                                                 <th>No. Resi</th>
                                                 <th>Penerima</th>
                                                 <th>Sampel</th>
@@ -220,6 +262,13 @@
                                             <tr>
                                                 <td>{{ $loop->iteration }}</td>
                                                 <td>{{ $pengiriman->tanggal->format('d/m/Y') }}</td>
+                                                <td>
+                                                    @if($pengiriman->toko)
+                                                        <span class="badge bg-secondary">{{ $pengiriman->toko->nama }}</span>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
                                                 <td>{{ $pengiriman->no_resi }}</td>
                                                 <td>{{ $pengiriman->penerima }}</td>
                                                 <td>
@@ -259,7 +308,7 @@
                                         </tbody>
                                         <tfoot class="table-secondary">
                                             <tr>
-                                                <th colspan="5" class="text-end">Total:</th>
+                                                <th colspan="6" class="text-end">Total:</th>
                                                 <th>{{ $totalJumlahSampel }}</th>
                                                 <th>Rp {{ number_format($totalHpp, 0, ',', '.') }}</th>
                                                 <th>Rp {{ number_format($totalOngkir, 0, ',', '.') }}</th>
@@ -307,8 +356,6 @@
                                                     $totalUserHpp += $user['total_hpp'];
                                                     $totalUserOngkir += $user['total_ongkir'];
                                                     $totalUserBiaya += $user['total_biaya'];
-                                                    // Hitung total jumlah sampel per user
-                                                    $userTotalJumlah = 0;
                                                 @endphp
                                                 <tr>
                                                     <td>{{ $loop->iteration }}</td>
@@ -355,6 +402,86 @@
                                 <div class="text-center py-4">
                                     <i class="fas fa-users fa-3x text-muted mb-3"></i>
                                     <p class="text-muted">Tidak ada data rekap user</p>
+                                </div>
+                                @endif
+                            </div>
+
+                            <!-- Tab 4: Rekap per Toko -->
+                            <div class="tab-pane fade" id="toko" role="tabpanel">
+                                @if(count($rekapPerToko) > 0)
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead class="table-primary">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Toko</th>
+                                                <th>Jumlah Pengiriman</th>
+                                                <th>Total Jumlah Sampel</th>
+                                                <th>Total HPP</th>
+                                                <th>Total Ongkir</th>
+                                                <th>Total Biaya</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @php
+                                                $totalTokoKirim = 0;
+                                                $totalTokoJumlah = 0;
+                                                $totalTokoHpp = 0;
+                                                $totalTokoOngkir = 0;
+                                                $totalTokoBiaya = 0;
+                                            @endphp
+                                            @foreach($rekapPerToko as $toko)
+                                                @php
+                                                    $totalTokoKirim += $toko['jumlah_pengiriman'];
+                                                    $totalTokoHpp += $toko['total_hpp'];
+                                                    $totalTokoOngkir += $toko['total_ongkir'];
+                                                    $totalTokoBiaya += $toko['total_biaya'];
+                                                @endphp
+                                                <tr>
+                                                    <td>{{ $loop->iteration }}</td>
+                                                    <td>
+                                                        <span class="badge bg-secondary">{{ $toko['nama_toko'] }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-primary">{{ $toko['jumlah_pengiriman'] }}</span>
+                                                    </td>
+                                                    <td>
+                                                        @php
+                                                            // Hitung total jumlah sampel untuk toko ini dari data rekapData
+                                                            $tokoJumlah = 0;
+                                                            foreach ($rekapData as $pengiriman) {
+                                                                if ($pengiriman->toko_id == $toko['toko_id']) {
+                                                                    for ($i = 1; $i <= 5; $i++) {
+                                                                        $tokoJumlah += $pengiriman->{"jumlah{$i}"} ?? 0;
+                                                                    }
+                                                                }
+                                                            }
+                                                            $totalTokoJumlah += $tokoJumlah;
+                                                        @endphp
+                                                        {{ $tokoJumlah }}
+                                                    </td>
+                                                    <td>Rp {{ number_format($toko['total_hpp'], 0, ',', '.') }}</td>
+                                                    <td>Rp {{ number_format($toko['total_ongkir'], 0, ',', '.') }}</td>
+                                                    <td><strong>Rp {{ number_format($toko['total_biaya'], 0, ',', '.') }}</strong></td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                        <tfoot class="table-secondary">
+                                            <tr>
+                                                <th colspan="2" class="text-end">Total:</th>
+                                                <th>{{ $totalTokoKirim }}</th>
+                                                <th>{{ $totalTokoJumlah }}</th>
+                                                <th>Rp {{ number_format($totalTokoHpp, 0, ',', '.') }}</th>
+                                                <th>Rp {{ number_format($totalTokoOngkir, 0, ',', '.') }}</th>
+                                                <th>Rp {{ number_format($totalTokoBiaya, 0, ',', '.') }}</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                @else
+                                <div class="text-center py-4">
+                                    <i class="fas fa-store fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">Tidak ada data rekap per toko</p>
                                 </div>
                                 @endif
                             </div>

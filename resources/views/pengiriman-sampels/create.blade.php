@@ -11,9 +11,9 @@
                     <form action="{{ route('pengiriman-sampels.store') }}" method="POST">
                         @csrf
 
-                        <!-- Baris pertama: Tanggal dan Username -->
+                        <!-- Baris pertama: Tanggal, Username, dan Toko -->
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="mb-3">
                                     <label for="tanggal" class="form-label">Tanggal Pengiriman <span
                                             class="text-danger">*</span></label>
@@ -26,13 +26,31 @@
                                     @enderror
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="mb-3">
                                     <label for="username" class="form-label">Username <span
                                             class="text-danger">*</span></label>
                                     <input type="text" class="form-control @error('username') is-invalid @enderror"
                                         id="username" name="username" value="{{ old('username') }}" required>
                                     @error('username')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="toko_id" class="form-label">Toko <span
+                                            class="text-danger">*</span></label>
+                                    <select class="form-select @error('toko_id') is-invalid @enderror" id="toko_id"
+                                        name="toko_id" required>
+                                        <option value="">Pilih Toko</option>
+                                        @foreach($tokoOptions as $id => $nama)
+                                            <option value="{{ $id }}" {{ old('toko_id') == $id ? 'selected' : '' }}>
+                                                {{ $nama }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('toko_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>

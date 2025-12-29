@@ -22,12 +22,18 @@ class Banding extends Model
         'nama_pengirim',
         'no_hp',
         'alamat',
-        'marketplace'
+        'marketplace',
+        'toko_id'
     ];
 
     protected $casts = [
         'tanggal' => 'datetime'
     ];
+
+    public function toko()
+    {
+        return $this->belongsTo(Toko::class);
+    }
 
     public static function getStatusBandingOptions()
     {

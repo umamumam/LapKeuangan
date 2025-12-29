@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\Banding;
+use App\Models\Toko;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
@@ -15,6 +16,13 @@ class BandingImport implements ToCollection, WithHeadingRow
     private $failedImports = [];
     private $rowCount = 0;
     private $successCount = 0;
+    private $selectedTokoId; // Tambah property untuk menyimpan toko_id yang dipilih
+
+    // Tambah constructor untuk menerima toko_id
+    public function __construct($tokoId = null)
+    {
+        $this->selectedTokoId = $tokoId;
+    }
 
     public function collection(Collection $rows)
     {
@@ -32,7 +40,7 @@ class BandingImport implements ToCollection, WithHeadingRow
                 $noPesanan = $this->getCellValue($row, ['no_pesanan', 'no pesanan', 'nomor_pesanan']);
                 $noPengajuan = $this->getCellValue($row, ['no_pengajuan', 'no pengajuan', 'nomor_pengajuan']);
                 $alasan = $this->getCellValue($row, ['alasan', 'reason', 'keterangan']);
-                $statusPenerimaan = $this->getCellValue($row, ['status_penerimaan', 'status penerimaan', 'penerimaan']); // TAMBAH INI
+                $statusPenerimaan = $this->getCellValue($row, ['status_penerimaan', 'status penerimaan', 'penerimaan']);
                 $username = $this->getCellValue($row, ['username', 'user', 'nama_user']);
                 $namaPengirim = $this->getCellValue($row, ['nama_pengirim', 'nama pengirim', 'pengirim']);
                 $noHp = $this->getCellValue($row, ['no_hp', 'no hp', 'telepon', 'hp', 'no_telepon']);
@@ -47,6 +55,20 @@ class BandingImport implements ToCollection, WithHeadingRow
                 // Parse tanggal
                 $parsedDate = $this->parseExcelDate($tanggal, $rowNumber, $noPesanan);
 
+                // Gunakan toko_id yang dipilih dari form
+                $tokoIdFinal = $this->selectedTokoId;
+
+                // Validasi bahwa toko_id harus ada
+                if (!$tokoIdFinal) {
+                    throw new \Exception('Toko tidak dipilih. Silakan pilih toko terlebih dahulu.');
+                }
+
+                // Cek apakah toko ada di database
+                $toko = Toko::find($tokoIdFinal);
+                if (!$toko) {
+                    throw new \Exception('Toko dengan ID ' . $tokoIdFinal . ' tidak ditemukan.');
+                }
+
                 $data = [
                     'tanggal' => $parsedDate,
                     'status_banding' => $statusBanding ?: 'Ditinjau',
@@ -55,17 +77,18 @@ class BandingImport implements ToCollection, WithHeadingRow
                     'no_pesanan' => $this->parseStringValue($noPesanan),
                     'no_pengajuan' => $this->parseStringValue($noPengajuan),
                     'alasan' => $alasan ?: 'Barang Belum Diterima',
-                    'status_penerimaan' => $statusPenerimaan ?: '-', // TAMBAH INI
+                    'status_penerimaan' => $statusPenerimaan ?: '-',
                     'username' => $username ?: '-',
                     'nama_pengirim' => $namaPengirim ?: '-',
                     'no_hp' => $this->parseStringValue($noHp),
                     'alamat' => $alamat ?: '-',
                     'marketplace' => $marketplace ?: 'Shopee',
+                    'toko_id' => $tokoIdFinal, // Gunakan toko_id dari form
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
 
-                // Validasi data - UPDATE VALIDASI
+                // Validasi data
                 $validator = Validator::make($data, [
                     'tanggal' => 'required|date',
                     'status_banding' => [
@@ -76,7 +99,7 @@ class BandingImport implements ToCollection, WithHeadingRow
                         'required',
                         Rule::in(['Dibebaskan', 'Ditanggung', '-'])
                     ],
-                    'no_pesanan' => [ // UBAH DARI required KE nullable
+                    'no_pesanan' => [
                         'nullable',
                         'string',
                         'max:100',
@@ -94,17 +117,21 @@ class BandingImport implements ToCollection, WithHeadingRow
                             'Bukan Produk Asli Toko'
                         ])
                     ],
-                    'status_penerimaan' => [ // TAMBAH VALIDASI BARU
+                    'status_penerimaan' => [
                         'required',
                         Rule::in(['Diterima dengan baik', 'Cacat', '-'])
                     ],
-                    'username' => 'nullable|string|max:100', // UBAH DARI required KE nullable
-                    'nama_pengirim' => 'nullable|string|max:100', // UBAH DARI required KE nullable
+                    'username' => 'nullable|string|max:100',
+                    'nama_pengirim' => 'nullable|string|max:100',
                     'no_hp' => 'nullable|string|max:20',
                     'alamat' => 'required|string',
                     'marketplace' => [
                         'required',
                         Rule::in(['Shopee', 'Tiktok'])
+                    ],
+                    'toko_id' => [
+                        'required',
+                        'exists:tokos,id'
                     ],
                 ], [
                     'tanggal.required' => 'Tanggal wajib diisi',
@@ -116,11 +143,13 @@ class BandingImport implements ToCollection, WithHeadingRow
                     'no_pesanan.unique' => 'Nomor pesanan sudah ada dalam database',
                     'alasan.required' => 'Alasan wajib diisi',
                     'alasan.in' => 'Alasan tidak valid',
-                    'status_penerimaan.required' => 'Status penerimaan wajib diisi', // TAMBAH PESAN ERROR
+                    'status_penerimaan.required' => 'Status penerimaan wajib diisi',
                     'status_penerimaan.in' => 'Status penerimaan harus Diterima dengan baik, Cacat, atau -',
                     'alamat.required' => 'Alamat wajib diisi',
                     'marketplace.required' => 'Marketplace wajib diisi',
                     'marketplace.in' => 'Marketplace harus Shopee atau Tiktok',
+                    'toko_id.required' => 'Toko wajib diisi',
+                    'toko_id.exists' => 'Toko tidak ditemukan dalam database',
                 ]);
 
                 if ($validator->fails()) {
@@ -146,6 +175,8 @@ class BandingImport implements ToCollection, WithHeadingRow
             }
         }
     }
+
+    // Hapus method getTokoId() dan getTokoIdByName() karena tidak digunakan lagi
 
     /**
      * Helper untuk parsing tanggal dari Excel

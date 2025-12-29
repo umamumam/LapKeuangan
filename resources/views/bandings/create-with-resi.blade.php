@@ -35,7 +35,7 @@
                                 </div>
                             </div>
 
-                            <!-- Status dan Marketplace -->
+                            <!-- Status, Marketplace, dan Toko -->
                             <div class="row mb-3">
                                 <div class="col-md-4">
                                     <label for="status_banding" class="form-label">Status Banding</label>
@@ -58,6 +58,19 @@
                                     </select>
                                 </div>
                                 <div class="col-md-4">
+                                    <label for="toko_id" class="form-label">Toko <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="toko_id" name="toko_id" required>
+                                        <option value="">Pilih Toko</option>
+                                        @foreach($tokoOptions as $id => $nama)
+                                            <option value="{{ $id }}">{{ $nama }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Alasan dan Informasi Pesanan -->
+                            <div class="row mb-3">
+                                <div class="col-md-4">
                                     <label for="alasan" class="form-label">Alasan</label>
                                     <select class="form-select" id="alasan" name="alasan">
                                         <option value="">Pilih Alasan</option>
@@ -66,10 +79,6 @@
                                         @endforeach
                                     </select>
                                 </div>
-                            </div>
-
-                            <!-- Informasi Pesanan -->
-                            <div class="row mb-3">
                                 <div class="col-md-4">
                                     <label for="no_pesanan" class="form-label">No Pesanan</label>
                                     <input type="text" class="form-control" id="no_pesanan" name="no_pesanan">
@@ -78,6 +87,10 @@
                                     <label for="no_pengajuan" class="form-label">No Pengajuan</label>
                                     <input type="text" class="form-control" id="no_pengajuan" name="no_pengajuan">
                                 </div>
+                            </div>
+
+                            <!-- Ongkir dan Informasi Customer -->
+                            <div class="row mb-3">
                                 <div class="col-md-4">
                                     <label for="ongkir" class="form-label">Ongkir <span class="text-danger">*</span></label>
                                     <select class="form-select" id="ongkir" name="ongkir" required>
@@ -88,10 +101,6 @@
                                         @endforeach
                                     </select>
                                 </div>
-                            </div>
-
-                            <!-- Informasi Customer -->
-                            <div class="row mb-3">
                                 <div class="col-md-4">
                                     <label for="username" class="form-label">Username</label>
                                     <input type="text" class="form-control" id="username" name="username">
@@ -100,13 +109,9 @@
                                     <label for="nama_pengirim" class="form-label">Nama Pengirim</label>
                                     <input type="text" class="form-control" id="nama_pengirim" name="nama_pengirim">
                                 </div>
-                                <div class="col-md-4">
-                                    <label for="no_hp" class="form-label">No HP</label>
-                                    <input type="text" class="form-control" id="no_hp" name="no_hp">
-                                </div>
                             </div>
 
-                            <!-- Status Penerimaan dan Alamat -->
+                            <!-- Status Penerimaan dan No HP -->
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="status_penerimaan" class="form-label">Status Penerimaan <span class="text-danger">*</span></label>
@@ -118,8 +123,13 @@
                                         @endforeach
                                     </select>
                                 </div>
+                                <div class="col-md-6">
+                                    <label for="no_hp" class="form-label">No HP</label>
+                                    <input type="text" class="form-control" id="no_hp" name="no_hp">
+                                </div>
                             </div>
 
+                            <!-- Alamat -->
                             <div class="row mb-3">
                                 <div class="col-12">
                                     <label for="alamat" class="form-label">Alamat <span class="text-danger">*</span></label>

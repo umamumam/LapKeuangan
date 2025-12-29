@@ -64,17 +64,14 @@
                         <h5 class="mb-0"><i class="fas fa-balance-scale"></i> Daftar Pengembalian / Pembatalan</h5>
                         <div class="d-flex gap-2">
                             <!-- Import Button -->
-                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">
+                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#importModal">
                                 <i class="fas fa-file-import"></i> Import
                             </button>
                             <!-- Export Button -->
                             <a href="{{ route('bandings.export') }}" class="btn btn-success btn-sm">
                                 <i class="fas fa-file-export"></i> Export
                             </a>
-                            {{-- <!-- Template Button -->
-                            <a href="{{ route('bandings.downloadTemplate') }}" class="btn btn-outline-secondary btn-sm">
-                                <i class="fas fa-download"></i> Template
-                            </a> --}}
                             <!-- Tambah Data -->
                             <a href="{{ route('bandings.create') }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-plus"></i> Tambah Banding
@@ -92,26 +89,40 @@
                     <!-- Form Filter -->
                     <div class="card-body">
                         <form action="{{ route('bandings.index') }}" method="GET" class="row g-3 mb-4">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="marketplace" class="form-label">Marketplace</label>
                                 <select name="marketplace" id="marketplace" class="form-select">
                                     <option value="all">Semua Marketplace</option>
                                     @foreach($marketplaceOptions as $value => $label)
-                                        <option value="{{ $value }}" {{ $marketplace == $value ? 'selected' : '' }}>
-                                            {{ $label }}
-                                        </option>
+                                    <option value="{{ $value }}" {{ $marketplace==$value ? 'selected' : '' }}>
+                                        {{ $label }}
+                                    </option>
                                     @endforeach
                                 </select>
                             </div>
 
                             <div class="col-md-3">
-                                <label for="start_date" class="form-label">Dari Tanggal</label>
-                                <input type="date" name="start_date" id="start_date" class="form-control" value="{{ $startDate }}">
+                                <label for="toko_id" class="form-label">Toko</label>
+                                <select name="toko_id" id="toko_id" class="form-select">
+                                    <option value="all">Semua Toko</option>
+                                    @foreach($tokoOptions as $id => $nama)
+                                    <option value="{{ $id }}" {{ $tokoId==$id ? 'selected' : '' }}>
+                                        {{ $nama }}
+                                    </option>
+                                    @endforeach
+                                </select>
                             </div>
 
-                            <div class="col-md-3">
+                            <div class="col-md-2">
+                                <label for="start_date" class="form-label">Dari Tanggal</label>
+                                <input type="date" name="start_date" id="start_date" class="form-control"
+                                    value="{{ $startDate }}">
+                            </div>
+
+                            <div class="col-md-2">
                                 <label for="end_date" class="form-label">Sampai Tanggal</label>
-                                <input type="date" name="end_date" id="end_date" class="form-control" value="{{ $endDate }}">
+                                <input type="date" name="end_date" id="end_date" class="form-control"
+                                    value="{{ $endDate }}">
                             </div>
 
                             <div class="col-md-2 d-flex align-items-end">
@@ -127,32 +138,43 @@
                         </form>
 
                         <!-- Info Filter Aktif -->
-                        @if($marketplace && $marketplace !== 'all' || $startDate || $endDate)
+                        @if($marketplace && $marketplace !== 'all' || $tokoId && $tokoId !== 'all' || $startDate ||
+                        $endDate)
                         <div class="alert alert-info alert-dismissible fade show mb-4" role="alert">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <i class="fas fa-filter me-2"></i>
                                     <strong>Filter Aktif:</strong>
                                     @if($marketplace && $marketplace !== 'all')
-                                        <span class="badge bg-primary ms-2 me-2">
-                                            {{ $marketplaceOptions[$marketplace] ?? $marketplace }}
-                                        </span>
+                                    <span class="badge bg-primary ms-2 me-2">
+                                        {{ $marketplaceOptions[$marketplace] ?? $marketplace }}
+                                    </span>
+                                    @endif
+                                    @if($tokoId && $tokoId !== 'all')
+                                    @php
+                                    $selectedToko = $tokoOptions->firstWhere('id', $tokoId) ??
+                                    collect($tokoOptions)->firstWhere('id', $tokoId);
+                                    @endphp
+                                    <span class="badge bg-success ms-2 me-2">
+                                        Toko: {{ $selectedToko->nama ?? ($tokoOptions[$tokoId] ?? '') }}
+                                    </span>
                                     @endif
                                     @if($startDate)
-                                        <span class="badge bg-info ms-2 me-2">
-                                            Dari: {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }}
-                                        </span>
+                                    <span class="badge bg-info ms-2 me-2">
+                                        Dari: {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }}
+                                    </span>
                                     @endif
                                     @if($endDate)
-                                        <span class="badge bg-info ms-2 me-2">
-                                            Sampai: {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}
-                                        </span>
+                                    <span class="badge bg-info ms-2 me-2">
+                                        Sampai: {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}
+                                    </span>
                                     @endif
                                     <span class="badge bg-secondary ms-2">
                                         Total Data: {{ $bandings->count() }}
                                     </span>
                                 </div>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                    aria-label="Close"></button>
                             </div>
                         </div>
                         @endif
@@ -165,6 +187,7 @@
                                     <tr>
                                         <th>#</th>
                                         <th>Tanggal</th>
+                                        <th>Toko</th> <!-- Kolom baru -->
                                         <th>No. Resi</th>
                                         <th>No. Pesanan</th>
                                         <th>No. Pengajuan</th>
@@ -185,6 +208,15 @@
                                         <td>
                                             @if($banding->tanggal)
                                             {{ \Carbon\Carbon::parse($banding->tanggal)->format('d/m/Y H:i') }}
+                                            @else
+                                            <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($banding->toko)
+                                            <span class="badge bg-secondary">
+                                                {{ $banding->toko->nama }}
+                                            </span>
                                             @else
                                             <span class="text-muted">-</span>
                                             @endif
@@ -238,8 +270,8 @@
                                                     class="btn btn-warning btn-sm" title="Edit">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <form action="{{ route('bandings.destroy', $banding->id) }}" method="POST"
-                                                    class="d-inline">
+                                                <form action="{{ route('bandings.destroy', $banding->id) }}"
+                                                    method="POST" class="d-inline">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="btn btn-danger btn-sm" title="Hapus"
@@ -257,11 +289,13 @@
                             <div class="text-center py-4">
                                 <i class="fas fa-balance-scale fa-3x text-muted mb-3"></i>
                                 <p class="text-muted">Belum ada data banding.</p>
-                                @if($marketplace && $marketplace !== 'all' || $startDate || $endDate)
+                                @if($marketplace && $marketplace !== 'all' || $tokoId && $tokoId !== 'all' || $startDate
+                                || $endDate)
                                 <p class="text-warning mb-3">Tidak ada data dengan filter yang dipilih.</p>
                                 @endif
                                 <div class="d-flex justify-content-center gap-2">
-                                    <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#importModal">
+                                    <button type="button" class="btn btn-info" data-bs-toggle="modal"
+                                        data-bs-target="#importModal">
                                         <i class="fas fa-file-import"></i> Import Data
                                     </button>
                                     <a href="{{ route('bandings.create') }}" class="btn btn-primary">
@@ -292,11 +326,27 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="file" class="form-label">Pilih File Excel</label>
-                            <input type="file" class="form-control" id="file" name="file" accept=".xlsx,.xls,.csv" required>
+                            <input type="file" class="form-control" id="file" name="file" accept=".xlsx,.xls,.csv"
+                                required>
                             <div class="form-text">
                                 Format file yang didukung: .xlsx, .xls, .csv (Maksimal 10MB)
                             </div>
                         </div>
+
+                        <!-- Tambah pilihan toko di modal import -->
+                        <div class="mb-3">
+                            <label for="import_toko_id" class="form-label">Pilih Toko untuk Semua Data Import</label>
+                            <select class="form-select" id="import_toko_id" name="toko_id" required>
+                                <option value="">Pilih Toko</option>
+                                @foreach($tokoOptions as $id => $nama)
+                                <option value="{{ $id }}">{{ $nama }}</option>
+                                @endforeach
+                            </select>
+                            <div class="form-text">
+                                Semua data dalam file Excel akan diimport ke toko yang dipilih ini
+                            </div>
+                        </div>
+
                         <div class="alert alert-info">
                             <h6 class="alert-heading mb-2">
                                 <i class="fas fa-info-circle me-2"></i>Petunjuk Import:
@@ -306,6 +356,8 @@
                                 <li>Pastikan kolom wajib seperti No. Pesanan sudah terisi</li>
                                 <li>Format tanggal: DD/MM/YYYY HH:MM</li>
                                 <li>Data duplikat akan ditambahkan sebagai data baru</li>
+                                <li><strong>Catatan:</strong> Kolom toko_id dalam Excel akan diabaikan, menggunakan toko
+                                    yang dipilih di atas</li>
                             </ul>
                         </div>
                     </div>
@@ -366,7 +418,7 @@
 
 <!-- Tambahkan script untuk date validation -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
     // Validasi tanggal
     const startDateInput = document.getElementById('start_date');
     const endDateInput = document.getElementById('end_date');

@@ -33,6 +33,7 @@ return new class extends Migration
             $table->string('no_hp')->nullable();
             $table->text('alamat');
             $table->enum('marketplace', ['Shopee', 'Tiktok']);
+            $table->foreignId('toko_id')->constrained('tokos')->onDelete('cascade');
             $table->timestamps();
 
             // Indexes
