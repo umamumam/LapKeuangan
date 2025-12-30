@@ -144,7 +144,7 @@ class PengembalianPenukaranImport implements ToModel, WithHeadingRow, WithValida
             throw new \Exception("No HP harus mengandung angka");
         }
 
-        if (strlen($phone) < 10) {
+        if (strlen($phone) < 1) {
             throw new \Exception("No HP terlalu pendek: '$originalPhone'");
         }
 
