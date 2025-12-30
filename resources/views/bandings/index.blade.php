@@ -89,7 +89,7 @@
                     <!-- Form Filter -->
                     <div class="card-body">
                         <form action="{{ route('bandings.index') }}" method="GET" class="row g-3 mb-4">
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <label for="marketplace" class="form-label">Marketplace</label>
                                 <select name="marketplace" id="marketplace" class="form-select">
                                     <option value="all">Semua Marketplace</option>
@@ -101,13 +101,25 @@
                                 </select>
                             </div>
 
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <label for="toko_id" class="form-label">Toko</label>
                                 <select name="toko_id" id="toko_id" class="form-select">
                                     <option value="all">Semua Toko</option>
                                     @foreach($tokoOptions as $id => $nama)
                                     <option value="{{ $id }}" {{ $tokoId==$id ? 'selected' : '' }}>
                                         {{ $nama }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label for="status_banding" class="form-label">Status Banding</label>
+                                <select name="status_banding" id="status_banding" class="form-select">
+                                    <option value="all">Semua Status</option>
+                                    @foreach($statusBandingOptions as $value => $label)
+                                    <option value="{{ $value }}" {{ $statusBanding==$value ? 'selected' : '' }}>
+                                        {{ $label }}
                                     </option>
                                     @endforeach
                                 </select>
@@ -138,8 +150,8 @@
                         </form>
 
                         <!-- Info Filter Aktif -->
-                        @if($marketplace && $marketplace !== 'all' || $tokoId && $tokoId !== 'all' || $startDate ||
-                        $endDate)
+                        @if($marketplace && $marketplace !== 'all' || $tokoId && $tokoId !== 'all' || $statusBanding &&
+                        $statusBanding !== 'all' || $startDate || $endDate)
                         <div class="alert alert-info alert-dismissible fade show mb-4" role="alert">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
@@ -157,6 +169,11 @@
                                     @endphp
                                     <span class="badge bg-success ms-2 me-2">
                                         Toko: {{ $selectedToko->nama ?? ($tokoOptions[$tokoId] ?? '') }}
+                                    </span>
+                                    @endif
+                                    @if($statusBanding && $statusBanding !== 'all')
+                                    <span class="badge bg-warning ms-2 me-2">
+                                        Status: {{ $statusBandingOptions[$statusBanding] ?? $statusBanding }}
                                     </span>
                                     @endif
                                     @if($startDate)
@@ -187,7 +204,7 @@
                                     <tr>
                                         <th>#</th>
                                         <th>Tanggal</th>
-                                        <th>Toko</th> <!-- Kolom baru -->
+                                        <th>Toko</th>
                                         <th>No. Resi</th>
                                         <th>No. Pesanan</th>
                                         <th>No. Pengajuan</th>
@@ -289,8 +306,8 @@
                             <div class="text-center py-4">
                                 <i class="fas fa-balance-scale fa-3x text-muted mb-3"></i>
                                 <p class="text-muted">Belum ada data banding.</p>
-                                @if($marketplace && $marketplace !== 'all' || $tokoId && $tokoId !== 'all' || $startDate
-                                || $endDate)
+                                @if($marketplace && $marketplace !== 'all' || $tokoId && $tokoId !== 'all' ||
+                                $statusBanding && $statusBanding !== 'all' || $startDate || $endDate)
                                 <p class="text-warning mb-3">Tidak ada data dengan filter yang dipilih.</p>
                                 @endif
                                 <div class="d-flex justify-content-center gap-2">

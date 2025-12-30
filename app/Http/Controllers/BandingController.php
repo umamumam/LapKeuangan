@@ -18,6 +18,7 @@ class BandingController extends Controller
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
         $tokoId = $request->input('toko_id');
+        $statusBanding = $request->input('status_banding');
 
         if (!$startDate && !$endDate) {
             $startDate = now()->startOfMonth()->format('Y-m-d');
@@ -35,22 +36,28 @@ class BandingController extends Controller
         if ($endDate) {
             $query->whereDate('tanggal', '<=', $endDate);
         }
-        if ($tokoId && $tokoId !== 'all') { // Tambahkan filter toko
+        if ($tokoId && $tokoId !== 'all') {
             $query->where('toko_id', $tokoId);
+        }
+        if ($statusBanding && $statusBanding !== 'all') {
+            $query->where('status_banding', $statusBanding);
         }
 
         $bandings = $query->orderBy('tanggal', 'desc')->get();
         $marketplaceOptions = Banding::getMarketplaceOptions();
         $tokoOptions = Toko::pluck('nama', 'id');
+        $statusBandingOptions = Banding::getStatusBandingOptions();
 
         return view('bandings.index', compact(
             'bandings',
             'marketplaceOptions',
             'tokoOptions',
+            'statusBandingOptions',
             'marketplace',
             'startDate',
             'endDate',
-            'tokoId'
+            'tokoId',
+            'statusBanding'
         ));
     }
 
