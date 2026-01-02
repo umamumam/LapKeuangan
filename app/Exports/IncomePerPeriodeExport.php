@@ -54,8 +54,13 @@ class IncomePerPeriodeExport implements FromCollection, WithHeadings, WithMappin
 
         $laba = $income->total_penghasilan - $totalHpp;
 
+        $noPesanan = $income->no_pesanan;
+        if (is_numeric($noPesanan) && ctype_digit((string) $noPesanan)) {
+            $noPesanan = "'" . $noPesanan;
+        }
+
         return [
-            "'" . $income->no_pesanan, // Tambahkan apostrophe agar Excel baca sebagai teks
+            $noPesanan,
             $income->no_pengajuan ?? '-',
             $income->total_penghasilan,
             $totalHpp,
