@@ -6,8 +6,10 @@ use App\Models\Income;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
-class IncomePerPeriodeExport implements FromCollection, WithHeadings, WithMapping
+class IncomePerPeriodeExport implements FromCollection, WithHeadings, WithMapping, WithColumnFormatting
 {
     protected $periodeId;
 
@@ -21,14 +23,13 @@ class IncomePerPeriodeExport implements FromCollection, WithHeadings, WithMappin
         // Hanya ambil income dengan periode_id yang dipilih
         return Income::with(['orders.produk', 'periode.toko'])
             ->where('periode_id', $this->periodeId)
-            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'asc')
             ->get();
     }
 
     public function headings(): array
     {
         return [
-            'No',
             'No Pesanan',
             'No Pengajuan',
             'Total Penghasilan',
@@ -43,9 +44,6 @@ class IncomePerPeriodeExport implements FromCollection, WithHeadings, WithMappin
 
     public function map($income): array
     {
-        static $index = 0;
-        $index++;
-
         // Hitung HPP persis seperti di Blade
         $totalHpp = $income->orders
             ->where('periode_id', $this->periodeId) // Pakai periode_id dari constructor
@@ -56,9 +54,13 @@ class IncomePerPeriodeExport implements FromCollection, WithHeadings, WithMappin
 
         $laba = $income->total_penghasilan - $totalHpp;
 
+        $noPesanan = $income->no_pesanan;
+        if (is_numeric($noPesanan) && ctype_digit((string) $noPesanan)) {
+            $noPesanan = "'" . $noPesanan;
+        }
+
         return [
-            $index,
-            $income->no_pesanan,
+            $noPesanan,
             $income->no_pengajuan ?? '-',
             $income->total_penghasilan,
             $totalHpp,
@@ -67,6 +69,13 @@ class IncomePerPeriodeExport implements FromCollection, WithHeadings, WithMappin
             $income->periode ? $income->periode->nama_periode : '-',
             $income->periode ? $income->periode->marketplace : '-',
             $income->periode && $income->periode->toko ? $income->periode->toko->nama : '-',
+        ];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'A' => NumberFormat::FORMAT_TEXT, // Kolom No Pesanan sebagai teks
         ];
     }
 }
