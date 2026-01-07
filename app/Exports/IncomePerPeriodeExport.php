@@ -12,10 +12,13 @@ use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 class IncomePerPeriodeExport implements FromCollection, WithHeadings, WithMapping, WithColumnFormatting
 {
     protected $periodeId;
+    protected $periodeMarketplace;
 
     public function __construct($periodeId)
     {
         $this->periodeId = $periodeId;
+        // Ambil data marketplace periode untuk digunakan di perhitungan
+        $this->periodeMarketplace = \App\Models\Periode::find($periodeId)->marketplace ?? null;
     }
 
     public function collection()
@@ -44,10 +47,15 @@ class IncomePerPeriodeExport implements FromCollection, WithHeadings, WithMappin
 
     public function map($income): array
     {
-        // Hitung HPP persis seperti di Blade
+        // Hitung HPP dengan logika khusus TikTok
         $totalHpp = $income->orders
-            ->where('periode_id', $this->periodeId) // Pakai periode_id dari constructor
-            ->sum(function ($order) {
+            ->where('periode_id', $this->periodeId)
+            ->sum(function ($order) use ($income) {
+                if ($this->periodeMarketplace == 'Tiktok') {
+                    if ($income->total_penghasilan < 0) {
+                        return 0;
+                    }
+                }
                 $netQuantity = $order->jumlah - $order->returned_quantity;
                 return $netQuantity * $order->produk->hpp_produk;
             });
@@ -67,7 +75,7 @@ class IncomePerPeriodeExport implements FromCollection, WithHeadings, WithMappin
             $laba,
             $income->orders->where('periode_id', $this->periodeId)->count(),
             $income->periode ? $income->periode->nama_periode : '-',
-            $income->periode ? $income->periode->marketplace : '-',
+            $this->periodeMarketplace, // Gunakan marketplace dari constructor
             $income->periode && $income->periode->toko ? $income->periode->toko->nama : '-',
         ];
     }
