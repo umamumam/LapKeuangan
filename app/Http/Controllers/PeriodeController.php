@@ -238,7 +238,7 @@ class PeriodeController extends Controller
             $updateData['returned_quantity'] = $orders->sum('returned_quantity');
         }
 
-        // 2. HITUNG DATA DARI INCOMES (termasuk HPP)
+        // 2. HITUNG DATA DARI INCOMES (termasuk HPP dengan logika khusus TikTok)
         $incomes = Income::with(['orders.produk'])
             ->where('periode_id', $periode->id)
             ->get();
@@ -247,13 +247,21 @@ class PeriodeController extends Controller
             $updateData['jumlah_income'] = $incomes->count();
             $updateData['total_penghasilan'] = $incomes->sum('total_penghasilan');
 
-            // PERHITUNGAN HPP BERDASARKAN INCOME
+            // PERHITUNGAN HPP BERDASARKAN INCOME - DENGAN LOGIKA KHUSUS TIKTOK
             $updateData['total_hpp_produk'] = $incomes->sum(function ($income) use ($periode) {
                 // Filter orders yang terkait dengan periode ini
                 $incomeOrders = $income->orders->where('periode_id', $periode->id);
 
-                // Hitung HPP dari semua orders yang terkait dengan income ini DAN periode ini
-                return $incomeOrders->sum(function ($order) {
+                // Hitung HPP dengan logika khusus TikTok
+                return $incomeOrders->sum(function ($order) use ($periode, $income) {
+                    if ($periode->marketplace === 'Tiktok') {
+                        // Jika total_penghasilan minus, HPP = 0
+                        if ($income->total_penghasilan < 0) {
+                            return 0;
+                        }
+                    }
+
+                    // Hitung HPP normal untuk Shopee atau TikTok non-retur
                     if ($order->produk && $order->produk->hpp_produk) {
                         $netQuantity = $order->jumlah - ($order->returned_quantity ?? 0);
                         return $netQuantity * $order->produk->hpp_produk;
