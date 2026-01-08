@@ -16,7 +16,7 @@ class OrderExport implements FromCollection, WithHeadings, WithMapping, WithStyl
      */
     public function collection()
     {
-        return Order::with('produk')->orderBy('created_at', 'desc')->get();
+        return Order::with('produk')->orderBy('id', 'asc')->get();
     }
 
     public function map($order): array

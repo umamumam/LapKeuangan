@@ -41,9 +41,36 @@
                             <a href="{{ route('orders.import.form') }}" class="btn btn-info btn-sm">
                                 <i class="fas fa-file-import"></i> Import
                             </a>
-                            <a href="{{ route('orders.export') }}" class="btn btn-success btn-sm">
-                                <i class="fas fa-file-export"></i> Export
-                            </a>
+                            <div class="dropdown">
+                                <button class="btn btn-success btn-sm dropdown-toggle" type="button"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-file-export"></i> Export
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('orders.export') }}">
+                                            <i class="fas fa-download me-2"></i> Export Semua Data
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <h6 class="dropdown-header">Export per Periode:</h6>
+                                    </li>
+                                    @foreach($periodes as $periode)
+                                    <li>
+                                        <form action="{{ route('orders.export.periode') }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <input type="hidden" name="periode_id" value="{{ $periode->id }}">
+                                            <button type="submit" class="dropdown-item" style="cursor: pointer;">
+                                                <i class="fas fa-calendar-alt me-2"></i>
+                                                {{ $periode->nama_periode }}
+                                                <small class="text-muted ms-1">({{ $periode->marketplace }})</small>
+                                            </button>
+                                        </form>
+                                    </li>
+                                    @endforeach
+                                </ul>
+                            </div>
                             <a href="{{ route('orders.create') }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-plus"></i> Tambah Order
                             </a>

@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('produks', ProdukController::class);
 
     Route::get('/orders/export', [OrderController::class, 'export'])->name('orders.export');
+    Route::post('/orders/export/periode', [OrderController::class, 'exportPeriode'])->name('orders.export.periode');
     Route::get('/orders/import', [OrderController::class, 'importForm'])->name('orders.import.form');
     Route::post('/orders/import', [OrderController::class, 'import'])->name('orders.import');
     Route::get('/orders/download-template', [OrderController::class, 'downloadTemplate'])->name('orders.download.template');

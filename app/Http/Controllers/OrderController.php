@@ -20,7 +20,8 @@ class OrderController extends Controller
     {
         $orders = Order::with('produk', 'periode')->orderBy('id', 'desc')->paginate(200);
         $totalOrders = Order::count();
-        return view('orders.index', compact('orders', 'totalOrders'));
+        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
+        return view('orders.index', compact('orders', 'totalOrders', 'periodes'));
     }
 
     /**
@@ -236,6 +237,22 @@ class OrderController extends Controller
     public function downloadTemplate()
     {
         return Excel::download(new OrderExport, 'template-import-order.xlsx');
+    }
+
+    public function exportPeriode(Request $request)
+    {
+        $request->validate([
+            'periode_id' => 'required|exists:periodes,id'
+        ]);
+        $periode = Periode::findOrFail($request->periode_id);
+        // Cek apakah ada data sebelum export
+        $orderCount = Order::where('periode_id', $request->periode_id)->count();
+        if ($orderCount === 0) {
+            return redirect()->back()
+                ->with('warning', "Tidak ada data order untuk periode '{$periode->nama_periode}'");
+        }
+        $filename = 'orders-periode-' . str_replace(' ', '-', $periode->nama_periode) . '-' . date('Y-m-d-H-i-s') . '.xlsx';
+        return Excel::download(new \App\Exports\OrderPerPeriodeExport($request->periode_id), $filename);
     }
 
     public function deleteAll()
