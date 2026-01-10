@@ -42,9 +42,9 @@ class PengembalianPenukaranController extends Controller
     {
         $query = PengembalianPenukaran::query()->where('statusditerima', 'OK');
 
-        if ($request->filled('jenis')) {
-            $query->where('jenis', $request->jenis);
-        }
+        // Default filter jenis = Pengiriman Gagal, tapi bisa diubah
+        $selectedJenis = $request->filled('jenis') ? $request->jenis : 'Pengiriman Gagal';
+        $query->where('jenis', $selectedJenis);
 
         if ($request->filled('marketplace')) {
             $query->where('marketplace', $request->marketplace);
@@ -63,7 +63,8 @@ class PengembalianPenukaranController extends Controller
             'jenisOptions',
             'marketplaceOptions',
             'startDate',
-            'endDate'
+            'endDate',
+            'selectedJenis' // Kirim juga selectedJenis ke view
         ));
     }
 
@@ -71,9 +72,9 @@ class PengembalianPenukaranController extends Controller
     {
         $query = PengembalianPenukaran::query()->where('statusditerima', 'Belum');
 
-        if ($request->filled('jenis')) {
-            $query->where('jenis', $request->jenis);
-        }
+        // Default filter jenis = Pengiriman Gagal, tapi bisa diubah
+        $selectedJenis = $request->filled('jenis') ? $request->jenis : 'Pengiriman Gagal';
+        $query->where('jenis', $selectedJenis);
 
         if ($request->filled('marketplace')) {
             $query->where('marketplace', $request->marketplace);
@@ -92,7 +93,8 @@ class PengembalianPenukaranController extends Controller
             'jenisOptions',
             'marketplaceOptions',
             'startDate',
-            'endDate'
+            'endDate',
+            'selectedJenis' // Kirim juga selectedJenis ke view
         ));
     }
 
@@ -344,5 +346,45 @@ class PengembalianPenukaranController extends Controller
                 'message' => 'Gagal mengubah status: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function exportFiltered(Request $request)
+    {
+        $status = $request->status; // 'OK' atau 'Belum'
+
+        if (!in_array($status, ['OK', 'Belum'])) {
+            abort(400, 'Status tidak valid');
+        }
+
+        $query = PengembalianPenukaran::query()->where('statusditerima', $status);
+
+        // Terapkan filter
+        if ($request->filled('jenis')) {
+            $query->where('jenis', $request->jenis);
+        } else {
+            // Default filter jenis = Pengiriman Gagal
+            $query->where('jenis', 'Pengiriman Gagal');
+        }
+
+        if ($request->filled('marketplace')) {
+            $query->where('marketplace', $request->marketplace);
+        }
+
+        $startDate = $request->filled('start_date') ? $request->start_date : now()->startOfMonth()->format('Y-m-d');
+        $endDate = $request->filled('end_date') ? $request->end_date : now()->endOfMonth()->format('Y-m-d');
+        $query->whereBetween('tanggal', [$startDate, $endDate]);
+
+        $pengembalianPenukaran = $query->orderBy('tanggal', 'desc')->get();
+
+        $filename = 'data_status_' . strtolower($status) . '_' . date('Y-m-d_H-i-s') . '.xlsx';
+
+        return Excel::download(new PengembalianPenukaranExport(
+            $pengembalianPenukaran,
+            $startDate,
+            $endDate,
+            $request->jenis ?: 'Pengiriman Gagal',
+            $request->marketplace,
+            $status
+        ), $filename);
     }
 }

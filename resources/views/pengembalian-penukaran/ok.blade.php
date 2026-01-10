@@ -31,6 +31,16 @@
                             <a href="{{ route('pengembalian-penukaran.belum') }}" class="btn btn-warning btn-sm">
                                 <i class="fas fa-clock"></i> Status Belum
                             </a>
+                            <form action="{{ route('pengembalian-penukaran.export.filtered') }}" method="GET" class="d-inline">
+                                <input type="hidden" name="status" value="OK">
+                                <input type="hidden" name="start_date" value="{{ $startDate ?? '' }}">
+                                <input type="hidden" name="end_date" value="{{ $endDate ?? '' }}">
+                                <input type="hidden" name="jenis" value="{{ request('jenis') ?: 'Pengiriman Gagal' }}">
+                                <input type="hidden" name="marketplace" value="{{ request('marketplace') ?? '' }}">
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    <i class="fas fa-file-export"></i> Export
+                                </button>
+                            </form>
                         </div>
                     </div>
 

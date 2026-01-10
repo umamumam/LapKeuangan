@@ -149,6 +149,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/data-ok', [PengembalianPenukaranController::class, 'indexOK'])->name('pengembalian-penukaran.ok');
     Route::get('/data-belum', [PengembalianPenukaranController::class, 'indexBelum'])->name('pengembalian-penukaran.belum');
     Route::put('/pengembalian-penukaran/{id}/update-status', [PengembalianPenukaranController::class, 'updateStatus'])->name('pengembalian-penukaran.update-status');
+    Route::get('/pengembalian-penukaran/export/filtered', [PengembalianPenukaranController::class, 'exportFiltered'])->name('pengembalian-penukaran.export.filtered');
     Route::resource('pengembalian-penukaran', PengembalianPenukaranController::class);
 });
 

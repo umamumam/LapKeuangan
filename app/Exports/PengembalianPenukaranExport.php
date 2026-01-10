@@ -17,14 +17,16 @@ class PengembalianPenukaranExport implements FromCollection, WithHeadings, WithM
     protected $endDate;
     protected $jenis;
     protected $marketplace;
+    protected $status;
 
-    public function __construct($data, $startDate = null, $endDate = null, $jenis = null, $marketplace = null)
+    public function __construct($data, $startDate = null, $endDate = null, $jenis = null, $marketplace = null, $status = null)
     {
         $this->data = $data;
         $this->startDate = $startDate;
         $this->endDate = $endDate;
         $this->jenis = $jenis;
         $this->marketplace = $marketplace;
+        $this->status = $status;
     }
 
     public function collection()
@@ -71,6 +73,11 @@ class PengembalianPenukaranExport implements FromCollection, WithHeadings, WithM
         // Tambahkan info filter di atas header
         $filterInfo = [];
 
+        // Info status
+        if ($this->status) {
+            $filterInfo[] = 'Status: ' . $this->status;
+        }
+
         if ($this->startDate) {
             $filterInfo[] = 'Periode: ' . \Carbon\Carbon::parse($this->startDate)->format('d/m/Y');
             if ($this->endDate) {
@@ -115,6 +122,10 @@ class PengembalianPenukaranExport implements FromCollection, WithHeadings, WithM
 
     public function title(): string
     {
-        return 'Data Pengembalian Penukaran';
+        $title = 'Data Pengembalian Penukaran';
+        if ($this->status) {
+            $title .= ' - Status ' . $this->status;
+        }
+        return $title;
     }
 }
