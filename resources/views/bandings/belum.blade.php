@@ -55,7 +55,7 @@
 
                     <!-- Form Filter -->
                     <div class="card-body">
-                        <form action="{{ route('bandings.ok') }}" method="GET" class="row g-3 mb-4"> <!-- UBAH ROUTE -->
+                        <form action="{{ route('bandings.belum') }}" method="GET" class="row g-3 mb-4"> <!-- UBAH ROUTE -->
                             <div class="col-md-2">
                                 <label for="marketplace" class="form-label">Marketplace</label>
                                 <select name="marketplace" id="marketplace" class="form-select">
@@ -109,7 +109,7 @@
                                     <button type="submit" class="btn btn-primary w-50">
                                         <i class="fas fa-search"></i> Filter
                                     </button>
-                                    <a href="{{ route('bandings.ok') }}" class="btn btn-secondary w-50"> <!-- UBAH ROUTE -->
+                                    <a href="{{ route('bandings.belum') }}" class="btn btn-secondary w-50"> <!-- UBAH ROUTE -->
                                         <i class="fas fa-undo"></i> Reset
                                     </a>
                                 </div>
