@@ -144,6 +144,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/pengembalian-penukaran/import', [PengembalianPenukaranController::class, 'import'])->name('pengembalian-penukaran.import');
     Route::get('/pengembalian-penukaran/export', [PengembalianPenukaranController::class, 'export'])->name('pengembalian-penukaran.export');
     Route::delete('/pengembalian-penukaran/delete-all', [PengembalianPenukaranController::class, 'deleteAll'])->name('pengembalian-penukaran.delete-all');
+    Route::get('/scan-ok', [PengembalianPenukaranController::class, 'searchOK'])->name('pengembalian-penukaran.search.ok');
+    Route::post('/scan-ok/search', [PengembalianPenukaranController::class, 'searchResultOK'])->name('pengembalian-penukaran.search.result.ok');
     Route::resource('pengembalian-penukaran', PengembalianPenukaranController::class);
 });
 

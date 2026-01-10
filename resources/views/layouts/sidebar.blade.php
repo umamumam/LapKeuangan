@@ -108,13 +108,19 @@
                         <span class="pc-mtext">Scan Resi</span>
                     </a>
                 </li>
-                <li class="pc-item">
+                {{-- <li class="pc-item">
                     <a href="/bandings/search-ok" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-barcode"></i></span>
                         <span class="pc-mtext">Scan Resi V2</span>
                     </a>
-                </li>
+                </li> --}}
                 <li class="pc-item">
+                    <a href="/bandings/scan-ok" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-barcode"></i></span>
+                        <span class="pc-mtext">Scan Resi V2</span>
+                    </a>
+                </li>
+                {{-- <li class="pc-item">
                     <a href="/ok" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-circle-check"></i></span>
                         <span class="pc-mtext">Daftar Status Diterima OK</span>
@@ -125,7 +131,7 @@
                         <span class="pc-micon"><i class="ti ti-circle-x"></i></span>
                         <span class="pc-mtext">Status Belum Diterima</span>
                     </a>
-                </li>
+                </li> --}}
                 <li class="pc-item">
                     <a href="/pengembalian-penukaran" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-refresh"></i></span>

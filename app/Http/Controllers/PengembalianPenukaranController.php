@@ -51,6 +51,7 @@ class PengembalianPenukaranController extends Controller
             'no_hp' => 'required|string|max:20',
             'alamat' => 'required|string',
             'keterangan' => 'nullable|string',
+            'statusditerima' => 'nullable|in:' . implode(',', array_keys(PengembalianPenukaran::STATUS_DITERIMA)),
         ]);
 
         try {
@@ -78,6 +79,7 @@ class PengembalianPenukaranController extends Controller
             'no_hp' => 'required|string|max:20',
             'alamat' => 'required|string',
             'keterangan' => 'nullable|string',
+            'statusditerima' => 'nullable|in:' . implode(',', array_keys(PengembalianPenukaran::STATUS_DITERIMA)),
         ]);
 
         try {
@@ -194,6 +196,50 @@ class PengembalianPenukaranController extends Controller
             return redirect()->back()
                 ->with('error', "❌ Gagal mengimport data: " . $e->getMessage())
                 ->withInput();
+        }
+    }
+
+    // Tambahan method untuk scan OK
+    public function searchOK()
+    {
+        return view('pengembalian-penukaran.searchok');
+    }
+
+    public function searchResultOK(Request $request)
+    {
+        $request->validate([
+            'resi' => 'required|string|max:100'
+        ]);
+
+        try {
+            // Cari data berdasarkan resi_penerimaan atau resi_pengiriman
+            $data = PengembalianPenukaran::where(function($query) use ($request) {
+                $query->where('resi_penerimaan', $request->resi)
+                    ->orWhere('resi_pengiriman', $request->resi);
+            })->first();
+
+            if (!$data) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tidak ditemukan untuk nomor resi: ' . $request->resi
+                ], 404);
+            }
+
+            // OTOMATIS UPDATE statusditerima ke 'OK'
+            $data->update([
+                'statusditerima' => 'OK'
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data ditemukan dan status diterima diubah menjadi OK!',
+                'data' => $data->fresh()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('no_hp');
             $table->text('alamat');
             $table->text('keterangan')->nullable();
+            $table->enum('statusditerima', ['OK', 'Belum'])->nullable()->default('Belum'); // Kolom baru
             $table->timestamps();
         });
     }

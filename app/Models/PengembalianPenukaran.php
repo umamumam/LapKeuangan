@@ -20,10 +20,20 @@ class PengembalianPenukaran extends Model
         'no_hp',
         'alamat',
         'keterangan',
+        'statusditerima',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
+    ];
+
+    protected $attributes = [
+        'statusditerima' => 'Belum',
+    ];
+
+    const STATUS_DITERIMA = [
+        'OK' => 'OK',
+        'Belum' => 'Belum',
     ];
 
     const JENIS = [
@@ -57,6 +67,11 @@ class PengembalianPenukaran extends Model
     public function getPembayaranLabelAttribute()
     {
         return self::PEMBAYARAN[$this->pembayaran] ?? $this->pembayaran;
+    }
+
+    public function getStatusDiterimaLabelAttribute()
+    {
+        return self::STATUS_DITERIMA[$this->statusditerima] ?? $this->statusditerima;
     }
 
     public function scopeFilterByJenis($query, $jenis)
