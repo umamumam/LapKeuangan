@@ -148,6 +148,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/scan-ok/search', [PengembalianPenukaranController::class, 'searchResultOK'])->name('pengembalian-penukaran.search.result.ok');
     Route::get('/data-ok', [PengembalianPenukaranController::class, 'indexOK'])->name('pengembalian-penukaran.ok');
     Route::get('/data-belum', [PengembalianPenukaranController::class, 'indexBelum'])->name('pengembalian-penukaran.belum');
+    Route::put('/pengembalian-penukaran/{id}/update-status', [PengembalianPenukaranController::class, 'updateStatus'])->name('pengembalian-penukaran.update-status');
     Route::resource('pengembalian-penukaran', PengembalianPenukaranController::class);
 });
 

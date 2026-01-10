@@ -300,4 +300,26 @@ class PengembalianPenukaranController extends Controller
             ], 500);
         }
     }
+
+    public function updateStatus(Request $request, $id)
+    {
+        try {
+            $pengembalianPenukaran = PengembalianPenukaran::findOrFail($id);
+
+            $pengembalianPenukaran->update([
+                'statusditerima' => 'OK'
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status berhasil diubah menjadi OK!',
+                'data' => $pengembalianPenukaran->fresh()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengubah status: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -158,7 +158,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <button class="btn btn-success btn-sm" onclick="markAsOK('{{ $item->resi_penerimaan }}')">
+                                        <button class="btn btn-success btn-sm" onclick="markAsOK('{{ $item->id }}', '{{ $item->resi_penerimaan ?: $item->resi_pengiriman }}')">
                                             <i class="fas fa-check"></i> Tandai OK
                                         </button>
                                     </td>
@@ -188,7 +188,7 @@
     </div>
 
     <script>
-        function markAsOK(resi) {
+        function markAsOK(id, resi) {
             Swal.fire({
                 title: 'Tandai sebagai OK?',
                 text: "Status akan diubah menjadi OK untuk resi: " + resi,
@@ -200,21 +200,45 @@
                 cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Simpan ke localStorage untuk otomatis di-scan
-                    localStorage.setItem('auto_scan_resi', resi);
-
-                    // Redirect ke halaman scan
-                    window.location.href = "{{ route('pengembalian-penukaran.search.ok') }}";
+                    // Kirim request update status
+                    fetch('/pengembalian-penukaran/' + id + '/update-status', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: data.message,
+                                showConfirmButton: false,
+                                timer: 2000
+                            }).then(() => {
+                                // Refresh halaman setelah sukses
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal!',
+                                text: data.message
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Terjadi kesalahan: ' + error.message
+                        });
+                    });
                 }
             });
         }
-
-        // Auto-fill resi dari localStorage jika ada
-        document.addEventListener('DOMContentLoaded', function() {
-            const autoResi = localStorage.getItem('auto_scan_resi');
-            if (autoResi) {
-                localStorage.removeItem('auto_scan_resi');
-            }
-        });
     </script>
 </x-app-layout>
