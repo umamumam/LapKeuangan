@@ -69,7 +69,13 @@
                                 <i class="fas fa-file-import"></i> Import
                             </button>
                             <!-- Export Button -->
-                            <a href="{{ route('bandings.export') }}" class="btn btn-success btn-sm">
+                            <a href="{{ route('bandings.export', [
+                                    'marketplace' => $marketplace,
+                                    'start_date' => $startDate,
+                                    'end_date' => $endDate,
+                                    'toko_id' => $tokoId,
+                                    'status_banding' => $statusBanding
+                                ]) }}" class="btn btn-success btn-sm">
                                 <i class="fas fa-file-export"></i> Export
                             </a>
                             <!-- Tambah Data -->

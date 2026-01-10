@@ -228,9 +228,39 @@ class BandingController extends Controller
 
     public function export(Request $request)
     {
+        $marketplace = $request->input('marketplace');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $tokoId = $request->input('toko_id');
+        $statusBanding = $request->input('status_banding');
+
+        if (!$startDate && !$endDate) {
+            $startDate = now()->startOfMonth()->format('Y-m-d');
+            $endDate = now()->endOfMonth()->format('Y-m-d');
+        }
+
+        $query = Banding::query()->with('toko');
+
+        if ($marketplace && $marketplace !== 'all') {
+            $query->where('marketplace', $marketplace);
+        }
+        if ($startDate) {
+            $query->whereDate('tanggal', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->whereDate('tanggal', '<=', $endDate);
+        }
+        if ($tokoId && $tokoId !== 'all') {
+            $query->where('toko_id', $tokoId);
+        }
+        if ($statusBanding && $statusBanding !== 'all') {
+            $query->where('status_banding', $statusBanding);
+        }
+
+        $bandings = $query->orderBy('tanggal', 'desc')->get();
         $filename = 'data_banding_' . date('Y-m-d_H-i-s') . '.xlsx';
 
-        return Excel::download(new BandingExport(), $filename);
+        return Excel::download(new BandingExport($bandings, $startDate, $endDate, $marketplace, $tokoId, $statusBanding), $filename);
     }
 
     public function import(Request $request)
