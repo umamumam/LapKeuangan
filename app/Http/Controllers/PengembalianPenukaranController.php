@@ -38,6 +38,64 @@ class PengembalianPenukaranController extends Controller
         ));
     }
 
+    public function indexOK(Request $request)
+    {
+        $query = PengembalianPenukaran::query()->where('statusditerima', 'OK');
+
+        if ($request->filled('jenis')) {
+            $query->where('jenis', $request->jenis);
+        }
+
+        if ($request->filled('marketplace')) {
+            $query->where('marketplace', $request->marketplace);
+        }
+
+        $startDate = $request->filled('start_date') ? $request->start_date : now()->startOfMonth()->format('Y-m-d');
+        $endDate = $request->filled('end_date') ? $request->end_date : now()->endOfMonth()->format('Y-m-d');
+        $query->whereBetween('tanggal', [$startDate, $endDate]);
+
+        $pengembalianPenukaran = $query->orderBy('tanggal', 'desc')->get();
+        $jenisOptions = PengembalianPenukaran::JENIS;
+        $marketplaceOptions = PengembalianPenukaran::MARKETPLACE;
+
+        return view('pengembalian-penukaran.ok', compact(
+            'pengembalianPenukaran',
+            'jenisOptions',
+            'marketplaceOptions',
+            'startDate',
+            'endDate'
+        ));
+    }
+
+    public function indexBelum(Request $request)
+    {
+        $query = PengembalianPenukaran::query()->where('statusditerima', 'Belum');
+
+        if ($request->filled('jenis')) {
+            $query->where('jenis', $request->jenis);
+        }
+
+        if ($request->filled('marketplace')) {
+            $query->where('marketplace', $request->marketplace);
+        }
+
+        $startDate = $request->filled('start_date') ? $request->start_date : now()->startOfMonth()->format('Y-m-d');
+        $endDate = $request->filled('end_date') ? $request->end_date : now()->endOfMonth()->format('Y-m-d');
+        $query->whereBetween('tanggal', [$startDate, $endDate]);
+
+        $pengembalianPenukaran = $query->orderBy('tanggal', 'desc')->get();
+        $jenisOptions = PengembalianPenukaran::JENIS;
+        $marketplaceOptions = PengembalianPenukaran::MARKETPLACE;
+
+        return view('pengembalian-penukaran.belum', compact(
+            'pengembalianPenukaran',
+            'jenisOptions',
+            'marketplaceOptions',
+            'startDate',
+            'endDate'
+        ));
+    }
+
     public function store(Request $request)
     {
         $request->validate([

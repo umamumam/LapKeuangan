@@ -146,6 +146,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/pengembalian-penukaran/delete-all', [PengembalianPenukaranController::class, 'deleteAll'])->name('pengembalian-penukaran.delete-all');
     Route::get('/scan-ok', [PengembalianPenukaranController::class, 'searchOK'])->name('pengembalian-penukaran.search.ok');
     Route::post('/scan-ok/search', [PengembalianPenukaranController::class, 'searchResultOK'])->name('pengembalian-penukaran.search.result.ok');
+    Route::get('/data-ok', [PengembalianPenukaranController::class, 'indexOK'])->name('pengembalian-penukaran.ok');
+    Route::get('/data-belum', [PengembalianPenukaranController::class, 'indexBelum'])->name('pengembalian-penukaran.belum');
     Route::resource('pengembalian-penukaran', PengembalianPenukaranController::class);
 });
 
