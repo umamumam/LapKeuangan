@@ -176,7 +176,7 @@ class PengembalianPenukaranImport implements ToModel, WithHeadingRow, WithValida
         $value = trim((string) $value);
 
         $enums = [
-            'jenis' => ['Pengembalian', 'Penukaran', 'Pengembalian Dana'],
+            'jenis' => ['Pengembalian', 'Penukaran', 'Pengembalian Dana', 'Pengiriman Gagal'],
             'marketplace' => ['Tiktok', 'Shopee', 'Reguler'],
             'pembayaran' => ['Sistem', 'Tunai', 'DFOD']
         ];
