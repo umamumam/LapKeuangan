@@ -23,12 +23,25 @@ class Banding extends Model
         'no_hp',
         'alamat',
         'marketplace',
-        'toko_id'
+        'toko_id',
+        'statusditerima'
     ];
 
     protected $casts = [
         'tanggal' => 'datetime'
     ];
+
+    protected $attributes = [
+        'statusditerima' => 'Belum',
+    ];
+
+    public static function getStatusDiterimaOptions()
+    {
+        return [
+            'OK' => 'OK',
+            'Belum' => 'Belum'
+        ];
+    }
 
     public function toko()
     {
@@ -99,6 +112,7 @@ class Banding extends Model
             'No HP',
             'Alamat',
             'Marketplace',
+            'Status Diterima',
             'Dibuat Pada',
             'Diupdate Pada'
         ];
@@ -120,6 +134,7 @@ class Banding extends Model
             $this->no_hp,
             $this->alamat,
             $this->marketplace,
+            $this->statusditerima,
             $this->created_at->format('d/m/Y H:i'),
             $this->updated_at->format('d/m/Y H:i')
         ];

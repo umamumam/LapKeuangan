@@ -109,6 +109,18 @@
                     </a>
                 </li>
                 <li class="pc-item">
+                    <a href="/bandings/search-ok" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-barcode"></i></span>
+                        <span class="pc-mtext">Scan Resi V2</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/ok" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-circle-check"></i></span>
+                        <span class="pc-mtext">Daftar Status Diterima OK</span>
+                    </a>
+                </li>
+                <li class="pc-item">
                     <a href="/pengembalian-penukaran" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-refresh"></i></span>
                         <span class="pc-mtext">Pengembalian_Penukaran</span>

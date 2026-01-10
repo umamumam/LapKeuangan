@@ -104,6 +104,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/bandings/search-result', [BandingController::class, 'searchResult'])->name('bandings.search.result');
     Route::get('/bandings/create-with-resi/{noResi}', [BandingController::class, 'createWithResi'])->name('bandings.create-with-resi');
     Route::post('/bandings/{banding}/update-status', [BandingController::class, 'updateStatus'])->name('bandings.update-status');
+    Route::get('/ok', [BandingController::class, 'StatusOk'])->name('bandings.ok');
+    Route::get('/bandings/search-ok', [BandingController::class, 'searchOK'])->name('bandings.searchOK');
+    Route::post('/bandings/search-result-ok', [BandingController::class, 'searchResultOK'])->name('bandings.search.result.ok');
     Route::resource('bandings', BandingController::class);
 
     Route::get('/sampels/export', [SampelController::class, 'export'])->name('sampels.export');

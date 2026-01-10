@@ -34,6 +34,7 @@ return new class extends Migration
             $table->text('alamat');
             $table->enum('marketplace', ['Shopee', 'Tiktok']);
             $table->foreignId('toko_id')->constrained('tokos')->onDelete('cascade');
+            $table->enum('statusditerima', ['OK', 'Belum'])->nullable()->default('Belum'); // Kolom baru
             $table->timestamps();
 
             // Indexes

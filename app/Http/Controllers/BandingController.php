@@ -68,6 +68,7 @@ class BandingController extends Controller
         $alasanOptions = Banding::getAlasanOptions();
         $marketplaceOptions = Banding::getMarketplaceOptions();
         $statusPenerimaanOptions = Banding::getStatusPenerimaanOptions();
+        $statusditerimaOptions = ['OK' => 'OK', 'Belum' => 'Belum']; //
         $tokoOptions = Toko::pluck('nama', 'id');
 
         return view('bandings.create', compact(
@@ -76,6 +77,7 @@ class BandingController extends Controller
             'alasanOptions',
             'marketplaceOptions',
             'statusPenerimaanOptions',
+            'statusditerimaOptions',
             'tokoOptions'
         ));
     }
@@ -96,7 +98,8 @@ class BandingController extends Controller
             'no_hp' => 'nullable|string|max:20',
             'alamat' => 'required|string',
             'marketplace' => 'required|in:Shopee,Tiktok',
-            'toko_id' => 'required|exists:tokos,id'
+            'toko_id' => 'required|exists:tokos,id',
+            'statusditerima' => 'nullable|in:OK,Belum',
         ]);
 
         try {
@@ -140,6 +143,7 @@ class BandingController extends Controller
         $alasanOptions = Banding::getAlasanOptions();
         $marketplaceOptions = Banding::getMarketplaceOptions();
         $statusPenerimaanOptions = Banding::getStatusPenerimaanOptions();
+        $statusditerimaOptions = ['OK' => 'OK', 'Belum' => 'Belum']; //
         $tokoOptions = Toko::pluck('nama', 'id');
 
         return view('bandings.edit', compact(
@@ -149,6 +153,7 @@ class BandingController extends Controller
             'alasanOptions',
             'marketplaceOptions',
             'statusPenerimaanOptions',
+            'statusditerimaOptions',
             'tokoOptions'
         ));
     }
@@ -169,7 +174,8 @@ class BandingController extends Controller
             'no_hp' => 'nullable|string|max:20',
             'alamat' => 'required|string',
             'marketplace' => 'required|in:Shopee,Tiktok',
-            'toko_id' => 'required|exists:tokos,id'
+            'toko_id' => 'required|exists:tokos,id',
+            'statusditerima' => 'nullable|in:OK,Belum',
         ]);
 
         try {
@@ -285,7 +291,8 @@ class BandingController extends Controller
                 '081234567890',
                 'Jl. Contoh Alamat No. 123, Jakarta',
                 'Shopee',
-                '1'
+                '1',
+                'Belum',
             ]
         ];
 
@@ -304,7 +311,8 @@ class BandingController extends Controller
                 'no_hp' => $item[10],
                 'alamat' => $item[11],
                 'marketplace' => $item[12],
-                'toko_id' => $item[13]
+                'toko_id' => $item[13],
+                'statusditerima' => $item[14],
             ];
         }));
 
@@ -352,6 +360,7 @@ class BandingController extends Controller
         $alasanOptions = Banding::getAlasanOptions();
         $marketplaceOptions = Banding::getMarketplaceOptions();
         $statusPenerimaanOptions = Banding::getStatusPenerimaanOptions();
+        $statusditerimaOptions = ['OK' => 'OK', 'Belum' => 'Belum']; //
         $tokoOptions = Toko::pluck('nama', 'id');
 
         return view('bandings.create-with-resi', compact(
@@ -360,6 +369,7 @@ class BandingController extends Controller
             'alasanOptions',
             'marketplaceOptions',
             'statusPenerimaanOptions',
+            'statusditerimaOptions',
             'tokoOptions',
             'noResi'
         ));
@@ -389,6 +399,98 @@ class BandingController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal memperbarui status: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function StatusOk(Request $request)
+    {
+        $marketplace = $request->input('marketplace');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $tokoId = $request->input('toko_id');
+        $statusDiterima = $request->input('status_diterima');
+
+        if (!$startDate && !$endDate) {
+            $startDate = now()->startOfMonth()->format('Y-m-d');
+            $endDate = now()->endOfMonth()->format('Y-m-d');
+        }
+
+        $query = Banding::query()->with('toko');
+
+        // TAMBAH INI: Hanya yang statusditerima = 'OK'
+        $query->where('statusditerima', 'OK');
+
+        if ($marketplace && $marketplace !== 'all') {
+            $query->where('marketplace', $marketplace);
+        }
+        if ($startDate) {
+            $query->whereDate('tanggal', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->whereDate('tanggal', '<=', $endDate);
+        }
+        if ($tokoId && $tokoId !== 'all') {
+            $query->where('toko_id', $tokoId);
+        }
+        if ($statusDiterima && $statusDiterima !== 'all') {
+            $query->where('statusditerima', $statusDiterima);
+        }
+
+        $bandings = $query->orderBy('tanggal', 'desc')->get();
+        $marketplaceOptions = Banding::getMarketplaceOptions();
+        $tokoOptions = Toko::pluck('nama', 'id');
+        $statusDiterimaOptions = Banding::getStatusDiterimaOptions();
+
+        return view('bandings.ok', compact(
+            'bandings',
+            'marketplaceOptions',
+            'tokoOptions',
+            'statusDiterimaOptions',
+            'marketplace',
+            'startDate',
+            'endDate',
+            'tokoId',
+            'statusDiterima'
+        ));
+    }
+
+    public function searchOK()
+    {
+        $tokoOptions = Toko::pluck('nama', 'id');
+        return view('bandings.searchok');
+    }
+
+    public function searchResultOK(Request $request)
+    {
+        $request->validate([
+            'no_resi' => 'required|string|max:100'
+        ]);
+
+        try {
+            $banding = Banding::with('toko')->where('no_resi', $request->no_resi)->first();
+
+            if (!$banding) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tidak ditemukan untuk nomor resi: ' . $request->no_resi
+                ], 404);
+            }
+
+            // OTOMATIS UPDATE statusditerima ke 'OK'
+            $banding->update([
+                'statusditerima' => 'OK'
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data ditemukan dan status diterima diubah menjadi OK!',
+                'data' => $banding->fresh() // Reload data setelah update
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ], 500);
         }
     }
