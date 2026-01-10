@@ -187,10 +187,33 @@ class PengembalianPenukaranController extends Controller
         }
     }
 
-    public function export()
+    public function export(Request $request)
     {
+        $query = PengembalianPenukaran::query();
+
+        if ($request->filled('jenis')) {
+            $query->where('jenis', $request->jenis);
+        }
+
+        if ($request->filled('marketplace')) {
+            $query->where('marketplace', $request->marketplace);
+        }
+
+        $startDate = $request->filled('start_date') ? $request->start_date : now()->startOfMonth()->format('Y-m-d');
+        $endDate = $request->filled('end_date') ? $request->end_date : now()->endOfMonth()->format('Y-m-d');
+        $query->whereBetween('tanggal', [$startDate, $endDate]);
+
+        $pengembalianPenukaran = $query->orderBy('tanggal', 'desc')->get();
+
         $filename = 'data_pengembalian_penukaran_' . date('Y-m-d_H-i-s') . '.xlsx';
-        return Excel::download(new PengembalianPenukaranExport(), $filename);
+
+        return Excel::download(new PengembalianPenukaranExport(
+            $pengembalianPenukaran,
+            $startDate,
+            $endDate,
+            $request->jenis,
+            $request->marketplace
+        ), $filename);
     }
 
     public function import(Request $request)

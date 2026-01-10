@@ -49,8 +49,13 @@
                             <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">
                                 <i class="fas fa-file-import"></i> Import
                             </button>
-                            <a href="{{ route('pengembalian-penukaran.export') }}" class="btn btn-warning btn-sm">
-                                <i class="fas fa-file-export"></i> Export
+                            <a href="{{ route('pengembalian-penukaran.export', [
+                                    'start_date' => $startDate ?? '',
+                                    'end_date' => $endDate ?? '',
+                                    'jenis' => request('jenis') ?? '',
+                                    'marketplace' => request('marketplace') ?? ''
+                                ]) }}" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-file-export"></i> Export
                             </a>
                             @if($pengembalianPenukaran->count() > 0)
                             <button class="btn btn-danger btn-sm" onclick="confirmDeleteAll()">
