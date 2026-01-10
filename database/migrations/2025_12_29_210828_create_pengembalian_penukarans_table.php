@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('pengembalian_penukarans', function (Blueprint $table) {
             $table->id();
             $table->date('tanggal');
-            $table->enum('jenis', ['Pengembalian', 'Penukaran', 'Pengembalian Dana']);
+            $table->enum('jenis', ['Pengembalian', 'Penukaran', 'Pengembalian Dana', 'Pengiriman Gagal']);
             $table->enum('marketplace', ['Tiktok', 'Shopee', 'Reguler']);
             $table->string('resi_penerimaan')->nullable();
             $table->string('resi_pengiriman')->nullable();

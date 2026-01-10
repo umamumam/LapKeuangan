@@ -98,6 +98,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Tanggal</th>
+                                    <th>Jenis</th>
                                     <th>Resi Penerimaan</th>
                                     <th>Resi Pengiriman</th>
                                     <th>Status</th>
@@ -109,6 +110,17 @@
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
+                                    <td>
+                                        @if($item->jenis == 'Pengembalian')
+                                        <span class="badge bg-warning">{{ $item->jenis }}</span>
+                                        @elseif($item->jenis == 'Penukaran')
+                                        <span class="badge bg-info">{{ $item->jenis }}</span>
+                                        @elseif($item->jenis == 'Pengiriman Gagal')
+                                        <span class="badge bg-danger">{{ $item->jenis }}</span>
+                                        @else
+                                        <span class="badge bg-success">{{ $item->jenis }}</span>
+                                        @endif
+                                    </td>
                                     <td>{{ $item->resi_penerimaan ?? '-' }}</td>
                                     <td>{{ $item->resi_pengiriman ?? '-' }}</td>
                                     <td>

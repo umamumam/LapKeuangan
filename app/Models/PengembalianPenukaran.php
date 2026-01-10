@@ -40,6 +40,7 @@ class PengembalianPenukaran extends Model
         'Pengembalian' => 'Pengembalian',
         'Penukaran' => 'Penukaran',
         'Pengembalian Dana' => 'Pengembalian Dana',
+        'Pengiriman Gagal' => 'Pengiriman Gagal',
     ];
 
     const MARKETPLACE = [

@@ -152,6 +152,8 @@
                                         <span class="badge bg-warning">{{ $item->jenis }}</span>
                                         @elseif($item->jenis == 'Penukaran')
                                         <span class="badge bg-info">{{ $item->jenis }}</span>
+                                        @elseif($item->jenis == 'Pengiriman Gagal')
+                                        <span class="badge bg-danger">{{ $item->jenis }}</span>
                                         @else
                                         <span class="badge bg-success">{{ $item->jenis }}</span>
                                         @endif
@@ -248,6 +250,7 @@
                                     <option value="Pengembalian">Pengembalian</option>
                                     <option value="Penukaran">Penukaran</option>
                                     <option value="Pengembalian Dana">Pengembalian Dana</option>
+                                    <option value="Pengiriman Gagal">Pengiriman Gagal</option>
                                 </select>
                             </div>
                         </div>
@@ -341,6 +344,7 @@
                                     <option value="Pengembalian">Pengembalian</option>
                                     <option value="Penukaran">Penukaran</option>
                                     <option value="Pengembalian Dana">Pengembalian Dana</option>
+                                    <option value="Pengiriman Gagal">Pengiriman Gagal</option>
                                 </select>
                             </div>
                         </div>
