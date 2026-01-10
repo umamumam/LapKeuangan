@@ -121,6 +121,12 @@
                     </a>
                 </li>
                 <li class="pc-item">
+                    <a href="/belum" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-circle-x"></i></span>
+                        <span class="pc-mtext">Status Belum Diterima</span>
+                    </a>
+                </li>
+                <li class="pc-item">
                     <a href="/pengembalian-penukaran" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-refresh"></i></span>
                         <span class="pc-mtext">Pengembalian_Penukaran</span>

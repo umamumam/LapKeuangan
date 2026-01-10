@@ -44,7 +44,7 @@
                     @endif
 
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0" style="color: green"><i class="fas fa-check-circle"></i> Daftar Status OK (Sudah Diterima)</h5>
+                        <h5 class="mb-0" style="color: red"><i class="ti ti-circle-x"></i> Daftar Status Belum (Belum Diterima)</h5>
                         <div class="d-flex gap-2">
                             <!-- Export Button -->
                             <a href="{{ route('bandings.export') }}" class="btn btn-success btn-sm">
@@ -210,7 +210,7 @@
                                             </span>
                                         </td> --}}
                                         <td>
-                                            <span class="badge bg-success">
+                                            <span class="badge bg-danger">
                                                 {{ $banding->statusditerima }} <!-- GUNAKAN statusditerima BUKAN status_diterima -->
                                             </span>
                                         </td>

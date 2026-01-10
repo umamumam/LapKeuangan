@@ -86,17 +86,17 @@ class BandingController extends Controller
     {
         $request->validate([
             'tanggal' => 'required|date',
-            'status_banding' => 'nullable|in:Berhasil,Ditinjau,Ditolak',
+            'status_banding' => 'nullable|in:Berhasil,Ditinjau,Ditolak,-',
             'ongkir' => 'required|in:Dibebaskan,Ditanggung,-',
             'no_resi' => 'nullable|string|max:100',
             'no_pesanan' => 'nullable|string|max:100',
             'no_pengajuan' => 'nullable|string|max:100',
-            'alasan' => 'nullable|in:Barang Palsu,Tidak Sesuai Ekspektasi Pembeli,Barang Belum Diterima,Cacat,Jumlah Barang Retur Kurang,Bukan Produk Asli Toko',
-            'status_penerimaan' => 'required|in:Diterima dengan baik,Cacat,-',
+            'alasan' => 'nullable|in:Barang Palsu,Tidak Sesuai Ekspektasi Pembeli,Barang Belum Diterima,Cacat,Jumlah Barang Retur Kurang,Bukan Produk Asli Toko,-',
+            'status_penerimaan' => 'nullable|in:Diterima dengan baik,Cacat,-',
             'username' => 'nullable|string|max:100',
             'nama_pengirim' => 'nullable|string|max:100',
             'no_hp' => 'nullable|string|max:20',
-            'alamat' => 'required|string',
+            'alamat' => 'nullable|string',
             'marketplace' => 'required|in:Shopee,Tiktok',
             'toko_id' => 'required|exists:tokos,id',
             'statusditerima' => 'nullable|in:OK,Belum',
@@ -162,17 +162,17 @@ class BandingController extends Controller
     {
         $request->validate([
             'tanggal' => 'required|date',
-            'status_banding' => 'nullable|in:Berhasil,Ditinjau,Ditolak',
+            'status_banding' => 'nullable|in:Berhasil,Ditinjau,Ditolak,-',
             'ongkir' => 'required|in:Dibebaskan,Ditanggung,-',
             'no_resi' => 'nullable|string|max:100',
             'no_pesanan' => 'nullable|string|max:100',
             'no_pengajuan' => 'nullable|string|max:100',
-            'alasan' => 'nullable|in:Barang Palsu,Tidak Sesuai Ekspektasi Pembeli,Barang Belum Diterima,Cacat,Jumlah Barang Retur Kurang,Bukan Produk Asli Toko',
-            'status_penerimaan' => 'required|in:Diterima dengan baik,Cacat,-',
+            'alasan' => 'nullable|in:Barang Palsu,Tidak Sesuai Ekspektasi Pembeli,Barang Belum Diterima,Cacat,Jumlah Barang Retur Kurang,Bukan Produk Asli Toko,,-',
+            'status_penerimaan' => 'nullable|in:Diterima dengan baik,Cacat,-',
             'username' => 'nullable|string|max:100',
             'nama_pengirim' => 'nullable|string|max:100',
             'no_hp' => 'nullable|string|max:20',
-            'alamat' => 'required|string',
+            'alamat' => 'nullable|string',
             'marketplace' => 'required|in:Shopee,Tiktok',
             'toko_id' => 'required|exists:tokos,id',
             'statusditerima' => 'nullable|in:OK,Belum',
@@ -279,7 +279,7 @@ class BandingController extends Controller
         $sampleData = [
             [
                 '01/01/2024 10:00',
-                'Ditinjau',
+                '-',
                 'Dibebaskan',
                 'RESI123456789',
                 'PESANAN001',
@@ -378,7 +378,7 @@ class BandingController extends Controller
     public function updateStatus(Request $request, Banding $banding)
     {
         $request->validate([
-            'status_banding' => 'required|in:Berhasil,Ditinjau,Ditolak',
+            'status_banding' => 'required|in:Berhasil,Ditinjau,Ditolak,-',
             'status_penerimaan' => 'required|in:Diterima dengan baik,Cacat,-'
         ]);
 
@@ -443,6 +443,58 @@ class BandingController extends Controller
         $statusDiterimaOptions = Banding::getStatusDiterimaOptions();
 
         return view('bandings.ok', compact(
+            'bandings',
+            'marketplaceOptions',
+            'tokoOptions',
+            'statusDiterimaOptions',
+            'marketplace',
+            'startDate',
+            'endDate',
+            'tokoId',
+            'statusDiterima'
+        ));
+    }
+
+    public function StatusBelum(Request $request)
+    {
+        $marketplace = $request->input('marketplace');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $tokoId = $request->input('toko_id');
+        $statusDiterima = $request->input('status_diterima');
+
+        if (!$startDate && !$endDate) {
+            $startDate = now()->startOfMonth()->format('Y-m-d');
+            $endDate = now()->endOfMonth()->format('Y-m-d');
+        }
+
+        $query = Banding::query()->with('toko');
+
+        // TAMBAH INI: Hanya yang statusditerima = 'Belum'
+        $query->where('statusditerima', 'Belum');
+
+        if ($marketplace && $marketplace !== 'all') {
+            $query->where('marketplace', $marketplace);
+        }
+        if ($startDate) {
+            $query->whereDate('tanggal', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->whereDate('tanggal', '<=', $endDate);
+        }
+        if ($tokoId && $tokoId !== 'all') {
+            $query->where('toko_id', $tokoId);
+        }
+        if ($statusDiterima && $statusDiterima !== 'all') {
+            $query->where('statusditerima', $statusDiterima);
+        }
+
+        $bandings = $query->orderBy('tanggal', 'desc')->get();
+        $marketplaceOptions = Banding::getMarketplaceOptions();
+        $tokoOptions = Toko::pluck('nama', 'id');
+        $statusDiterimaOptions = Banding::getStatusDiterimaOptions();
+
+        return view('bandings.belum', compact(
             'bandings',
             'marketplaceOptions',
             'tokoOptions',

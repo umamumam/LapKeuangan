@@ -154,9 +154,9 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="status_penerimaan" class="form-label">Status Penerimaan *</label>
+                                        <label for="status_penerimaan" class="form-label">Status Penerimaan</label>
                                         <select class="form-select @error('status_penerimaan') is-invalid @enderror"
-                                            id="status_penerimaan" name="status_penerimaan" required>
+                                            id="status_penerimaan" name="status_penerimaan">
                                             <option value="">Pilih Status Penerimaan</option>
                                             @foreach($statusPenerimaanOptions as $value => $label)
                                             <option value="{{ $value }}" {{ old('status_penerimaan')==$value ? 'selected' : '' }}>
@@ -217,9 +217,9 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="alamat" class="form-label">Alamat *</label>
+                                <label for="alamat" class="form-label">Alamat</label>
                                 <textarea class="form-control @error('alamat') is-invalid @enderror" id="alamat"
-                                    name="alamat" rows="3" required>{{ old('alamat') }}</textarea>
+                                    name="alamat" rows="3">{{ old('alamat') }}</textarea>
                                 @error('alamat')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

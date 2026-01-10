@@ -53,7 +53,8 @@ class Banding extends Model
         return [
             'Berhasil' => 'Berhasil',
             'Ditinjau' => 'Ditinjau',
-            'Ditolak' => 'Ditolak'
+            'Ditolak' => 'Ditolak',
+            '-' => '-'
         ];
     }
 
@@ -74,7 +75,8 @@ class Banding extends Model
             'Barang Belum Diterima' => 'Barang Belum Diterima',
             'Cacat' => 'Cacat',
             'Jumlah Barang Retur Kurang' => 'Jumlah Barang Retur Kurang',
-            'Bukan Produk Asli Toko' => 'Bukan Produk Asli Toko'
+            'Bukan Produk Asli Toko' => 'Bukan Produk Asli Toko',
+            '-' => '-'
         ];
     }
 

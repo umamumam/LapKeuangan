@@ -105,6 +105,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/bandings/create-with-resi/{noResi}', [BandingController::class, 'createWithResi'])->name('bandings.create-with-resi');
     Route::post('/bandings/{banding}/update-status', [BandingController::class, 'updateStatus'])->name('bandings.update-status');
     Route::get('/ok', [BandingController::class, 'StatusOk'])->name('bandings.ok');
+    Route::get('/belum', [BandingController::class, 'StatusBelum'])->name('bandings.belum');
     Route::get('/bandings/search-ok', [BandingController::class, 'searchOK'])->name('bandings.searchOK');
     Route::post('/bandings/search-result-ok', [BandingController::class, 'searchResultOK'])->name('bandings.search.result.ok');
     Route::resource('bandings', BandingController::class);
