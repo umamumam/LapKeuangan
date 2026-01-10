@@ -42,9 +42,9 @@ class PengembalianPenukaranController extends Controller
     {
         $query = PengembalianPenukaran::query()->where('statusditerima', 'OK');
 
-        // Default filter jenis = Pengiriman Gagal, tapi bisa diubah
-        $selectedJenis = $request->filled('jenis') ? $request->jenis : 'Pengiriman Gagal';
-        $query->where('jenis', $selectedJenis);
+        if ($request->filled('jenis')) {
+            $query->where('jenis', $request->jenis);
+        }
 
         if ($request->filled('marketplace')) {
             $query->where('marketplace', $request->marketplace);
@@ -63,8 +63,7 @@ class PengembalianPenukaranController extends Controller
             'jenisOptions',
             'marketplaceOptions',
             'startDate',
-            'endDate',
-            'selectedJenis' // Kirim juga selectedJenis ke view
+            'endDate'
         ));
     }
 
@@ -72,9 +71,9 @@ class PengembalianPenukaranController extends Controller
     {
         $query = PengembalianPenukaran::query()->where('statusditerima', 'Belum');
 
-        // Default filter jenis = Pengiriman Gagal, tapi bisa diubah
-        $selectedJenis = $request->filled('jenis') ? $request->jenis : 'Pengiriman Gagal';
-        $query->where('jenis', $selectedJenis);
+        if ($request->filled('jenis')) {
+            $query->where('jenis', $request->jenis);
+        }
 
         if ($request->filled('marketplace')) {
             $query->where('marketplace', $request->marketplace);
@@ -93,8 +92,7 @@ class PengembalianPenukaranController extends Controller
             'jenisOptions',
             'marketplaceOptions',
             'startDate',
-            'endDate',
-            'selectedJenis' // Kirim juga selectedJenis ke view
+            'endDate'
         ));
     }
 
