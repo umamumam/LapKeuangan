@@ -115,7 +115,7 @@
                     </a>
                 </li> --}}
                 <li class="pc-item">
-                    <a href="/bandings/scan-ok" class="pc-link">
+                    <a href="/scan-ok" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-barcode"></i></span>
                         <span class="pc-mtext">Scan Resi V2</span>
                     </a>
