@@ -219,64 +219,37 @@ class PengembalianPenukaranController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240'
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048'
         ]);
 
         try {
             $import = new PengembalianPenukaranImport();
             Excel::import($import, $request->file('file'));
 
+            // Periksa jika ada data yang gagal
+            $failedRows = $import->getFailedRows();
+            $successCount = $import->getSuccessCount();
             $totalRows = $import->getRowCount();
-            $errors = $import->getErrors();
-            $failures = $import->failures();
 
-            $errorCount = count($errors) + count($failures);
-            $successCount = $totalRows - $errorCount;
+            if (count($failedRows) > 0) {
+                $message = "Import selesai! {$successCount} dari {$totalRows} data berhasil diimport. " .
+                        count($failedRows) . " data gagal.";
 
-            $allErrors = [];
-
-            foreach ($errors as $error) {
-                $allErrors[] = [
-                    'row' => $error['row'],
-                    'resi' => $error['resi'],
-                    'nama' => $error['nama'],
-                    'error' => $error['error'],
-                    'data' => $error['data']
-                ];
+                // Simpan data gagal ke session untuk ditampilkan
+                session()->flash('import_warning', [
+                    'message' => $message,
+                    'failed_rows' => $failedRows
+                ]);
+            } else {
+                $message = "Semua data ({$successCount}) berhasil diimport!";
+                session()->flash('success', $message);
             }
 
-            foreach ($failures as $failure) {
-                $row = $failure->row();
-                $errorsList = implode(', ', $failure->errors());
-                $values = $failure->values();
+            return redirect()->route('pengembalian-penukaran.index');
 
-                $allErrors[] = [
-                    'row' => $row,
-                    'resi' => $values['resi_penerimaan'] ?? $values['Resi Penerimaan'] ?? $values['Resi_Penerimaan'] ?? '-',
-                    'nama' => $values['nama_pengirim'] ?? $values['Nama Pengirim'] ?? $values['Nama_Pengirim'] ?? '-',
-                    'error' => $errorsList,
-                    'data' => [
-                        'tanggal' => $values['tanggal'] ?? $values['Tanggal'] ?? '-',
-                        'jenis' => $values['jenis'] ?? $values['Jenis'] ?? '-',
-                        'marketplace' => $values['marketplace'] ?? $values['Marketplace'] ?? '-',
-                        'no_hp' => $values['no_hp'] ?? $values['No HP'] ?? $values['No_HP'] ?? '-',
-                    ]
-                ];
-            }
-
-            if ($errorCount > 0) {
-                return redirect()->back()
-                    ->with('warning', "✅ $successCount data berhasil diimport\n❌ $errorCount data gagal diimport")
-                    ->with('import_errors', $allErrors)
-                    ->withInput();
-            }
-
-            return redirect()->route('pengembalian-penukaran.index')
-                ->with('success', "✅ $successCount data berhasil diimport!");
         } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', "❌ Gagal mengimport data: " . $e->getMessage())
-                ->withInput();
+            return redirect()->route('pengembalian-penukaran.index')
+                ->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
         }
     }
 

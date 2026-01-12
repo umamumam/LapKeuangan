@@ -3,201 +3,292 @@
 namespace App\Imports;
 
 use App\Models\PengembalianPenukaran;
-use Maatwebsite\Excel\Concerns\ToModel;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithValidation;
-use Maatwebsite\Excel\Concerns\SkipsOnFailure;
-use Maatwebsite\Excel\Concerns\SkipsFailures;
-use Maatwebsite\Excel\Concerns\Importable;
 use Carbon\Carbon;
-use Illuminate\Validation\Rule;
 
-class PengembalianPenukaranImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFailure
+class PengembalianPenukaranImport implements ToCollection, WithHeadingRow
 {
-    use Importable, SkipsFailures;
-
+    private $failedRows = [];
     private $rowCount = 0;
-    private $errors = [];
+    private $successCount = 0;
 
-    public function model(array $row)
+    public function collection(Collection $rows)
     {
-        $this->rowCount++;
-        $currentRow = $this->rowCount + 1;
+        $this->rowCount = count($rows);
+
+        foreach ($rows as $index => $row) {
+            $rowNumber = $index + 2; // +2 karena baris header +1 dan index dimulai dari 0
+
+            try {
+                // Ambil data dari Excel dengan berbagai kemungkinan nama kolom
+                $tanggal = $this->getCellValue($row, ['tanggal', 'date']);
+                $jenis = $this->getCellValue($row, ['jenis', 'type']);
+                $marketplace = $this->getCellValue($row, ['marketplace', 'market_place']);
+                $resiPenerimaan = $this->getCellValue($row, ['resi_penerimaan', 'resi penerimaan', 'receipt_received', 'receipt received']);
+                $resiPengiriman = $this->getCellValue($row, ['resi_pengiriman', 'resi pengiriman', 'receipt_shipped', 'receipt shipped']);
+                $pembayaran = $this->getCellValue($row, ['pembayaran', 'payment']);
+                $namaPengirim = $this->getCellValue($row, ['nama_pengirim', 'nama pengirim', 'sender_name', 'sender name']);
+                $noHp = $this->getCellValue($row, ['no_hp', 'no hp', 'phone', 'telepon', 'telephone']);
+                $alamat = $this->getCellValue($row, ['alamat', 'address']);
+                $keterangan = $this->getCellValue($row, ['keterangan', 'description', 'note']);
+                $statusditerima = $this->getCellValue($row, ['statusditerima', 'status diterima', 'status_received', 'status received']);
+
+                // Skip baris kosong
+                if (empty($namaPengirim) && empty($noHp)) {
+                    continue;
+                }
+
+                // Format tanggal dari berbagai format
+                $tanggalFormatted = $this->parseDate($tanggal, $rowNumber, $namaPengirim);
+                if (!$tanggalFormatted) {
+                    $this->failedRows[] = [
+                        'nama_pengirim' => $namaPengirim ?? 'Tidak diketahui',
+                        'row' => $rowNumber,
+                        'reason' => 'Format tanggal tidak valid: ' . $tanggal
+                    ];
+                    continue;
+                }
+
+                // Validasi nilai enum
+                $jenis = $this->validateEnum($jenis, ['Pengembalian', 'Penukaran', 'Pengembalian Dana', 'Pengiriman Gagal'], 'Jenis', $rowNumber, $namaPengirim);
+                if (!$jenis) continue;
+
+                $marketplace = $this->validateEnum($marketplace, ['Tiktok', 'Shopee', 'Reguler'], 'Marketplace', $rowNumber, $namaPengirim);
+                if (!$marketplace) continue;
+
+                $pembayaran = $this->validateEnum($pembayaran, ['Sistem', 'Tunai', 'DFOD'], 'Pembayaran', $rowNumber, $namaPengirim);
+                if (!$pembayaran) continue;
+
+                // Status diterima default ke 'Belum' jika tidak ada
+                if ($statusditerima) {
+                    $statusditerima = $this->validateEnum($statusditerima, ['OK', 'Belum'], 'Status Diterima', $rowNumber, $namaPengirim);
+                    if (!$statusditerima) continue;
+                } else {
+                    $statusditerima = 'Belum';
+                }
+
+                // Siapkan data untuk disimpan
+                $data = [
+                    'tanggal' => $tanggalFormatted,
+                    'jenis' => $jenis,
+                    'marketplace' => $marketplace,
+                    'resi_penerimaan' => $this->cleanString($resiPenerimaan),
+                    'resi_pengiriman' => $this->cleanString($resiPengiriman),
+                    'pembayaran' => $pembayaran,
+                    'nama_pengirim' => $this->cleanString($namaPengirim),
+                    'no_hp' => $this->formatPhoneNumber($noHp),
+                    'alamat' => $this->cleanString($alamat),
+                    'keterangan' => $this->cleanString($keterangan),
+                    'statusditerima' => $statusditerima,
+                ];
+
+                // Validasi data
+                $validator = Validator::make($data, [
+                    'tanggal' => 'required|date',
+                    'jenis' => 'required|in:Pengembalian,Penukaran,Pengembalian Dana,Pengiriman Gagal',
+                    'marketplace' => 'required|in:Tiktok,Shopee,Reguler',
+                    'resi_penerimaan' => 'nullable|string|max:100',
+                    'resi_pengiriman' => 'nullable|string|max:100',
+                    'pembayaran' => 'required|in:Sistem,Tunai,DFOD',
+                    'nama_pengirim' => 'required|string|max:100',
+                    'no_hp' => 'required|string|max:20',
+                    'alamat' => 'required|string',
+                    'keterangan' => 'nullable|string',
+                    'statusditerima' => 'nullable|in:OK,Belum',
+                ]);
+
+                if ($validator->fails()) {
+                    $this->failedRows[] = [
+                        'nama_pengirim' => $data['nama_pengirim'] ?? 'Tidak diketahui',
+                        'row' => $rowNumber,
+                        'reason' => implode(', ', $validator->errors()->all())
+                    ];
+                    continue;
+                }
+
+                // Create data
+                PengembalianPenukaran::create($data);
+                $this->successCount++;
+
+            } catch (\Exception $e) {
+                $this->failedRows[] = [
+                    'nama_pengirim' => $namaPengirim ?? 'Tidak diketahui',
+                    'row' => $rowNumber,
+                    'reason' => $e->getMessage()
+                ];
+                continue;
+            }
+        }
+    }
+
+    /**
+     * Helper untuk mendapatkan nilai sel dengan berbagai kemungkinan nama kolom
+     */
+    private function getCellValue($row, $possibleKeys)
+    {
+        foreach ($possibleKeys as $key) {
+            $lowerKey = strtolower($key);
+            $snakeKey = str_replace(' ', '_', $lowerKey);
+            $camelKey = str_replace(' ', '', ucwords(str_replace('_', ' ', $key)));
+            $pascalKey = ucfirst($camelKey);
+
+            $keysToCheck = [$key, $lowerKey, $snakeKey, $camelKey, $pascalKey];
+
+            foreach ($keysToCheck as $checkKey) {
+                if (isset($row[$checkKey]) && !empty($row[$checkKey]) && $row[$checkKey] !== '') {
+                    return $row[$checkKey];
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Parse tanggal dari berbagai format
+     */
+    private function parseDate($dateValue, $rowNumber, $namaPengirim)
+    {
+        if (empty($dateValue)) {
+            return null;
+        }
 
         try {
-            $tanggal = $this->parseDate($row['tanggal'] ?? $row['Tanggal'] ?? null, $currentRow);
-            $noHp = $this->formatPhoneNumber($row['no_hp'] ?? $row['No HP'] ?? $row['No_HP'] ?? '', $currentRow);
-
-            $resiPenerimaan = $row['resi_penerimaan'] ?? $row['Resi Penerimaan'] ?? $row['Resi_Penerimaan'] ?? null;
-            $resiPengiriman = $row['resi_pengiriman'] ?? $row['Resi Pengiriman'] ?? $row['Resi_Pengiriman'] ?? null;
-
-            $jenis = $this->normalizeEnum($row['jenis'] ?? $row['Jenis'] ?? null, 'jenis', $currentRow);
-            $marketplace = $this->normalizeEnum($row['marketplace'] ?? $row['Marketplace'] ?? null, 'marketplace', $currentRow);
-            $pembayaran = $this->normalizeEnum($row['pembayaran'] ?? $row['Pembayaran'] ?? null, 'pembayaran', $currentRow);
-
-            $namaPengirim = $row['nama_pengirim'] ?? $row['Nama Pengirim'] ?? $row['Nama_Pengirim'] ?? null;
-            $alamat = $row['alamat'] ?? $row['Alamat'] ?? null;
-            $keterangan = $row['keterangan'] ?? $row['Keterangan'] ?? null;
-
-            if (empty($namaPengirim)) {
-                throw new \Exception("Nama pengirim tidak boleh kosong");
+            // Coba parse dari format Excel (serial number)
+            if (is_numeric($dateValue)) {
+                $date = Carbon::create(1899, 12, 30)->addDays($dateValue);
+                return $date->format('Y-m-d');
             }
 
-            if (empty($alamat)) {
-                throw new \Exception("Alamat tidak boleh kosong");
+            // Coba parse dari berbagai format tanggal
+            $formats = [
+                'd/m/Y', 'd-m-Y', 'Y-m-d', 'Y/m/d',
+                'd/m/y', 'd-m-y', 'm/d/Y', 'm-d-Y'
+            ];
+
+            foreach ($formats as $format) {
+                try {
+                    $date = Carbon::createFromFormat($format, $dateValue);
+                    return $date->format('Y-m-d');
+                } catch (\Exception $e) {
+                    continue;
+                }
             }
 
-            return new PengembalianPenukaran([
-                'tanggal' => $tanggal,
-                'jenis' => $jenis,
-                'marketplace' => $marketplace,
-                'resi_penerimaan' => $resiPenerimaan,
-                'resi_pengiriman' => $resiPengiriman,
-                'pembayaran' => $pembayaran,
-                'nama_pengirim' => $namaPengirim,
-                'no_hp' => $noHp,
-                'alamat' => $alamat,
-                'keterangan' => $keterangan,
-            ]);
+            // Coba parse secara otomatis
+            $date = Carbon::parse($dateValue);
+            return $date->format('Y-m-d');
 
         } catch (\Exception $e) {
-            $this->errors[] = [
-                'row' => $currentRow,
-                'resi' => $resiPenerimaan ?? '-',
-                'nama' => $row['nama_pengirim'] ?? $row['Nama Pengirim'] ?? $row['Nama_Pengirim'] ?? '-',
-                'error' => $e->getMessage(),
-                'data' => [
-                    'tanggal' => $row['tanggal'] ?? $row['Tanggal'] ?? '-',
-                    'jenis' => $row['jenis'] ?? $row['Jenis'] ?? '-',
-                    'marketplace' => $row['marketplace'] ?? $row['Marketplace'] ?? '-',
-                    'no_hp' => $row['no_hp'] ?? $row['No HP'] ?? $row['No_HP'] ?? '-',
-                ]
-            ];
             return null;
         }
     }
 
-    public function rules(): array
+    /**
+     * Validasi nilai enum
+     */
+    private function validateEnum($value, $allowedValues, $fieldName, $rowNumber, $namaPengirim)
     {
-        return [
-            '*.tanggal' => ['required'],
-            '*.jenis' => ['required'],
-            '*.marketplace' => ['required'],
-            '*.pembayaran' => ['required'],
-            '*.nama_pengirim' => ['required'],
-            '*.no_hp' => ['required'],
-            '*.alamat' => ['required'],
-        ];
-    }
-
-    public function customValidationMessages()
-    {
-        return [
-            'tanggal.required' => 'Tanggal wajib diisi',
-            'jenis.required' => 'Jenis wajib diisi',
-            'marketplace.required' => 'Marketplace wajib diisi',
-            'pembayaran.required' => 'Pembayaran wajib diisi',
-            'nama_pengirim.required' => 'Nama pengirim wajib diisi',
-            'no_hp.required' => 'No HP wajib diisi',
-            'alamat.required' => 'Alamat wajib diisi',
-        ];
-    }
-
-    private function parseDate($date, $rowNumber)
-    {
-        if (empty($date)) {
-            throw new \Exception("Tanggal tidak boleh kosong");
-        }
-
-        try {
-            if (is_numeric($date)) {
-                if ($date < 60) {
-                    $date += 1;
-                }
-                $unixTimestamp = ($date - 25569) * 86400;
-                return Carbon::createFromTimestamp($unixTimestamp)->format('Y-m-d');
+        if (empty($value)) {
+            if ($fieldName === 'Jenis' || $fieldName === 'Marketplace' || $fieldName === 'Pembayaran') {
+                $this->failedRows[] = [
+                    'nama_pengirim' => $namaPengirim ?? 'Tidak diketahui',
+                    'row' => $rowNumber,
+                    'reason' => $fieldName . ' tidak boleh kosong'
+                ];
+                return false;
             }
-
-            return Carbon::parse($date)->format('Y-m-d');
-        } catch (\Exception $e) {
-            throw new \Exception("Format tanggal tidak valid: '$date'");
+            return null;
         }
+
+        // Cari kecocokan case-insensitive
+        foreach ($allowedValues as $allowedValue) {
+            if (strcasecmp($value, $allowedValue) === 0) {
+                return $allowedValue;
+            }
+        }
+
+        $this->failedRows[] = [
+            'nama_pengirim' => $namaPengirim ?? 'Tidak diketahui',
+            'row' => $rowNumber,
+            'reason' => $fieldName . ' tidak valid: ' . $value . '. Harus salah satu dari: ' . implode(', ', $allowedValues)
+        ];
+        return false;
     }
 
-    private function formatPhoneNumber($phone, $rowNumber)
+    /**
+     * Format nomor telepon
+     */
+    private function formatPhoneNumber($phone)
     {
         if (empty($phone)) {
-            throw new \Exception("No HP tidak boleh kosong");
+            return '';
         }
 
-        $originalPhone = $phone;
         $phone = (string) $phone;
-
-        if (strpos($phone, 'E+') !== false) {
-            $phone = (string) floatval($phone);
-            $phone = rtrim($phone, '.0');
-        }
-
         $phone = preg_replace('/[^0-9]/', '', $phone);
 
-        if (empty($phone)) {
-            throw new \Exception("No HP harus mengandung angka");
-        }
-
-        if (strlen($phone) < 1) {
-            throw new \Exception("No HP terlalu pendek: '$originalPhone'");
-        }
-
-        if (strlen($phone) > 15) {
-            throw new \Exception("No HP terlalu panjang: '$originalPhone'");
-        }
-
-        if (strpos($phone, '0') === 0) {
+        // Jika diawali dengan 0, ganti dengan 62
+        if (substr($phone, 0, 1) === '0') {
             $phone = '62' . substr($phone, 1);
         }
 
-        if (strpos($phone, '62') !== 0) {
-            if (strlen($phone) >= 10 && strlen($phone) <= 12) {
-                $phone = '62' . $phone;
-            } else {
-                throw new \Exception("Format no HP tidak dikenali: '$originalPhone'");
-            }
+        // Jika tidak diawali dengan 62, tambahkan
+        if (substr($phone, 0, 2) !== '62') {
+            $phone = '62' . $phone;
         }
 
-        return '+' . $phone;
+        return $phone;
     }
 
-    private function normalizeEnum($value, $type, $rowNumber)
+    /**
+     * Clean string (trim dan hapus karakter yang tidak perlu)
+     */
+    private function cleanString($value)
     {
         if (empty($value)) {
-            throw new \Exception(ucfirst($type) . " tidak boleh kosong");
+            return null;
         }
 
-        $value = trim((string) $value);
+        $value = trim($value);
 
-        $enums = [
-            'jenis' => ['Pengembalian', 'Penukaran', 'Pengembalian Dana', 'Pengiriman Gagal'],
-            'marketplace' => ['Tiktok', 'Shopee', 'Reguler'],
-            'pembayaran' => ['Sistem', 'Tunai', 'DFOD']
-        ];
+        // Hilangkan spasi berlebih
+        $value = preg_replace('/\s+/', ' ', $value);
 
-        foreach ($enums[$type] as $enum) {
-            if (strtolower($value) === strtolower($enum)) {
-                return $enum;
-            }
-        }
-
-        $allowed = implode(', ', $enums[$type]);
-        throw new \Exception(ucfirst($type) . " '$value' tidak valid. Harus salah satu dari: $allowed");
+        return $value;
     }
 
-    public function getRowCount(): int
+    /**
+     * Get failed rows
+     */
+    public function getFailedRows()
+    {
+        return $this->failedRows;
+    }
+
+    /**
+     * Get total rows processed
+     */
+    public function getRowCount()
     {
         return $this->rowCount;
     }
 
-    public function getErrors(): array
+    /**
+     * Get success count
+     */
+    public function getSuccessCount()
     {
-        return $this->errors;
+        return $this->successCount;
+    }
+
+    /**
+     * Get failed count
+     */
+    public function getFailedCount()
+    {
+        return count($this->failedRows);
     }
 }

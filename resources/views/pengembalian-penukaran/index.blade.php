@@ -43,6 +43,32 @@
                     </script>
                     @endif
 
+                    @if(session('import_warning'))
+                    <script>
+                        document.addEventListener("DOMContentLoaded", function() {
+                            const importData = @json(session('import_warning'));
+
+                            // Format failed rows untuk ditampilkan
+                            let failedDetails = '';
+                            if (importData.failed_rows && importData.failed_rows.length > 0) {
+                                failedDetails = '<br><br><strong>Data yang gagal:</strong><br>';
+                                importData.failed_rows.forEach(function(row, index) {
+                                    failedDetails += `${index + 1}. Baris ${row.row} - ${row.nama_pengirim}: ${row.reason}<br>`;
+                                });
+                            }
+
+                            Swal.fire({
+                                icon: "warning",
+                                title: "Import Selesai",
+                                html: importData.message + failedDetails,
+                                showConfirmButton: true,
+                                confirmButtonText: "OK",
+                                width: '600px'
+                            });
+                        });
+                    </script>
+                    @endif
+
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="fas fa-exchange-alt"></i> Daftar Pengembalian & Penukaran</h5>
                         <div class="d-flex gap-2">
