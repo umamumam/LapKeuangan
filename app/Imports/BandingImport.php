@@ -71,12 +71,12 @@ class BandingImport implements ToCollection, WithHeadingRow
 
                 $data = [
                     'tanggal' => $parsedDate,
-                    'status_banding' => $statusBanding ?: 'Ditinjau',
+                    'status_banding' => $statusBanding ?: '-',
                     'ongkir' => $ongkir ?: '-',
                     'no_resi' => $this->parseStringValue($noResi),
                     'no_pesanan' => $this->parseStringValue($noPesanan),
                     'no_pengajuan' => $this->parseStringValue($noPengajuan),
-                    'alasan' => $alasan ?: 'Barang Belum Diterima',
+                    'alasan' => $alasan ?: '-',
                     'status_penerimaan' => $statusPenerimaan ?: '-',
                     'username' => $username ?: '-',
                     'nama_pengirim' => $namaPengirim ?: '-',
@@ -93,7 +93,7 @@ class BandingImport implements ToCollection, WithHeadingRow
                     'tanggal' => 'required|date',
                     'status_banding' => [
                         'required',
-                        Rule::in(['Berhasil', 'Ditinjau', 'Ditolak'])
+                        Rule::in(['Berhasil', 'Ditinjau', 'Ditolak', '-'])
                     ],
                     'ongkir' => [
                         'required',
@@ -114,7 +114,8 @@ class BandingImport implements ToCollection, WithHeadingRow
                             'Barang Belum Diterima',
                             'Cacat',
                             'Jumlah Barang Retur Kurang',
-                            'Bukan Produk Asli Toko'
+                            'Bukan Produk Asli Toko',
+                            '-'
                         ])
                     ],
                     'status_penerimaan' => [
