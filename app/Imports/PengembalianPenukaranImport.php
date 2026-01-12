@@ -165,7 +165,9 @@ class PengembalianPenukaranImport implements ToCollection, WithHeadingRow
             // Coba parse dari berbagai format tanggal
             $formats = [
                 'd/m/Y', 'd-m-Y',
-                'd/m/y', 'd-m-y'
+                'd/m/y', 'd-m-y',
+                'd/m/Y H:i:s', 'd-m-Y H:i:s',    // dengan waktu detik
+                'd/m/Y H:i', 'd-m-Y H:i',        // dengan waktu menit
             ];
 
             foreach ($formats as $format) {
