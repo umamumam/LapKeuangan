@@ -71,25 +71,25 @@
                         <!-- Container untuk sampel -->
                         <div id="sampel-container">
                             @php
-                                // Ambil data sampel yang sudah ada
-                                // Gunakan data lama untuk kompatibilitas jika belum ada relasi items
-                                $sampelItems = $pengirimanSampel->pengirimanSampelItems ?? [];
-
-                                // Untuk data lama yang masih single sampel, konversi ke format array
-                                if (count($sampelItems) === 0 && $pengirimanSampel->sampel_id) {
-                                    $sampelItems = [['sampel_id' => $pengirimanSampel->sampel_id, 'jumlah' => $pengirimanSampel->jumlah]];
+                                // Cek berapa banyak sampel yang sudah terisi (tidak null)
+                                $filledSamples = 0;
+                                for ($i = 1; $i <= 5; $i++) {
+                                    if (!empty($pengirimanSampel->{"sampel{$i}_id"})) {
+                                        $filledSamples = $i;
+                                    }
                                 }
-
-                                $sampelCount = count($sampelItems) ?: 1;
+                                // Minimal tampilkan 1 baris jika semua kosong
+                                $sampelCount = max($filledSamples, 1);
                             @endphp
 
                             @for ($i = 1; $i <= 5; $i++)
                                 @php
-                                    $sampelItem = $sampelItems[$i-1] ?? null;
-                                    $isVisible = $i <= $sampelCount;
+                                    $sampelId = old("sampel{$i}_id", $pengirimanSampel->{"sampel{$i}_id"});
+                                    $jumlah = old("jumlah{$i}", $pengirimanSampel->{"jumlah{$i}"});
+
+                                    // Tampilkan baris jika index <= jumlah yang terisi, atau jika ada error validasi di baris tersebut
+                                    $isVisible = ($i <= $sampelCount) || old("sampel{$i}_id") || $errors->has("sampel{$i}_id");
                                     $displayStyle = $isVisible ? 'display: flex' : 'display: none';
-                                    $sampelId = $sampelItem['sampel_id'] ?? $sampelItem->sampel_id ?? null;
-                                    $jumlah = $sampelItem['jumlah'] ?? $sampelItem->jumlah ?? 0;
                                 @endphp
 
                                 <div class="row mb-3 sampel-row" data-index="{{ $i }}" style="{{ $displayStyle }}">
@@ -99,13 +99,12 @@
                                             <select
                                                 class="form-control sampel-select @error('sampel'.$i.'_id') is-invalid @enderror"
                                                 id="sampel{{ $i }}_id" name="sampel{{ $i }}_id" data-trigger
-                                                data-index="{{ $i }}" onchange="calculateTotal()">
+                                                data-index="{{ $i }}">
                                                 <option value="">Pilih Sampel (Opsional)</option>
                                                 @foreach($sampels as $sampel)
-                                                <option value="{{ $sampel->id }}" data-harga="{{ $sampel->harga }}" {{
-                                                    old('sampel'.$i.'_id', $sampelId) == $sampel->id ? 'selected' : '' }}>
-                                                    {{ $sampel->nama }} - {{ $sampel->ukuran }} (Rp {{
-                                                    number_format($sampel->harga, 0, ',', '.') }})
+                                                <option value="{{ $sampel->id }}" data-harga="{{ $sampel->harga }}"
+                                                    {{ $sampelId == $sampel->id ? 'selected' : '' }}>
+                                                    {{ $sampel->nama }} - {{ $sampel->ukuran }} (Rp {{ number_format($sampel->harga, 0, ',', '.') }})
                                                 </option>
                                                 @endforeach
                                             </select>
@@ -120,8 +119,8 @@
                                             <input type="number"
                                                 class="form-control jumlah-input @error('jumlah'.$i) is-invalid @enderror"
                                                 id="jumlah{{ $i }}" name="jumlah{{ $i }}"
-                                                value="{{ old('jumlah'.$i, $jumlah) }}" min="0"
-                                                data-index="{{ $i }}" onchange="calculateTotal()">
+                                                value="{{ $jumlah }}" min="0"
+                                                data-index="{{ $i }}">
                                             @error('jumlah'.$i)
                                             <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
