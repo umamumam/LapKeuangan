@@ -219,8 +219,8 @@
                                         <th>Status Banding</th>
                                         <th>Alasan</th>
                                         <th>Ongkir</th>
-                                        <th>Nama Pengirim</th>
-                                        <th>No. HP</th>
+                                        {{-- <th>Nama Pengirim</th>
+                                        <th>No. HP</th> --}}
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
@@ -275,14 +275,14 @@
                                                 {{ $banding->ongkir }}
                                             </span>
                                         </td>
-                                        <td>{{ $banding->nama_pengirim }}</td>
+                                        {{-- <td>{{ $banding->nama_pengirim }}</td>
                                         <td>
                                             @if($banding->no_hp)
                                             {{ $banding->no_hp }}
                                             @else
                                             <span class="text-muted">-</span>
                                             @endif
-                                        </td>
+                                        </td> --}}
                                         <td>
                                             <div class="d-flex gap-2">
                                                 <a href="{{ route('bandings.show', $banding->id) }}"
