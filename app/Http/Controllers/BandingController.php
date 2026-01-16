@@ -47,6 +47,7 @@ class BandingController extends Controller
         $marketplaceOptions = Banding::getMarketplaceOptions();
         $tokoOptions = Toko::pluck('nama', 'id');
         $statusBandingOptions = Banding::getStatusBandingOptions();
+        session(['last_banding_index_url' => $request->fullUrl()]);
 
         return view('bandings.index', compact(
             'bandings',
@@ -180,8 +181,8 @@ class BandingController extends Controller
 
         try {
             $banding->update($request->all());
-
-            return redirect()->route('bandings.index')
+            $url = session('last_banding_index_url', route('bandings.index'));
+            return redirect()->to($url)
                 ->with('success', 'Data banding berhasil diperbarui!');
         } catch (\Exception $e) {
             return redirect()->back()
