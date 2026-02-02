@@ -616,4 +616,83 @@ class PeriodeController extends Controller
             ], 500);
         }
     }
+
+    public function edit($id)
+    {
+        $periode = Periode::with('toko')->findOrFail($id);
+
+        $tokos = Toko::orderBy('nama')->get();
+        $marketplaces = ['Shopee', 'Tiktok'];
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'periode' => $periode,
+                'tokos' => $tokos,
+                'marketplaces' => $marketplaces
+            ]
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'nama_periode' => 'required|string|max:100',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
+            'toko_id' => 'required|exists:tokos,id',
+            'marketplace' => 'required|in:Shopee,Tiktok',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $periode = Periode::findOrFail($id);
+
+            // Cek duplikasi (kecuali data sendiri)
+            $existing = Periode::where('nama_periode', $request->nama_periode)
+                ->where('toko_id', $request->toko_id)
+                ->where('marketplace', $request->marketplace)
+                ->where('id', '!=', $id)
+                ->first();
+
+            if ($existing) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Periode dengan nama, toko, dan marketplace yang sama sudah ada'
+                ], 422);
+            }
+
+            // Update data
+            $periode->update([
+                'nama_periode' => $request->nama_periode,
+                'tanggal_mulai' => $request->tanggal_mulai,
+                'tanggal_selesai' => $request->tanggal_selesai,
+                'toko_id' => $request->toko_id,
+                'marketplace' => $request->marketplace,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Periode berhasil diperbarui',
+                'data' => $periode
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui periode: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
