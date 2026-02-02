@@ -28,6 +28,7 @@ class PengembalianPenukaranController extends Controller
         $pengembalianPenukaran = $query->orderBy('tanggal', 'desc')->get();
         $jenisOptions = PengembalianPenukaran::JENIS;
         $marketplaceOptions = PengembalianPenukaran::MARKETPLACE;
+        session(['last_pengembalian_index_url' => $request->fullUrl()]);
 
         return view('pengembalian-penukaran.index', compact(
             'pengembalianPenukaran',
@@ -142,8 +143,8 @@ class PengembalianPenukaranController extends Controller
 
         try {
             $pengembalianPenukaran->update($request->all());
-
-            return redirect()->route('pengembalian-penukaran.index')
+            $url = session('last_pengembalian_index_url', route('pengembalian-penukaran.index'));
+            return redirect()->to($url)
                 ->with('success', 'Data pengembalian/penukaran berhasil diperbarui!');
         } catch (\Exception $e) {
             return redirect()->back()
