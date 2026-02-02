@@ -43,6 +43,7 @@ class PengirimanSampelController extends Controller
 
         $pengirimanSampels = $query->orderBy('tanggal', 'desc')->get();
         $tokoOptions = Toko::pluck('nama', 'id'); // Ambil data toko untuk dropdown
+        session(['last_sampel_index_url' => $request->fullUrl()]);
 
         return view('pengiriman-sampels.index', compact('pengirimanSampels', 'tokoOptions', 'tokoId', 'startDate', 'endDate'));
     }
@@ -226,7 +227,8 @@ class PengirimanSampelController extends Controller
 
             DB::commit();
 
-            return redirect()->route('pengiriman-sampels.index')
+            $url = session('last_sampel_index_url', route('pengiriman-sampels.index'));
+            return redirect()->to($url)
                 ->with('success', 'Data pengiriman sampel berhasil diperbarui.');
         } catch (\Exception $e) {
             DB::rollBack();
