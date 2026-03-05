@@ -27,7 +27,7 @@ class ProdukController extends Controller
         })
         ->orderBy('created_at', 'desc')
         ->get();
-
+        session(['last_produk_index_url' => $request->fullUrl()]);
         return view('produks.index', compact('produks'));
     }
 
@@ -79,7 +79,10 @@ class ProdukController extends Controller
 
         try {
             $produk->update($request->all());
-            return redirect()->route('produks.index')
+            // return redirect()->route('produks.index')
+            //     ->with('success', 'Produk berhasil diperbarui!');
+            $url = session('last_produk_index_url', route('produks.index'));
+            return redirect()->to($url)
                 ->with('success', 'Produk berhasil diperbarui!');
         } catch (\Exception $e) {
             return redirect()->back()
