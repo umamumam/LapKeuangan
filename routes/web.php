@@ -121,6 +121,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/pengiriman-sampels-export', [PengirimanSampelController::class, 'export'])->name('pengiriman-sampels.export');
     Route::post('/pengiriman-sampels-import', [PengirimanSampelController::class, 'import'])->name('pengiriman-sampels.import');
     Route::get('/pengiriman-sampels-rekap', [PengirimanSampelController::class, 'rekap'])->name('pengiriman-sampels.rekap');
+    Route::delete('pengembalian-penukaran/delete-by-filter', [PengembalianPenukaranController::class, 'deleteByFilter'])->name('pengembalian-penukaran.delete-by-filter');
     Route::resource('pengiriman-sampels', PengirimanSampelController::class);
 
     Route::prefix('periodes')->name('periodes.')->group(function () {

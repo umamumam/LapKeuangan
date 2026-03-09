@@ -93,6 +93,20 @@
                                 @method('DELETE')
                             </form>
                             @endif
+                            {{-- Tombol Hapus by Filter --}}
+                            <button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteByFilter()">
+                                <i class="fas fa-filter"></i> Hapus Filter
+                            </button>
+                            <form id="deleteByFilterForm"
+                                action="{{ route('pengembalian-penukaran.delete-by-filter') }}"
+                                method="POST" style="display: none;">
+                                @csrf
+                                @method('DELETE')
+                                <input type="hidden" name="start_date" id="filter_start_date">
+                                <input type="hidden" name="end_date"   id="filter_end_date">
+                                <input type="hidden" name="jenis"      id="filter_jenis">
+                                <input type="hidden" name="marketplace" id="filter_marketplace">
+                            </form>
                             <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createModal">
                                 <i class="fas fa-plus"></i> Tambah Data
                             </button>
@@ -527,6 +541,40 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     document.getElementById('deleteAllForm').submit();
+                }
+            });
+        }
+
+        function confirmDeleteByFilter() {
+            const startDate  = document.getElementById('start_date').value;
+            const endDate    = document.getElementById('end_date').value;
+            const jenis      = document.getElementById('jenis').value;
+            const marketplace = document.getElementById('marketplace').value;
+
+            // Isi hidden form
+            document.getElementById('filter_start_date').value  = startDate;
+            document.getElementById('filter_end_date').value    = endDate;
+            document.getElementById('filter_jenis').value       = jenis;
+            document.getElementById('filter_marketplace').value = marketplace;
+
+            // Buat label info filter untuk ditampilkan di SweetAlert
+            let filterInfo = `Tanggal: <b>${startDate}</b> s/d <b>${endDate}</b>`;
+            if (jenis)       filterInfo += `<br>Jenis: <b>${jenis}</b>`;
+            if (marketplace) filterInfo += `<br>Marketplace: <b>${marketplace}</b>`;
+
+            Swal.fire({
+                title: 'Hapus Data Berdasarkan Filter?',
+                html: `Data yang akan dihapus sesuai filter aktif:<br><br>${filterInfo}<br><br>
+                    <span class="text-danger">Tindakan ini tidak dapat dibatalkan!</span>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('deleteByFilterForm').submit();
                 }
             });
         }

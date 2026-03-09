@@ -359,4 +359,41 @@ class PengembalianPenukaranController extends Controller
             $status
         ), $filename);
     }
+
+    public function deleteByFilter(Request $request)
+    {
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date'   => 'required|date|after_or_equal:start_date',
+        ]);
+
+        try {
+            $query = PengembalianPenukaran::query()
+                ->whereBetween('tanggal', [$request->start_date, $request->end_date]);
+
+            if ($request->filled('jenis')) {
+                $query->where('jenis', $request->jenis);
+            }
+
+            if ($request->filled('marketplace')) {
+                $query->where('marketplace', $request->marketplace);
+            }
+
+            $count = $query->count();
+
+            if ($count === 0) {
+                return redirect()->back()
+                    ->with('warning', 'Tidak ada data yang sesuai filter untuk dihapus.');
+            }
+
+            $query->delete();
+
+            return redirect()->route('pengembalian-penukaran.index')
+                ->with('success', "{$count} data berhasil dihapus sesuai filter!");
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+        }
+    }
 }
