@@ -53,6 +53,7 @@ class OrderImport implements ToCollection, WithHeadingRow
                     ->when($namaVariasi, function ($query) use ($namaVariasi) {
                         return $query->where('nama_variasi', $namaVariasi);
                     })
+                    ->orderByDesc('id') // ambil produk terbaru jika ada duplikat nama
                     ->first();
 
                 if (!$produk) {
