@@ -38,7 +38,8 @@
                                         <label for="resi" class="form-label fw-bold h5">Scan atau Input No Resi</label>
                                         <p class="text-muted mb-3">
                                             <i class="fas fa-info-circle text-info"></i>
-                                            Data yang ditemukan akan otomatis diubah statusnya menjadi <strong>OK</strong>
+                                            Data yang ditemukan akan otomatis diubah statusnya menjadi
+                                            <strong>OK</strong>
                                         </p>
                                         <div class="input-group input-group-lg">
                                             <input type="text" class="form-control form-control-lg" id="resi"
@@ -59,9 +60,11 @@
                                     <div id="scanner-area" class="text-center mb-4" style="display: none;">
                                         <div class="alert alert-info mb-3">
                                             <i class="fas fa-info-circle"></i> Arahkan kamera ke barcode
-                                            <button type="button" class="btn-close float-end" id="closeScannerInfo"></button>
+                                            <button type="button" class="btn-close float-end"
+                                                id="closeScannerInfo"></button>
                                         </div>
-                                        <div id="preview" class="mx-auto mb-3 border rounded" style="max-width: 100%;"></div>
+                                        <div id="preview" class="mx-auto mb-3 border rounded" style="max-width: 100%;">
+                                        </div>
                                         <button class="btn btn-danger btn-sm" id="stopScanner">
                                             <i class="fas fa-stop"></i> Stop Scanner
                                         </button>
@@ -69,7 +72,8 @@
 
                                     <!-- Loading Spinner -->
                                     <div class="text-center loading-spinner" id="loadingSpinner" style="display: none;">
-                                        <div class="spinner-border text-success" role="status" style="width: 3rem; height: 3rem;">
+                                        <div class="spinner-border text-success" role="status"
+                                            style="width: 3rem; height: 3rem;">
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
                                         <p class="mt-2 text-muted h5">Mencari dan mengupdate data...</p>
@@ -82,7 +86,8 @@
                         <div class="text-center text-muted py-5">
                             <i class="fas fa-exchange-alt fa-4x mb-3 opacity-50"></i>
                             <h4 class="text-muted">Silahkan scan atau input nomor resi</h4>
-                            <p class="text-muted">Status akan otomatis berubah menjadi <strong>OK</strong> setelah data ditemukan</p>
+                            <p class="text-muted">Status akan otomatis berubah menjadi <strong>OK</strong> setelah data
+                                ditemukan</p>
                         </div>
                     </div>
                 </div>
@@ -149,7 +154,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="scannerPengembalian.scanNext()" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-primary" onclick="scannerPengembalian.scanNext()"
+                        data-bs-dismiss="modal">
                         <i class="fas fa-redo me-1"></i> Scan Berikutnya
                     </button>
                 </div>
@@ -186,7 +192,8 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="fas fa-times me-1"></i> Tutup
                     </button>
-                    <button type="button" class="btn btn-primary" onclick="scannerPengembalian.retry()" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-primary" onclick="scannerPengembalian.retry()"
+                        data-bs-dismiss="modal">
                         <i class="fas fa-redo me-1"></i> Coba Lagi
                     </button>
                 </div>
@@ -327,12 +334,10 @@
 
                     if (data.success) {
                         this.showSuccessModal(data.data, data.message);
-                        // Clear input setelah berhasil
-                        this.resiInput.value = '';
-                        // Auto focus kembali setelah modal ditutup
-                        this.successModal._element.addEventListener('hidden.bs.modal', () => {
-                            setTimeout(() => this.resiInput.focus(), 100);
-                        });
+                        // Refresh otomatis setelah 3 detik
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
                     } else {
                         this.showErrorModal(data.message, resi);
                     }
