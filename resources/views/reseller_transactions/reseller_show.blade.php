@@ -100,6 +100,9 @@
                                     class="btn btn-secondary btn-sm shadow-sm">
                                     <i class="fas fa-arrow-left"></i> Kembali
                                 </a>
+                                <button type="button" class="btn btn-success btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#payDebtModal">
+                                    <i class="fas fa-money-bill-wave text-white me-1"></i> Bayar Tagihan
+                                </button>
                                 <a href="{{ route('reseller_transactions.create', ['reseller_id' => $reseller->id]) }}"
                                     class="btn btn-primary btn-sm shadow-sm">
                                     <i class="fas fa-plus"></i> Tambah Transaksi
@@ -151,9 +154,35 @@
             </div>
 
             <div class="card shadow-sm border-0 mt-2" style="border-radius: 12px;">
-                <div class="card-header bg-white border-0 pt-4 pb-2">
-                    <h6 class="mb-0 fw-bold"><i class="fas fa-history text-muted me-2"></i> Riwayat Transaksi Bulan Ini
-                    </h6>
+                <div class="card-header bg-white border-0 pt-4 pb-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <h6 class="mb-0 fw-bold"><i class="fas fa-history text-muted me-2"></i> Riwayat Transaksi Bulan Ini</h6>
+                    
+                    @php
+                        $totalTagihanGlobal = abs(\App\Models\ResellerTransaction::where('reseller_id', $reseller->id)
+                            ->where('sisa_kurang', '<', 0)
+                            ->sum('sisa_kurang'));
+                    @endphp
+                    
+                    @if($totalTagihanGlobal > 0)
+                    <div class="px-3 py-2 rounded shadow bg-danger text-white d-flex align-items-center gap-3">
+                        <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <span class="fw-bold text-white text-opacity-75" style="font-size: 0.75rem; letter-spacing: 0.5px; display: block; margin-bottom: -2px;">TOTAL KESELURUHAN TAGIHAN</span>
+                            <h4 class="mb-0 fw-bolder text-white">Rp {{ number_format($totalTagihanGlobal, 0, ',', '.') }}</h4>
+                        </div>
+                    </div>
+                    @else
+                    <div class="px-3 py-2 rounded shadow-sm bg-success text-white d-flex align-items-center gap-3">
+                        <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div>
+                            <span class="fw-bold text-white" style="font-size: 0.85rem; letter-spacing: 0.5px;">TIDAK ADA TAGIHAN</span>
+                        </div>
+                    </div>
+                    @endif
                 </div>
                 <div class="card-body" style="overflow-x:auto;">
                     <table class="table table-hover align-middle nowrap" id="res-config" style="width: 100%">
@@ -276,6 +305,43 @@
             </template>
             @endforeach
 
+        </div>
+    </div>
+
+    <!-- Modal Bayar Tagihan -->
+    <div class="modal fade" id="payDebtModal" tabindex="-1" aria-labelledby="payDebtModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title fw-bold" id="payDebtModalLabel">
+                        <i class="fas fa-money-bill-wave me-2"></i> Bayar Tagihan (Otomatis)
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ route('reseller_transactions.pay_debt', $reseller->id) }}" method="POST" onsubmit="return confirm('Proses pembayaran tagihan ini?')">
+                    @csrf
+                    <div class="modal-body p-4">
+                        <div class="alert alert-info border-0 shadow-sm mb-4" style="font-size: 0.85rem;">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Sistem akan secara otomatis memotong/melunaskan tagihan pada transaksi <strong>terlama</strong> yang belum lunas.
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark">Nominal Pembayaran</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light fw-bold text-muted border-end-0">Rp</span>
+                                <input type="number" name="nominal" class="form-control form-control-lg border-start-0 ps-0 text-success fw-bold" required min="1" placeholder="0">
+                            </div>
+                            <small class="text-muted mt-1 d-block mt-2">
+                                * Masukkan jumlah uang tunai yang disetorkan.
+                            </small>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-0 pt-2 pb-2">
+                        <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success shadow-sm px-4 fw-bold">Konfirmasi Bayar <i class="fas fa-check ms-1"></i></button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 

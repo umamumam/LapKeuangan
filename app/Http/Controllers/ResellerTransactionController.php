@@ -317,4 +317,45 @@ class ResellerTransactionController extends Controller
             return redirect()->back()->with('error', 'Gagal mengubah transaksi: ' . $e->getMessage())->withInput();
         }
     }
+
+    public function payDebt(Request $request, Reseller $reseller)
+    {
+        $request->validate([
+            'nominal' => 'required|numeric|min:1'
+        ]);
+
+        $nominal = $request->nominal;
+
+        // Ambil semua transaksi reseller ini yang sisa_kurangnya minus (berhutang)
+        // Urutkan dari yang tgl terlama
+        $debtTransactions = ResellerTransaction::where('reseller_id', $reseller->id)
+            ->where('sisa_kurang', '<', 0)
+            ->orderBy('tgl', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        foreach ($debtTransactions as $trx) {
+            if ($nominal <= 0) {
+                break;
+            }
+
+            $hutang = abs($trx->sisa_kurang);
+
+            if ($nominal >= $hutang) {
+                // Lunas untuk transaksi ini
+                $trx->bayar += $hutang;
+                $trx->sisa_kurang = 0;
+                $nominal -= $hutang;
+            } else {
+                // Bayar sebagian untuk transaksi ini
+                $trx->bayar += $nominal;
+                $trx->sisa_kurang += $nominal; // sisa_kurang itu negatif, jadi ditambah jadi mendekati 0
+                $nominal = 0;
+            }
+
+            $trx->save();
+        }
+
+        return redirect()->back()->with('success', 'Pembayaran tagihan berhasil dicatat ke transaksi terawal.');
+    }
 }

@@ -170,6 +170,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/barangs/export', [BarangController::class, 'export'])->name('barangs.export');
     Route::post('/barangs/import', [BarangController::class, 'import'])->name('barangs.import');
     Route::resource('barangs', BarangController::class);
+    Route::post('/reseller_transactions/reseller/{reseller}/pay_debt', [ResellerTransactionController::class, 'payDebt'])->name('reseller_transactions.pay_debt');
     Route::get('/reseller_transactions/reseller/{reseller}', [ResellerTransactionController::class, 'resellerShow'])->name('reseller_transactions.show_reseller');
     Route::resource('reseller_transactions', ResellerTransactionController::class);
 });
