@@ -160,6 +160,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('pengembalian-penukaran', PengembalianPenukaranController::class);
 
     // Partners (Reseller & Supplier)
+    Route::get('/partners/reseller/{reseller}', [PartnerController::class, 'showReseller'])->name('partners.reseller.show');
+    Route::get('/partners/supplier/{supplier}', [PartnerController::class, 'showSupplier'])->name('partners.supplier.show');
     Route::get('/partners', [PartnerController::class, 'index'])->name('partners.index');
     Route::resource('resellers', ResellerController::class)->except(['index', 'create', 'edit', 'show']);
     Route::resource('suppliers', SupplierController::class)->except(['index', 'create', 'edit', 'show']);

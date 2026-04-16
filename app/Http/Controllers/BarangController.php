@@ -37,7 +37,7 @@ class BarangController extends Controller
 
         try {
             Barang::create($request->all());
-            return redirect()->route('barangs.index')->with('success', 'Barang berhasil ditambahkan!');
+            return redirect()->back()->with('success', 'Barang berhasil ditambahkan!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal menambahkan barang: ' . $e->getMessage())->withInput();
         }
@@ -60,7 +60,7 @@ class BarangController extends Controller
 
         try {
             $barang->update($request->all());
-            return redirect()->route('barangs.index')->with('success', 'Barang berhasil diperbarui!');
+            return redirect()->back()->with('success', 'Barang berhasil diperbarui!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal memperbarui barang: ' . $e->getMessage())->withInput();
         }
@@ -70,7 +70,7 @@ class BarangController extends Controller
     {
         try {
             $barang->delete();
-            return redirect()->route('barangs.index')->with('success', 'Barang berhasil dihapus!');
+            return redirect()->back()->with('success', 'Barang berhasil dihapus!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal menghapus barang: ' . $e->getMessage());
         }
@@ -95,7 +95,7 @@ class BarangController extends Controller
 
         try {
             Excel::import(new BarangImport, $request->file('file'));
-            return redirect()->route('barangs.index')->with('success', 'Data barang berhasil diimport!');
+            return redirect()->back()->with('success', 'Data barang berhasil diimport!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal mengimport data: ' . $e->getMessage());
         }

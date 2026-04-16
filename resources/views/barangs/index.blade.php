@@ -148,31 +148,30 @@
                                                         <div class="col-md-4 mb-2">
                                                             <label class="form-label">Beli Per Potong</label>
                                                             <input type="number" name="hargabeli_perpotong"
-                                                                class="form-control edit-beli-ptg"
+                                                                class="form-control"
                                                                 value="{{ $barang->hargabeli_perpotong }}">
                                                         </div>
                                                         <div class="col-md-4 mb-2">
                                                             <label class="form-label">Beli Per Lusin</label>
                                                             <input type="number" name="hargabeli_perlusin"
-                                                                class="form-control edit-beli-lsn"
+                                                                class="form-control"
                                                                 value="{{ $barang->hargabeli_perlusin }}">
                                                         </div>
                                                         <div class="col-md-4 mb-2">
                                                             <label class="form-label">Jual Per Potong</label>
                                                             <input type="number" name="hargajual_perpotong"
-                                                                class="form-control edit-jual-ptg"
+                                                                class="form-control"
                                                                 value="{{ $barang->hargajual_perpotong }}">
                                                         </div>
                                                         <div class="col-md-4 mb-2">
                                                             <label class="form-label">Jual Per Lusin</label>
                                                             <input type="number" name="hargajual_perlusin"
-                                                                class="form-control edit-jual-lsn"
+                                                                class="form-control"
                                                                 value="{{ $barang->hargajual_perlusin }}">
                                                         </div>
                                                         <div class="col-md-4 mb-2">
                                                             <label class="form-label">Keuntungan</label>
-                                                            <input type="number" name="keuntungan"
-                                                                class="form-control edit-keuntungan"
+                                                            <input type="number" name="keuntungan" class="form-control"
                                                                 value="{{ $barang->keuntungan }}">
                                                         </div>
                                                     </div>
@@ -327,40 +326,6 @@
                 input.addEventListener('input', function() {
                     this.value = this.value.toUpperCase();
                 });
-            });
-
-            // Calculation Logic
-            function applyCalculation(container) {
-                if(!container) return;
-                const beliPtg = container.querySelector('#create_beli_ptg, .edit-beli-ptg');
-                const beliLsn = container.querySelector('#create_beli_lsn, .edit-beli-lsn');
-                const jualPtg = container.querySelector('#create_jual_ptg, .edit-jual-ptg');
-                const jualLsn = container.querySelector('#create_jual_lsn, .edit-jual-lsn');
-                const profit = container.querySelector('#create_keuntungan, .edit-keuntungan');
-
-                function update() {
-                    const beli = parseFloat(beliPtg.value) || 0;
-                    const jual = parseFloat(jualPtg.value) || 0;
-                    
-                    if (beliPtg === document.activeElement) {
-                        beliLsn.value = Math.round(beli * 12);
-                    }
-                    if (jualPtg === document.activeElement) {
-                        jualLsn.value = Math.round(jual * 12);
-                    }
-                    profit.value = Math.round(jual - beli);
-                }
-
-                if(beliPtg) beliPtg.addEventListener('input', update);
-                if(jualPtg) jualPtg.addEventListener('input', update);
-            }
-
-            // Apply to Create Modal
-            applyCalculation(document.getElementById('createBarangModal'));
-
-            // Apply to all Edit Modals
-            document.querySelectorAll('[id^="editBarangModal"]').forEach(modal => {
-                applyCalculation(modal);
             });
         });
     </script>

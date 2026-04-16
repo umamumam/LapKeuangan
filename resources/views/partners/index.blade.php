@@ -47,7 +47,8 @@
                                         <tr>
                                             <th style="width: 50px">#</th>
                                             <th>Nama</th>
-                                            <th style="width: 100px" class="text-center">Aksi</th>
+                                            <th class="text-center">Jml Barang</th>
+                                            <th style="width: 120px" class="text-center">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -56,7 +57,14 @@
                                             <td>{{ $loop->iteration }}</td>
                                             <td>{{ $reseller->nama }}</td>
                                             <td class="text-center">
+                                                <span class="badge bg-light-primary text-primary">{{ $reseller->barangs_count }}</span>
+                                            </td>
+                                            <td class="text-center">
                                                 <div class="d-flex justify-content-center gap-1">
+                                                    <a href="{{ route('partners.reseller.show', $reseller->id) }}" 
+                                                        class="btn btn-info btn-sm text-white">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
                                                     <button type="button" class="btn btn-warning btn-sm"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#editResellerModal{{ $reseller->id }}">
@@ -127,7 +135,8 @@
                                         <tr>
                                             <th style="width: 50px">#</th>
                                             <th>Nama</th>
-                                            <th style="width: 100px" class="text-center">Aksi</th>
+                                            <th class="text-center">Jml Barang</th>
+                                            <th style="width: 120px" class="text-center">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -136,7 +145,14 @@
                                             <td>{{ $loop->iteration }}</td>
                                             <td>{{ $supplier->nama }}</td>
                                             <td class="text-center">
+                                                <span class="badge bg-light-warning text-warning">{{ $supplier->barangs_count }}</span>
+                                            </td>
+                                            <td class="text-center">
                                                 <div class="d-flex justify-content-center gap-1">
+                                                    <a href="{{ route('partners.supplier.show', $supplier->id) }}" 
+                                                        class="btn btn-info btn-sm text-white">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
                                                     <button type="button" class="btn btn-warning btn-sm"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#editSupplierModal{{ $supplier->id }}">
