@@ -12,4 +12,9 @@ class Reseller extends Model
     {
         return $this->hasMany(Barang::class);
     }
+
+    public function transactions()
+    {
+        return $this->hasMany(ResellerTransaction::class);
+    }
 }

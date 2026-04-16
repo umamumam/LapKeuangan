@@ -10,8 +10,8 @@ class PartnerController extends Controller
 {
     public function index()
     {
-        $resellers = Reseller::withCount('barangs')->orderBy('nama')->get();
-        $suppliers = Supplier::withCount('barangs')->orderBy('nama')->get();
+        $resellers = Reseller::with(['barangs'])->withCount('barangs')->orderBy('nama')->get();
+        $suppliers = Supplier::with(['barangs'])->withCount('barangs')->orderBy('nama')->get();
         return view('partners.index', compact('resellers', 'suppliers'));
     }
 

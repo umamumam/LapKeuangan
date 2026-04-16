@@ -18,6 +18,7 @@ use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\ResellerController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\ResellerTransactionController;
 use App\Http\Controllers\PengembalianPenukaranController;
 
 Route::get('/', function () {
@@ -169,6 +170,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/barangs/export', [BarangController::class, 'export'])->name('barangs.export');
     Route::post('/barangs/import', [BarangController::class, 'import'])->name('barangs.import');
     Route::resource('barangs', BarangController::class);
+    Route::get('/reseller_transactions/reseller/{reseller}', [ResellerTransactionController::class, 'resellerShow'])->name('reseller_transactions.show_reseller');
+    Route::resource('reseller_transactions', ResellerTransactionController::class);
 });
 
 require __DIR__ . '/auth.php';
