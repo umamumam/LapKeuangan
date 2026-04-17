@@ -19,6 +19,7 @@ class Barang extends Model
         'hargabeli_perlusin',
         'hargajual_perpotong',
         'hargajual_perlusin',
+        'harga_grosir',
         'keuntungan',
     ];
 

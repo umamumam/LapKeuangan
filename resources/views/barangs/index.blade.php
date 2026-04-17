@@ -61,6 +61,7 @@
                                     <th>Beli/Lsn</th>
                                     <th>Jual/Ptg</th>
                                     <th>Jual/Lsn</th>
+                                    <th>Grosir</th>
                                     <th>Keuntungan</th>
                                     <th class="text-center">Aksi</th>
                                 </tr>
@@ -78,6 +79,7 @@
                                     <td>{{ number_format($barang->hargabeli_perlusin) }}</td>
                                     <td>{{ number_format($barang->hargajual_perpotong) }}</td>
                                     <td>{{ number_format($barang->hargajual_perlusin) }}</td>
+                                    <td>{{ number_format($barang->harga_grosir) }}</td>
                                     <td>{{ number_format($barang->keuntungan) }}</td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-1">
@@ -170,6 +172,12 @@
                                                                 value="{{ $barang->hargajual_perlusin }}">
                                                         </div>
                                                         <div class="col-md-4 mb-2">
+                                                            <label class="form-label text-primary fw-bold">Harga Grosir</label>
+                                                            <input type="number" name="harga_grosir"
+                                                                class="form-control border-primary"
+                                                                value="{{ $barang->harga_grosir }}">
+                                                        </div>
+                                                        <div class="col-md-4 mb-2">
                                                             <label class="form-label">Keuntungan</label>
                                                             <input type="number" name="keuntungan" class="form-control"
                                                                 value="{{ $barang->keuntungan }}">
@@ -257,6 +265,11 @@
                                     placeholder="0">
                             </div>
                             <div class="col-md-4 mb-2">
+                                <label class="form-label text-primary fw-bold">Harga Grosir</label>
+                                <input type="number" name="harga_grosir" class="form-control border-primary"
+                                    placeholder="0">
+                            </div>
+                            <div class="col-md-4 mb-2">
                                 <label class="form-label">Keuntungan</label>
                                 <input type="number" name="keuntungan" id="create_keuntungan" class="form-control"
                                     placeholder="0">
@@ -297,7 +310,7 @@
                             <small>
                                 <i class="fas fa-info-circle"></i>
                                 Pastikan file memiliki kolom: **Nama Barang, Ukuran, HPP, Harga Beli Per Potong, Harga
-                                Beli Per Lusin, Harga Jual Per Potong, Harga Jual Per Lusin, Keuntungan, Reseller, Supplier**
+                                Beli Per Lusin, Harga Jual Per Potong, Harga Jual Per Lusin, Harga Grosir, Keuntungan, Reseller, Supplier**
                             </small>
                         </div>
                     </div>

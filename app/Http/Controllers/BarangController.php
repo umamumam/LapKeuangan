@@ -32,6 +32,7 @@ class BarangController extends Controller
             'hargabeli_perlusin' => 'nullable|integer',
             'hargajual_perpotong' => 'nullable|integer',
             'hargajual_perlusin' => 'nullable|integer',
+            'harga_grosir' => 'nullable|integer',
             'keuntungan' => 'nullable|integer',
         ]);
 
@@ -55,6 +56,7 @@ class BarangController extends Controller
             'hargabeli_perlusin' => 'nullable|integer',
             'hargajual_perpotong' => 'nullable|integer',
             'hargajual_perlusin' => 'nullable|integer',
+            'harga_grosir' => 'nullable|integer',
             'keuntungan' => 'nullable|integer',
         ]);
 

@@ -27,6 +27,7 @@ class BarangImport implements ToModel, WithHeadingRow, WithCalculatedFormulas
         $beli_lsn = $this->cleanNumber($row['harga_beli_per_lusin']);
         $jual_ptg = $this->cleanNumber($row['harga_jual_per_potong']);
         $jual_lsn = $this->cleanNumber($row['harga_jual_per_lusin']);
+        $harga_grosir = $this->cleanNumber($row['harga_grosir']);
         $keuntungan_input = $this->cleanNumber($row['keuntungan']);
 
         $keuntungan = 0;
@@ -72,6 +73,7 @@ class BarangImport implements ToModel, WithHeadingRow, WithCalculatedFormulas
             'hargabeli_perlusin'  => $beli_lsn,
             'hargajual_perpotong' => $jual_ptg,
             'hargajual_perlusin'  => $jual_lsn,
+            'harga_grosir'       => $harga_grosir,
             'keuntungan'          => $keuntungan,
         ]);
     }

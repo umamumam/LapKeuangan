@@ -9,6 +9,7 @@ use App\Models\Barang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class ResellerTransactionController extends Controller
 {
@@ -175,8 +176,8 @@ class ResellerTransactionController extends Controller
 
         $reseller = Reseller::findOrFail($resellerId);
 
-        // ONLY fetch items for this specific reseller
-        $barangs = Barang::where('reseller_id', $resellerId)->orderBy('namabarang')->get();
+        // Pass all barangs - JS will filter by reseller logic
+        $barangs = Barang::orderBy('namabarang')->get();
 
         return view('reseller_transactions.create', compact('reseller', 'barangs'));
     }
@@ -198,6 +199,11 @@ class ResellerTransactionController extends Controller
             $total_barang = 0;
             $total_uang = 0;
 
+            $buktiPath = null;
+            if ($request->hasFile('bukti_tf')) {
+                $buktiPath = $request->file('bukti_tf')->store('bukti_tf', 'public');
+            }
+
             // Save parent first to get ID
             $transaction = ResellerTransaction::create([
                 'reseller_id' => $request->reseller_id,
@@ -206,11 +212,17 @@ class ResellerTransactionController extends Controller
                 'total_uang' => 0,
                 'bayar' => $request->bayar,
                 'sisa_kurang' => 0,
+                'retur' => $request->retur ?? 0,
+                'bukti_tf' => $buktiPath,
             ]);
 
             foreach ($request->details as $detail) {
-                $barang = Barang::find($detail['barang_id']);
-                $subtotal = $barang->hpp * $detail['jumlah'];
+                // Use subtotal from form (already calculated by JS based on selected price mode)
+                $subtotal = isset($detail['subtotal']) ? (int)$detail['subtotal'] : 0;
+                if ($subtotal <= 0) {
+                    $barang = Barang::find($detail['barang_id']);
+                    $subtotal = ($barang->hpp ?? 0) * $detail['jumlah'];
+                }
 
                 ResellerTransactionDetail::create([
                     'reseller_transaction_id' => $transaction->id,
@@ -259,7 +271,9 @@ class ResellerTransactionController extends Controller
     {
         $resellerTransaction->load('details');
         $reseller = Reseller::findOrFail($resellerTransaction->reseller_id);
-        $barangs = Barang::where('reseller_id', $reseller->id)->orderBy('namabarang')->get();
+        // Pass all barangs - JS will filter: show reseller's own barangs,
+        // or if reseller has none, show umum (null reseller_id AND null supplier_id)
+        $barangs = Barang::orderBy('namabarang')->get();
 
         return view('reseller_transactions.edit', compact('resellerTransaction', 'reseller', 'barangs'));
     }
@@ -281,12 +295,22 @@ class ResellerTransactionController extends Controller
             $total_barang = 0;
             $total_uang = 0;
 
+            $buktiPath = $resellerTransaction->bukti_tf;
+            if ($request->hasFile('bukti_tf')) {
+                if ($buktiPath) Storage::disk('public')->delete($buktiPath);
+                $buktiPath = $request->file('bukti_tf')->store('bukti_tf', 'public');
+            }
+
             // Delete old details
             ResellerTransactionDetail::where('reseller_transaction_id', $resellerTransaction->id)->delete();
 
             foreach ($request->details as $detail) {
-                $barang = Barang::find($detail['barang_id']);
-                $subtotal = $barang->hpp * $detail['jumlah'];
+                // Use subtotal from form
+                $subtotal = isset($detail['subtotal']) ? (int)$detail['subtotal'] : 0;
+                if ($subtotal <= 0) {
+                    $barang = Barang::find($detail['barang_id']);
+                    $subtotal = ($barang->hpp ?? 0) * $detail['jumlah'];
+                }
 
                 ResellerTransactionDetail::create([
                     'reseller_transaction_id' => $resellerTransaction->id,
@@ -306,7 +330,9 @@ class ResellerTransactionController extends Controller
                 'total_barang' => $total_barang,
                 'total_uang' => $total_uang,
                 'bayar' => $request->bayar,
-                'sisa_kurang' => $sisa_kurang
+                'sisa_kurang' => $sisa_kurang,
+                'retur' => $request->retur ?? 0,
+                'bukti_tf' => $buktiPath,
             ]);
 
             DB::commit();
