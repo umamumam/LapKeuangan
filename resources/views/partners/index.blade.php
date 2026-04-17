@@ -107,6 +107,11 @@
                                             {{ strtoupper($reseller->nama) }}
                                         </h4>
                                         <div class="border-top border-white border-opacity-25 pt-2 mt-2">
+                                            @if($reseller->hutang_awal > 0)
+                                            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.9);" class="mb-1 fw-bold">
+                                                <i class="fas fa-money-bill-wave me-1 text-white"></i> Hutang: Rp {{ number_format($reseller->hutang_awal, 0, ',', '.') }}
+                                            </div>
+                                            @endif
                                             <div style="font-size: 0.75rem; color: rgba(255,255,255,0.9);" class="mb-1 fw-medium">
                                                 <i class="fas fa-boxes me-1 text-white text-opacity-75"></i> Produk ({{ $reseller->barangs_count }}):
                                             </div>
@@ -150,6 +155,11 @@
                                             <label class="form-label">Nama Reseller</label>
                                             <input type="text" name="nama" class="form-control"
                                                 value="{{ $reseller->nama }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Hutang Awal</label>
+                                            <input type="number" name="hutang_awal" class="form-control"
+                                                value="{{ number_format($reseller->hutang_awal, 0, '', '') }}" placeholder="0">
                                         </div>
                                     </div>
                                     <div class="modal-footer">
@@ -224,6 +234,11 @@
                                             {{ strtoupper($supplier->nama) }}
                                         </h4>
                                         <div class="border-top border-white border-opacity-25 pt-2 mt-2">
+                                            @if($supplier->hutang_awal > 0)
+                                            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.9);" class="mb-1 fw-bold">
+                                                <i class="fas fa-money-bill-wave me-1 text-white"></i> Hutang: Rp {{ number_format($supplier->hutang_awal, 0, ',', '.') }}
+                                            </div>
+                                            @endif
                                             <div style="font-size: 0.75rem; color: rgba(255,255,255,0.9);" class="mb-1 fw-medium">
                                                 <i class="fas fa-boxes me-1 text-white text-opacity-75"></i> Produk ({{ $supplier->barangs_count }}):
                                             </div>
@@ -268,6 +283,11 @@
                                             <input type="text" name="nama" class="form-control"
                                                 value="{{ $supplier->nama }}" required>
                                         </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Hutang Awal</label>
+                                            <input type="number" name="hutang_awal" class="form-control"
+                                                value="{{ number_format($supplier->hutang_awal, 0, '', '') }}" placeholder="0">
+                                        </div>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
@@ -302,6 +322,10 @@
                             <label class="form-label">Nama Reseller</label>
                             <input type="text" name="nama" class="form-control" placeholder="Nama Reseller" required>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Hutang Awal</label>
+                            <input type="number" name="hutang_awal" class="form-control" placeholder="0">
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
@@ -326,6 +350,10 @@
                         <div class="mb-3">
                             <label class="form-label">Nama Supplier</label>
                             <input type="text" name="nama" class="form-control" placeholder="Nama Supplier" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Hutang Awal</label>
+                            <input type="number" name="hutang_awal" class="form-control" placeholder="0">
                         </div>
                     </div>
                     <div class="modal-footer">

@@ -64,6 +64,17 @@
                 <div>
                     <h5 class="mb-0 fw-bold"><i class="fas fa-user-tie text-primary me-2"></i> Transaksi Reseller: {{
                         $reseller->nama }}</h5>
+                    <div class="d-flex align-items-center gap-3 mt-2">
+                        <div class="bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pivot shadow-sm d-flex align-items-center border border-primary border-opacity-25">
+                            <i class="fas fa-money-bill-wave me-2"></i>
+                            <span class="fw-bold me-2">Hutang Awal:</span>
+                            <span class="fw-bolder">Rp {{ number_format($reseller->hutang_awal, 0, ',', '.') }}</span>
+                            <button type="button" class="btn btn-sm btn-primary ms-3 rounded-circle d-flex align-items-center justify-content-center" 
+                                style="width: 28px; height: 28px;" data-bs-toggle="modal" data-bs-target="#editHutangAwalModal">
+                                <i class="fas fa-edit" style="font-size: 0.75rem;"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="w-100 w-md-auto">
                     <form action="{{ route('reseller_transactions.show_reseller', $reseller->id) }}" method="GET"
@@ -160,7 +171,7 @@
                     @php
                         $totalTagihanGlobal = abs(\App\Models\ResellerTransaction::where('reseller_id', $reseller->id)
                             ->where('sisa_kurang', '<', 0)
-                            ->sum('sisa_kurang'));
+                            ->sum('sisa_kurang')) + $reseller->hutang_awal;
                     @endphp
                     
                     @if($totalTagihanGlobal > 0)
@@ -339,6 +350,41 @@
                     <div class="modal-footer bg-light border-0 pt-2 pb-2">
                         <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-success shadow-sm px-4 fw-bold">Konfirmasi Bayar <i class="fas fa-check ms-1"></i></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Hutang Awal -->
+    <div class="modal fade" id="editHutangAwalModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold text-white"><i class="fas fa-edit me-2"></i> Edit Hutang Awal</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ route('resellers.update', $reseller->id) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="nama" value="{{ $reseller->nama }}">
+                    <div class="modal-body p-4">
+                        <div class="alert alert-info border-0 shadow-sm mb-4" style="font-size: 0.85rem;">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Hutang awal adalah saldo hutang sebelum sistem ini digunakan atau hutang manual lainnya.
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark">Nominal Hutang Awal</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light fw-bold text-muted border-end-0">Rp</span>
+                                <input type="number" name="hutang_awal" class="form-control form-control-lg border-start-0 ps-0 text-primary fw-bold" 
+                                    value="{{ number_format($reseller->hutang_awal, 0, '', '') }}" required min="0" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-0">
+                        <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary shadow-sm px-4 fw-bold">Simpan Perubahan <i class="fas fa-save ms-1"></i></button>
                     </div>
                 </form>
             </div>

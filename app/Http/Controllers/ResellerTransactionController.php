@@ -107,7 +107,7 @@ class ResellerTransactionController extends Controller
             $trx = $allTransactions->where('reseller_id', $reseller->id);
             $reseller->total_uang = $trx->sum('total_uang');
             $reseller->bayar = $trx->sum('bayar');
-            $reseller->sisa_kurang = $trx->sum('sisa_kurang');
+            $reseller->sisa_kurang = $trx->sum('sisa_kurang') - $reseller->hutang_awal;
         }
 
         // Orang yang Sisa/Kurang < 0 (berhutang/tagihan)
@@ -138,7 +138,7 @@ class ResellerTransactionController extends Controller
             'minggu_5' => ['total_uang' => 0, 'bayar' => 0, 'sisa_kurang' => 0],
         ];
 
-        $hasDebt = false;
+        $hasDebt = $reseller->hutang_awal > 0;
 
         foreach ($transactions as $trx) {
             if ($trx->sisa_kurang < 0) {
@@ -352,34 +352,49 @@ class ResellerTransactionController extends Controller
 
         $nominal = $request->nominal;
 
-        // Ambil semua transaksi reseller ini yang sisa_kurangnya minus (berhutang)
-        // Urutkan dari yang tgl terlama
-        $debtTransactions = ResellerTransaction::where('reseller_id', $reseller->id)
-            ->where('sisa_kurang', '<', 0)
-            ->orderBy('tgl', 'asc')
-            ->orderBy('id', 'asc')
-            ->get();
-
-        foreach ($debtTransactions as $trx) {
-            if ($nominal <= 0) {
-                break;
-            }
-
-            $hutang = abs($trx->sisa_kurang);
-
-            if ($nominal >= $hutang) {
-                // Lunas untuk transaksi ini
-                $trx->bayar += $hutang;
-                $trx->sisa_kurang = 0;
-                $nominal -= $hutang;
+        // 1. Bayar Hutang Awal dulu jika ada
+        if ($reseller->hutang_awal > 0) {
+            if ($nominal >= $reseller->hutang_awal) {
+                $nominal -= $reseller->hutang_awal;
+                $reseller->hutang_awal = 0;
             } else {
-                // Bayar sebagian untuk transaksi ini
-                $trx->bayar += $nominal;
-                $trx->sisa_kurang += $nominal; // sisa_kurang itu negatif, jadi ditambah jadi mendekati 0
+                $reseller->hutang_awal -= $nominal;
                 $nominal = 0;
             }
+            $reseller->save();
+        }
 
-            $trx->save();
+        // 2. Jika masih ada sisa nominal, baru potong transaksi
+        if ($nominal > 0) {
+            // Ambil semua transaksi reseller ini yang sisa_kurangnya minus (berhutang)
+            // Urutkan dari yang tgl terlama
+            $debtTransactions = ResellerTransaction::where('reseller_id', $reseller->id)
+                ->where('sisa_kurang', '<', 0)
+                ->orderBy('tgl', 'asc')
+                ->orderBy('id', 'asc')
+                ->get();
+
+            foreach ($debtTransactions as $trx) {
+                if ($nominal <= 0) {
+                    break;
+                }
+
+                $hutang = abs($trx->sisa_kurang);
+
+                if ($nominal >= $hutang) {
+                    // Lunas untuk transaksi ini
+                    $trx->bayar += $hutang;
+                    $trx->sisa_kurang = 0;
+                    $nominal -= $hutang;
+                } else {
+                    // Bayar sebagian untuk transaksi ini
+                    $trx->bayar += $nominal;
+                    $trx->sisa_kurang += $nominal; // sisa_kurang itu negatif, jadi ditambah jadi mendekati 0
+                    $nominal = 0;
+                }
+
+                $trx->save();
+            }
         }
 
         return redirect()->back()->with('success', 'Pembayaran tagihan berhasil dicatat ke transaksi terawal.');

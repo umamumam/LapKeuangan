@@ -11,6 +11,7 @@ class SupplierController extends Controller
     {
         $request->validate([
             'nama' => 'required|string|max:255|unique:suppliers,nama',
+            'hutang_awal' => 'nullable|numeric|min:0',
         ]);
 
         Supplier::create($request->all());
@@ -22,6 +23,7 @@ class SupplierController extends Controller
     {
         $request->validate([
             'nama' => 'required|string|max:255|unique:suppliers,nama,' . $supplier->id,
+            'hutang_awal' => 'nullable|numeric|min:0',
         ]);
 
         $supplier->update($request->all());

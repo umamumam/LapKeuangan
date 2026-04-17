@@ -51,7 +51,7 @@ class SupplierTransactionController extends Controller
             $trx = $allTransactions->where('supplier_id', $supplier->id);
             $supplier->total_uang    = $trx->sum('total_uang');
             $supplier->bayar         = $trx->sum('bayar');
-            $supplier->total_tagihan = $trx->sum('total_tagihan');
+            $supplier->total_tagihan = $trx->sum('total_tagihan') - $supplier->hutang_awal;
         }
 
         // Suppliers yang masih berhutang (total_tagihan < 0)
@@ -82,7 +82,7 @@ class SupplierTransactionController extends Controller
             'minggu_5' => ['total_uang' => 0, 'bayar' => 0, 'total_tagihan' => 0],
         ];
 
-        $hasDebt = false;
+        $hasDebt = $supplier->hutang_awal > 0;
 
         foreach ($transactions as $trx) {
             if ($trx->total_tagihan < 0) {
@@ -312,30 +312,45 @@ class SupplierTransactionController extends Controller
         $nominalAsli = $request->nominal;
         $nominal     = $request->nominal;
 
-        $debtTransactions = SupplierTransaction::where('supplier_id', $supplier->id)
-            ->where('total_tagihan', '<', 0)
-            ->orderBy('tgl', 'asc')
-            ->orderBy('id', 'asc')
-            ->get();
-
-        foreach ($debtTransactions as $trx) {
-            if ($nominal <= 0) {
-                break;
-            }
-
-            $hutang = abs($trx->total_tagihan);
-
-            if ($nominal >= $hutang) {
-                $trx->bayar         += $hutang;
-                $trx->total_tagihan  = 0;
-                $nominal            -= $hutang;
+        // 1. Bayar Hutang Awal dulu jika ada
+        if ($supplier->hutang_awal > 0) {
+            if ($nominal >= $supplier->hutang_awal) {
+                $nominal -= $supplier->hutang_awal;
+                $supplier->hutang_awal = 0;
             } else {
-                $trx->bayar         += $nominal;
-                $trx->total_tagihan += $nominal;
-                $nominal             = 0;
+                $supplier->hutang_awal -= $nominal;
+                $nominal = 0;
             }
+            $supplier->save();
+        }
 
-            $trx->save();
+        // 2. Jika masih ada sisa nominal, baru potong transaksi
+        if ($nominal > 0) {
+            $debtTransactions = SupplierTransaction::where('supplier_id', $supplier->id)
+                ->where('total_tagihan', '<', 0)
+                ->orderBy('tgl', 'asc')
+                ->orderBy('id', 'asc')
+                ->get();
+
+            foreach ($debtTransactions as $trx) {
+                if ($nominal <= 0) {
+                    break;
+                }
+
+                $hutang = abs($trx->total_tagihan);
+
+                if ($nominal >= $hutang) {
+                    $trx->bayar         += $hutang;
+                    $trx->total_tagihan  = 0;
+                    $nominal            -= $hutang;
+                } else {
+                    $trx->bayar         += $nominal;
+                    $trx->total_tagihan += $nominal;
+                    $nominal             = 0;
+                }
+
+                $trx->save();
+            }
         }
 
         SupplierPayment::create([

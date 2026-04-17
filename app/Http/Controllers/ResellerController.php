@@ -11,6 +11,7 @@ class ResellerController extends Controller
     {
         $request->validate([
             'nama' => 'required|string|max:255|unique:resellers,nama',
+            'hutang_awal' => 'nullable|numeric|min:0',
         ]);
 
         Reseller::create($request->all());
@@ -22,6 +23,7 @@ class ResellerController extends Controller
     {
         $request->validate([
             'nama' => 'required|string|max:255|unique:resellers,nama,' . $reseller->id,
+            'hutang_awal' => 'nullable|numeric|min:0',
         ]);
 
         $reseller->update($request->all());
