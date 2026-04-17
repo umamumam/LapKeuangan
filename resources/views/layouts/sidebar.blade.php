@@ -176,6 +176,12 @@
                         <span class="pc-mtext">Transaksi Reseller</span>
                     </a>
                 </li>
+                <li class="pc-item {{ Request::is('supplier_transactions*') ? 'active' : '' }}">
+                    <a href="{{ route('supplier_transactions.index') }}" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-truck"></i></span>
+                        <span class="pc-mtext">Transaksi Supplier</span>
+                    </a>
+                </li>
                 <li class="pc-item pc-caption">
                     <label style="color: red;">Pengiriman Sampel</label>
                     <i class="ti ti-news"></i>
