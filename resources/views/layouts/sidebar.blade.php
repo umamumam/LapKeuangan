@@ -154,7 +154,7 @@
                         <span class="pc-mtext">Pengembalian_Penukaran</span>
                     </a>
                 </li>
-                <li class="pc-item pc-caption">
+                {{-- <li class="pc-item pc-caption">
                     <label style="color: red;">Reseller & Supplier</label>
                     <i class="ti ti-news"></i>
                 </li>
@@ -181,7 +181,7 @@
                         <span class="pc-micon"><i class="ti ti-truck"></i></span>
                         <span class="pc-mtext">Transaksi Supplier</span>
                     </a>
-                </li>
+                </li> --}}
                 <li class="pc-item pc-caption">
                     <label style="color: red;">Pengiriman Sampel</label>
                     <i class="ti ti-news"></i>
