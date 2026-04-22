@@ -4,7 +4,7 @@
             <div class="col-sm-12">
                 <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
                     <div>
-                        <h4 class="mb-0 fw-bold text-dark"><i class="fas fa-users-cog text-primary me-2"></i> Transaksi Reseller</h4>
+                        <h4 class="mb-0 fw-bold text-dark"><i class="fas fa-users-cog text-primary me-2"></i> Transaksi Reseller ({{ strtoupper($type) }})</h4>
                     </div>
                 </div>
 
@@ -21,7 +21,7 @@
                     $bgGradient = $gradients[$index % count($gradients)];
                     @endphp
                     <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-                        <a href="{{ route('reseller_transactions.matrix', ['reseller_id' => $reseller->id]) }}" class="text-decoration-none">
+                        <a href="{{ route('reseller_transactions.matrix', ['reseller_id' => $reseller->id, 'type' => $type]) }}" class="text-decoration-none">
                             <div class="card h-100 border-0 shadow hover-card"
                                 style="border-radius: 12px; background: {{ $bgGradient }}; position: relative; overflow: hidden; min-height: 140px;">
                                 <div style="position: absolute; right: -30px; top: -30px; width: 140px; height: 140px; border-radius: 50%; background: rgba(255,255,255,0.08);"></div>

@@ -13,8 +13,9 @@ use Illuminate\Support\Facades\DB;
 
 class ResellerTransactionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $type = $request->query('type', 'grosir'); // default to grosir
         $resellers = Reseller::with(['transactions', 'payments'])->orderBy('nama')->get();
         
         foreach ($resellers as $reseller) {
@@ -32,14 +33,16 @@ class ResellerTransactionController extends Controller
                 ->pluck('barangs.namabarang');
         }
 
-        return view('reseller_transactions.index', compact('resellers'));
+        return view('reseller_transactions.index', compact('resellers', 'type'));
     }
 
     public function matrix(Request $request)
     {
         $resellerId = $request->query('reseller_id');
+        $type = $request->query('type', 'grosir');
+
         if (!$resellerId) {
-            return redirect()->route('reseller_transactions.index')->with('error', 'Silahkan pilih reseller terlebih dahulu.');
+            return redirect()->route('reseller_transactions.index', ['type' => $type])->with('error', 'Silahkan pilih reseller terlebih dahulu.');
         }
 
         $reseller = Reseller::findOrFail($resellerId);
@@ -55,6 +58,11 @@ class ResellerTransactionController extends Controller
             ->orderBy('namabarang')
             ->orderBy('ukuran')
             ->get();
+        
+        // Map price field based on type
+        foreach ($barangs as $barang) {
+            $barang->display_price = ($type == 'hpp') ? ($barang->hpp ?? 0) : ($barang->harga_grosir ?? 0);
+        }
         
         // Calculate which period we are in (every 35 days)
         $diffInDays = $baseDate->diffInDays($now, false);
@@ -93,7 +101,7 @@ class ResellerTransactionController extends Controller
             ->whereBetween('tgl', [$startDate->format('Y-m-d'), $dates[34]->format('Y-m-d')])
             ->get();
 
-        return view('reseller_transactions.matrix', compact('reseller', 'barangs', 'dates', 'transactions', 'payments', 'startDate', 'periods', 'periodIndex'));
+        return view('reseller_transactions.matrix', compact('reseller', 'barangs', 'dates', 'transactions', 'payments', 'startDate', 'periods', 'periodIndex', 'type'));
     }
 
     public function saveMatrix(Request $request)

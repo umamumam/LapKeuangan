@@ -4,7 +4,7 @@
             <div
                 class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3">
                 <div>
-                    <h5 class="mb-0 fw-bolder text-primary"><i class="fas fa-file-invoice me-2"></i> Transaksi: {{
+                    <h5 class="mb-0 fw-bolder text-primary"><i class="fas fa-file-invoice me-2"></i> Transaksi {{ strtoupper($type) }}: {{
                         $reseller->nama }}</h5>
                     <div class="d-flex align-items-center gap-2 mt-1">
                         <span class="badge bg-light text-dark border px-2 small">
@@ -20,6 +20,7 @@
                 <div class="d-flex gap-2">
                     <form action="{{ route('reseller_transactions.matrix') }}" method="GET" class="d-flex gap-1">
                         <input type="hidden" name="reseller_id" value="{{ $reseller->id }}">
+                        <input type="hidden" name="type" value="{{ $type }}">
                         <select name="period_index" class="form-select form-select-sm border-primary shadow-none"
                             style="width: auto;" onchange="this.form.submit()">
                             @foreach($periods as $p)
@@ -32,7 +33,7 @@
                     <button type="button" class="btn btn-sm btn-outline-primary fw-bold" data-bs-toggle="modal"
                         data-bs-target="#rekapModal">REKAP</button>
                     <button type="button" class="btn btn-sm btn-primary fw-bold" id="btnSave">SIMPAN DATA</button>
-                    <a href="{{ route('reseller_transactions.index') }}" class="btn btn-sm btn-secondary"><i
+                    <a href="{{ route('reseller_transactions.index', ['type' => $type]) }}" class="btn btn-sm btn-secondary"><i
                             class="fas fa-times"></i></a>
                 </div>
             </div>
@@ -45,7 +46,7 @@
                             <thead>
                                 <tr>
                                     <th class="sticky-col-1 bg-grey" rowspan="3">NAMA BARANG</th>
-                                    <th class="sticky-col-2 bg-grey" rowspan="3">HARGA GROSIR</th>
+                                    <th class="sticky-col-2 bg-grey text-uppercase" rowspan="3">HARGA {{ $type }}</th>
                                     @for($w=1; $w<=5; $w++) <th class="bg-soft-purple text-uppercase" colspan="7">MINGGU
                                         {{ $w }}</th>
                                         <th class="bg-orange" rowspan="3">JUMLAH</th>
@@ -73,13 +74,12 @@
                             </thead>
                             <tbody>
                                 @foreach($barangs as $barang)
-                                <tr data-barang-id="{{ $barang->id }}" data-price="{{ $barang->harga_grosir ?? 0 }}">
+                                <tr data-barang-id="{{ $barang->id }}" data-price="{{ $barang->display_price }}">
                                     <td class="sticky-col-1 fw-bold bg-white">
                                         <div class="text-dark">{{ $barang->namabarang }}</div>
                                         <div class="small text-muted fw-normal" style="font-size: 0.7rem;">Uk: {{ $barang->ukuran }}</div>
                                     </td>
-                                    <td class="sticky-col-2 text-end bg-light">{{ number_format($barang->harga_grosir ??
-                                        0, 0, ',', '.') }}</td>
+                                    <td class="sticky-col-2 text-end bg-light">{{ number_format($barang->display_price, 0, ',', '.') }}</td>
                                     @for($w=1; $w<=5; $w++) @for($d=0; $d<7; $d++) @php $dateStr=$startDate->
                                         copy()->addDays(($w-1)*7 + $d)->format('Y-m-d');
                                         $qty = 0;
