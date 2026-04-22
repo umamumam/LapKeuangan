@@ -73,6 +73,9 @@
                                 <button type="button" class="btn btn-success btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#payDebtModal">
                                     <i class="fas fa-money-bill-wave me-1"></i> Bayar Tagihan
                                 </button>
+                                <a href="{{ route('supplier_transactions.batch_create', ['supplier_id' => $supplier->id]) }}" class="btn btn-outline-warning btn-sm shadow-sm text-dark fw-bold">
+                                    <i class="fas fa-layer-group"></i> Input Batch (7 Hr)
+                                </a>
                                 <a href="{{ route('supplier_transactions.create', ['supplier_id' => $supplier->id]) }}" class="btn btn-warning btn-sm shadow-sm text-dark fw-bold">
                                     <i class="fas fa-plus"></i> Tambah Transaksi
                                 </a>

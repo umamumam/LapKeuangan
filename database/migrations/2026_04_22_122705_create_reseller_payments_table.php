@@ -6,28 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('reseller_transactions', function (Blueprint $table) {
+        Schema::create('reseller_payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('reseller_id')->constrained('resellers')->onDelete('cascade');
             $table->date('tgl');
-            $table->integer('total_barang')->default(0);
-            $table->bigInteger('total_uang')->default(0);
-            $table->bigInteger('bayar')->default(0);
-            $table->bigInteger('sisa_kurang')->default(0);
+            $table->bigInteger('nominal');
+            $table->string('keterangan')->nullable();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('reseller_transactions');
+        Schema::dropIfExists('reseller_payments');
     }
 };

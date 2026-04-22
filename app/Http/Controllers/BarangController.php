@@ -28,12 +28,7 @@ class BarangController extends Controller
             'namabarang' => 'required|string|max:255',
             'ukuran' => 'nullable|string|max:50',
             'hpp' => 'nullable|integer',
-            'hargabeli_perpotong' => 'nullable|integer',
-            'hargabeli_perlusin' => 'nullable|integer',
-            'hargajual_perpotong' => 'nullable|integer',
-            'hargajual_perlusin' => 'nullable|integer',
             'harga_grosir' => 'nullable|integer',
-            'keuntungan' => 'nullable|integer',
         ]);
 
         try {
@@ -52,12 +47,7 @@ class BarangController extends Controller
             'namabarang' => 'required|string|max:255',
             'ukuran' => 'nullable|string|max:50',
             'hpp' => 'nullable|integer',
-            'hargabeli_perpotong' => 'nullable|integer',
-            'hargabeli_perlusin' => 'nullable|integer',
-            'hargajual_perpotong' => 'nullable|integer',
-            'hargajual_perlusin' => 'nullable|integer',
             'harga_grosir' => 'nullable|integer',
-            'keuntungan' => 'nullable|integer',
         ]);
 
         try {
@@ -76,11 +66,6 @@ class BarangController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal menghapus barang: ' . $e->getMessage());
         }
-    }
-
-    public function show(Barang $barang)
-    {
-        return response()->json($barang->load(['reseller', 'supplier']));
     }
 
     public function export()

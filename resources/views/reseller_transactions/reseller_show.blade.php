@@ -114,6 +114,10 @@
                                 <button type="button" class="btn btn-success btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#payDebtModal">
                                     <i class="fas fa-money-bill-wave text-white me-1"></i> Bayar Tagihan
                                 </button>
+                                <a href="{{ route('reseller_transactions.batch_create', ['reseller_id' => $reseller->id]) }}"
+                                    class="btn btn-outline-primary btn-sm shadow-sm fw-bold">
+                                    <i class="fas fa-layer-group"></i> Input Batch (7 Hr)
+                                </a>
                                 <a href="{{ route('reseller_transactions.create', ['reseller_id' => $reseller->id]) }}"
                                     class="btn btn-primary btn-sm shadow-sm">
                                     <i class="fas fa-plus"></i> Tambah Transaksi

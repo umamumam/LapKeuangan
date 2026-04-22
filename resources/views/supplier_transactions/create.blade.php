@@ -136,53 +136,13 @@
             const btnUangPas = document.getElementById('btn-uang-pas');
 
             let rowIdx = 0;
-            let currentPriceMode = 'beli_potong';
+            let currentPriceMode = 'hpp';
 
-            // Popup pilihan harga
-            Swal.fire({
-                title: 'Pilih Mode Harga',
-                html: `
-                    <p>Silakan pilih jenis harga yang akan digunakan untuk transaksi ini:</p>
-                    <div class="d-grid gap-2 mt-3">
-                        <button type="button" class="btn btn-outline-primary price-mode-btn" data-mode="hpp">HPP</button>
-                        <button type="button" class="btn btn-outline-primary price-mode-btn" data-mode="beli_potong">Harga Beli Per Potong</button>
-                        <button type="button" class="btn btn-outline-primary price-mode-btn" data-mode="beli_lusin">Harga Beli Per Lusin</button>
-                        <button type="button" class="btn btn-outline-primary price-mode-btn" data-mode="grosir">Harga Grosir</button>
-                    </div>
-                `,
-                showConfirmButton: false,
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                didOpen: () => {
-                    const content = Swal.getHtmlContainer();
-                    const buttons = content.querySelectorAll('.price-mode-btn');
-                    buttons.forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            currentPriceMode = btn.getAttribute('data-mode');
-                            Swal.close();
+            // Set initial UI Header & Indicator
+            document.getElementById('priceModeIndicator').classList.remove('d-none');
+            document.getElementById('priceModeText').textContent = 'HPP';
+            document.getElementById('hargaHeader').textContent = 'HPP (Harga Beli)';
 
-                            Swal.fire({
-                                toast: true,
-                                position: 'top-end',
-                                icon: 'info',
-                                title: 'Mode Aktif: ' + btn.textContent,
-                                showConfirmButton: false,
-                                timer: 3000
-                            });
-
-                            // Update UI Header & Indicator
-                            document.getElementById('priceModeIndicator').classList.remove('d-none');
-                            document.getElementById('priceModeText').textContent = btn.textContent;
-                            document.getElementById('hargaHeader').textContent = btn.textContent;
-
-                            // Refresh harga jika sudah ada baris
-                            document.querySelectorAll('.barang-input').forEach(input => {
-                                input.dispatchEvent(new Event('input'));
-                            });
-                        });
-                    });
-                }
-            });
 
             function formatRupiah(number) {
                 return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);

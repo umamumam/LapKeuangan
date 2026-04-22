@@ -15,12 +15,7 @@ class Barang extends Model
         'namabarang',
         'ukuran',
         'hpp',
-        'hargabeli_perpotong',
-        'hargabeli_perlusin',
-        'hargajual_perpotong',
-        'hargajual_perlusin',
         'harga_grosir',
-        'keuntungan',
     ];
 
     public function reseller()
@@ -31,11 +26,5 @@ class Barang extends Model
     public function supplier()
     {
         return $this->belongsTo(Supplier::class);
-    }
-
-    public function transactions()
-    {
-        return $this->belongsToMany(ResellerTransaction::class, 'reseller_transaction_details', 'barang_id', 'reseller_transaction_id')
-            ->withPivot('jumlah', 'subtotal');
     }
 }

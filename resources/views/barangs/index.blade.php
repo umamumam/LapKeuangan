@@ -56,13 +56,8 @@
                                     <th>Supplier</th>
                                     <th>Nama Barang</th>
                                     <th>Ukuran</th>
-                                    <th>HPP</th>
-                                    <th>Beli/Ptg</th>
-                                    <th>Beli/Lsn</th>
-                                    <th>Jual/Ptg</th>
-                                    <th>Jual/Lsn</th>
-                                    <th>Grosir</th>
-                                    <th>Keuntungan</th>
+                                    <th class="text-end">HPP</th>
+                                    <th class="text-end">Harga Grosir</th>
                                     <th class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -72,15 +67,10 @@
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $barang->reseller->nama ?? '-' }}</td>
                                     <td>{{ $barang->supplier->nama ?? '-' }}</td>
-                                    <td>{{ $barang->namabarang }}</td>
+                                    <td class="fw-bold">{{ $barang->namabarang }}</td>
                                     <td>{{ $barang->ukuran }}</td>
-                                    <td>{{ number_format($barang->hpp) }}</td>
-                                    <td>{{ number_format($barang->hargabeli_perpotong) }}</td>
-                                    <td>{{ number_format($barang->hargabeli_perlusin) }}</td>
-                                    <td>{{ number_format($barang->hargajual_perpotong) }}</td>
-                                    <td>{{ number_format($barang->hargajual_perlusin) }}</td>
-                                    <td>{{ number_format($barang->harga_grosir) }}</td>
-                                    <td>{{ number_format($barang->keuntungan) }}</td>
+                                    <td class="text-end text-muted">Rp {{ number_format($barang->hpp, 0, ',', '.') }}</td>
+                                    <td class="text-end text-primary fw-bold">Rp {{ number_format($barang->harga_grosir, 0, ',', '.') }}</td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-1">
                                             <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal"
@@ -101,20 +91,20 @@
 
                                 <!-- Edit Modal -->
                                 <div class="modal fade" id="editBarangModal{{ $barang->id }}" tabindex="-1">
-                                    <div class="modal-dialog modal-lg">
+                                    <div class="modal-dialog modal-md">
                                         <form action="{{ route('barangs.update', $barang->id) }}" method="POST">
                                             @csrf
                                             @method('PUT')
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">Edit Barang</h5>
+                                            <div class="modal-content shadow border-0" style="border-radius: 12px;">
+                                                <div class="modal-header bg-warning">
+                                                    <h5 class="modal-title text-dark fw-bold"><i class="fas fa-edit me-2"></i> Edit Barang</h5>
                                                     <button type="button" class="btn-close"
                                                         data-bs-dismiss="modal"></button>
                                                 </div>
-                                                <div class="modal-body">
-                                                    <div class="row g-2">
-                                                        <div class="col-md-6 mb-2">
-                                                            <label class="form-label">Reseller</label>
+                                                <div class="modal-body p-4">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-6">
+                                                            <label class="form-label fw-bold">Reseller (Opsional)</label>
                                                             <select name="reseller_id" class="form-select">
                                                                 <option value="">-- Pilih Reseller --</option>
                                                                 @foreach($resellers as $reseller)
@@ -122,8 +112,8 @@
                                                                 @endforeach
                                                             </select>
                                                         </div>
-                                                        <div class="col-md-6 mb-2">
-                                                            <label class="form-label">Supplier</label>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label fw-bold">Supplier (Opsional)</label>
                                                             <select name="supplier_id" class="form-select">
                                                                 <option value="">-- Pilih Supplier --</option>
                                                                 @foreach($suppliers as $supplier)
@@ -131,61 +121,32 @@
                                                                 @endforeach
                                                             </select>
                                                         </div>
-                                                        <div class="col-md-8 mb-2">
-                                                            <label class="form-label">Nama Barang</label>
+                                                        <div class="col-md-12">
+                                                            <label class="form-label fw-bold">Nama Barang</label>
                                                             <input type="text" name="namabarang" class="form-control"
                                                                 value="{{ $barang->namabarang }}" required>
                                                         </div>
-                                                        <div class="col-md-4 mb-2">
-                                                            <label class="form-label">Ukuran</label>
+                                                        <div class="col-md-4">
+                                                            <label class="form-label fw-bold">Ukuran</label>
                                                             <input type="text" name="ukuran"
                                                                 class="form-control edit-ukuran"
                                                                 value="{{ $barang->ukuran }}">
                                                         </div>
-                                                        <div class="col-md-4 mb-2">
-                                                            <label class="form-label">HPP</label>
+                                                        <div class="col-md-4">
+                                                            <label class="form-label fw-bold">HPP</label>
                                                             <input type="number" name="hpp" class="form-control"
                                                                 value="{{ $barang->hpp }}">
                                                         </div>
-                                                        <div class="col-md-4 mb-2">
-                                                            <label class="form-label">Beli Per Potong</label>
-                                                            <input type="number" name="hargabeli_perpotong"
-                                                                class="form-control"
-                                                                value="{{ $barang->hargabeli_perpotong }}">
-                                                        </div>
-                                                        <div class="col-md-4 mb-2">
-                                                            <label class="form-label">Beli Per Lusin</label>
-                                                            <input type="number" name="hargabeli_perlusin"
-                                                                class="form-control"
-                                                                value="{{ $barang->hargabeli_perlusin }}">
-                                                        </div>
-                                                        <div class="col-md-4 mb-2">
-                                                            <label class="form-label">Jual Per Potong</label>
-                                                            <input type="number" name="hargajual_perpotong"
-                                                                class="form-control"
-                                                                value="{{ $barang->hargajual_perpotong }}">
-                                                        </div>
-                                                        <div class="col-md-4 mb-2">
-                                                            <label class="form-label">Jual Per Lusin</label>
-                                                            <input type="number" name="hargajual_perlusin"
-                                                                class="form-control"
-                                                                value="{{ $barang->hargajual_perlusin }}">
-                                                        </div>
-                                                        <div class="col-md-4 mb-2">
-                                                            <label class="form-label text-primary fw-bold">Harga Grosir</label>
+                                                        <div class="col-md-4">
+                                                            <label class="form-label fw-bold text-primary">Harga Grosir</label>
                                                             <input type="number" name="harga_grosir"
                                                                 class="form-control border-primary"
                                                                 value="{{ $barang->harga_grosir }}">
                                                         </div>
-                                                        <div class="col-md-4 mb-2">
-                                                            <label class="form-label">Keuntungan</label>
-                                                            <input type="number" name="keuntungan" class="form-control"
-                                                                value="{{ $barang->keuntungan }}">
-                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div class="modal-footer">
-                                                    <button type="submit" class="btn btn-primary">Simpan</button>
+                                                <div class="modal-footer bg-light border-0">
+                                                    <button type="submit" class="btn btn-warning px-4 fw-bold">Update Barang</button>
                                                 </div>
                                             </div>
                                         </form>
@@ -202,18 +163,18 @@
 
     <!-- Create Modal -->
     <div class="modal fade" id="createBarangModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-md">
             <form action="{{ route('barangs.store') }}" method="POST">
                 @csrf
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Tambah Barang Baru</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-content shadow border-0" style="border-radius: 12px;">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title fw-bold"><i class="fas fa-plus me-2"></i> Tambah Barang Baru</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="modal-body">
-                        <div class="row g-2">
-                            <div class="col-md-6 mb-2">
-                                <label class="form-label">Reseller</label>
+                    <div class="modal-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Reseller</label>
                                 <select name="reseller_id" class="form-select">
                                     <option value="">-- Pilih Reseller --</option>
                                     @foreach($resellers as $reseller)
@@ -221,8 +182,8 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-6 mb-2">
-                                <label class="form-label">Supplier</label>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Supplier</label>
                                 <select name="supplier_id" class="form-select">
                                     <option value="">-- Pilih Supplier --</option>
                                     @foreach($suppliers as $supplier)
@@ -230,54 +191,29 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-8 mb-2">
-                                <label class="form-label">Nama Barang</label>
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">Nama Barang</label>
                                 <input type="text" name="namabarang" id="create_namabarang" class="form-control"
                                     required placeholder="Nama barang">
                             </div>
-                            <div class="col-md-4 mb-2">
-                                <label class="form-label">Ukuran</label>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Ukuran</label>
                                 <input type="text" name="ukuran" id="create_ukuran" class="form-control"
                                     placeholder="Ukuran">
                             </div>
-                            <div class="col-md-4 mb-2">
-                                <label class="form-label">HPP</label>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">HPP</label>
                                 <input type="number" name="hpp" class="form-control" placeholder="0">
                             </div>
-                            <div class="col-md-4 mb-2">
-                                <label class="form-label">Beli Per Potong</label>
-                                <input type="number" name="hargabeli_perpotong" id="create_beli_ptg"
-                                    class="form-control" placeholder="0">
-                            </div>
-                            <div class="col-md-4 mb-2">
-                                <label class="form-label">Beli Per Lusin</label>
-                                <input type="number" name="hargabeli_perlusin" id="create_beli_lsn" class="form-control"
-                                    placeholder="0">
-                            </div>
-                            <div class="col-md-4 mb-2">
-                                <label class="form-label">Jual Per Potong</label>
-                                <input type="number" name="hargajual_perpotong" id="create_jual_ptg"
-                                    class="form-control" placeholder="0">
-                            </div>
-                            <div class="col-md-4 mb-2">
-                                <label class="form-label">Jual Per Lusin</label>
-                                <input type="number" name="hargajual_perlusin" id="create_jual_lsn" class="form-control"
-                                    placeholder="0">
-                            </div>
-                            <div class="col-md-4 mb-2">
-                                <label class="form-label text-primary fw-bold">Harga Grosir</label>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-primary">Harga Grosir</label>
                                 <input type="number" name="harga_grosir" class="form-control border-primary"
-                                    placeholder="0">
-                            </div>
-                            <div class="col-md-4 mb-2">
-                                <label class="form-label">Keuntungan</label>
-                                <input type="number" name="keuntungan" id="create_keuntungan" class="form-control"
                                     placeholder="0">
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Tambah</button>
+                    <div class="modal-footer bg-light border-0">
+                        <button type="submit" class="btn btn-primary px-4 fw-bold">Simpan Barang</button>
                     </div>
                 </div>
             </form>

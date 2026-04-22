@@ -154,7 +154,7 @@
                         <span class="pc-mtext">Pengembalian_Penukaran</span>
                     </a>
                 </li>
-                {{-- <li class="pc-item pc-caption">
+                <li class="pc-item pc-caption">
                     <label style="color: red;">Reseller & Supplier</label>
                     <i class="ti ti-news"></i>
                 </li>
@@ -170,7 +170,7 @@
                         <span class="pc-mtext">Daftar Barang</span>
                     </a>
                 </li>
-                <li class="pc-item">
+                <li class="pc-item {{ Request::is('reseller_transactions*') ? 'active' : '' }}">
                     <a href="{{ route('reseller_transactions.index') }}" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-shopping-cart"></i></span>
                         <span class="pc-mtext">Transaksi Reseller</span>
@@ -181,7 +181,7 @@
                         <span class="pc-micon"><i class="ti ti-truck"></i></span>
                         <span class="pc-mtext">Transaksi Supplier</span>
                     </a>
-                </li> --}}
+                </li>
                 <li class="pc-item pc-caption">
                     <label style="color: red;">Pengiriman Sampel</label>
                     <i class="ti ti-news"></i>

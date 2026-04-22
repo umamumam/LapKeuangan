@@ -22,12 +22,7 @@ class BarangExport implements FromCollection, WithHeadings, WithMapping
             'Nama Barang',
             'Ukuran',
             'HPP',
-            'Harga Beli Per Potong',
-            'Harga Beli Per Lusin',
-            'Harga Jual Per Potong',
-            'Harga Jual Per Lusin',
             'Harga Grosir',
-            'Keuntungan',
         ];
     }
 
@@ -39,12 +34,7 @@ class BarangExport implements FromCollection, WithHeadings, WithMapping
             $barang->namabarang,
             $barang->ukuran,
             $barang->hpp,
-            $barang->hargabeli_perpotong,
-            $barang->hargabeli_perlusin,
-            $barang->hargajual_perpotong,
-            $barang->hargajual_perlusin,
             $barang->harga_grosir,
-            $barang->keuntungan,
         ];
     }
 }

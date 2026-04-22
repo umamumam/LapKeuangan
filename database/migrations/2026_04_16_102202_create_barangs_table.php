@@ -18,11 +18,7 @@ return new class extends Migration
             $table->string('namabarang');
             $table->string('ukuran')->nullable();
             $table->bigInteger('hpp')->nullable();
-            $table->bigInteger('hargabeli_perpotong')->nullable();
-            $table->bigInteger('hargabeli_perlusin')->nullable();
-            $table->bigInteger('hargajual_perpotong')->nullable();
-            $table->bigInteger('hargajual_perlusin')->nullable();
-            $table->bigInteger('keuntungan')->nullable();
+            $table->bigInteger('harga_grosir')->nullable();
             $table->timestamps();
         });
     }
