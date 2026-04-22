@@ -107,6 +107,7 @@ class ResellerTransactionController extends Controller
     public function saveMatrix(Request $request)
     {
         $resellerId = $request->reseller_id;
+        $type = $request->input('type', 'grosir');
         $data = $request->input('data', []); // [date][barang_id] = jumlah
 
         try {
@@ -144,10 +145,15 @@ class ResellerTransactionController extends Controller
                 // Sync details
                 $transaction->details()->delete();
                 foreach ($items as $barangId => $jumlah) {
+                    $jumlah = (int) $jumlah;
                     if ($jumlah <= 0) continue;
 
                     $barang = Barang::find($barangId);
-                    $subtotal = $jumlah * ($barang->harga_grosir ?? 0);
+                    if (!$barang) continue;
+
+                    // If HPP is used, use hpp field, otherwise use harga_grosir
+                    $price = ($type == 'hpp') ? ($barang->hpp ?? 0) : ($barang->harga_grosir ?? 0);
+                    $subtotal = $jumlah * $price;
 
                     ResellerTransactionDetail::create([
                         'reseller_transaction_id' => $transaction->id,

@@ -42,6 +42,7 @@
                 <div class="table-container shadow-sm border rounded bg-white">
                     <form id="matrixForm">
                         <input type="hidden" name="reseller_id" value="{{ $reseller->id }}">
+                        <input type="hidden" name="type" value="{{ $type }}">
                         <table class="table-matrix" id="matrixTable">
                             <thead>
                                 <tr>
