@@ -8,14 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('reseller_transaction_details', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('reseller_transaction_id')->constrained('reseller_transactions')->onDelete('cascade');
-            $table->foreignId('barang_id')->constrained('barangs')->onDelete('cascade');
-            $table->integer('jumlah');
-            $table->bigInteger('subtotal');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('reseller_transaction_details')) {
+            Schema::create('reseller_transaction_details', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('reseller_transaction_id')->constrained('reseller_transactions')->onDelete('cascade');
+                $table->foreignId('barang_id')->constrained('barangs')->onDelete('cascade');
+                $table->integer('jumlah');
+                $table->bigInteger('subtotal');
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void
