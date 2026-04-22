@@ -50,9 +50,13 @@ class ResellerTransactionController extends Controller
         $baseDate = Carbon::parse('2025-12-31');
         $now = Carbon::now();
         
-        // Logic: Show general products (reseller_id IS NULL AND supplier_id IS NULL)
-        $barangs = Barang::whereNull('reseller_id')
-            ->whereNull('supplier_id')
+        // Logic: Show general products (reseller_id IS NULL AND supplier_id IS NULL) 
+        // AND products specifically assigned to this reseller
+        $barangs = Barang::where(function($q) use ($resellerId) {
+                $q->where(function($q2) {
+                    $q2->whereNull('reseller_id')->whereNull('supplier_id');
+                })->orWhere('reseller_id', $resellerId);
+            })
             ->whereNotNull('namabarang')
             ->where('namabarang', '!=', '')
             ->orderBy('namabarang')
