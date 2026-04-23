@@ -170,6 +170,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/barangs/export', [BarangController::class, 'export'])->name('barangs.export');
     Route::post('/barangs/import', [BarangController::class, 'import'])->name('barangs.import');
+    Route::delete('/barangs/delete-all', [BarangController::class, 'deleteAll'])->name('barangs.deleteAll');
     Route::resource('barangs', BarangController::class);
 
     // Reseller Transactions (Matrix Style)

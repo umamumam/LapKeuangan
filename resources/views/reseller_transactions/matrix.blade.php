@@ -74,13 +74,41 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @php
+                                    // Normalisasi nama (trim) untuk pemetaan warna agar konsisten
+                                    $uniqueNames = $barangs->map(fn($b) => trim($b->namabarang))->unique()->values()->toArray();
+                                    $colors = [
+                                        '#e8f5e9', // light green
+                                        '#fff3e0', // light orange
+                                        '#fce4ec', // light pink
+                                        '#e1f5fe', // light blue
+                                        '#f3e5f5', // light purple
+                                        '#efebe9', // light brown
+                                        '#fafafa', // light grey
+                                        '#fffde7', // light yellow
+                                        '#f1f8e9', // light lime
+                                        '#e0f2f1', // light teal
+                                        '#e8eaf6', // light indigo
+                                        '#f9fbe7', // light lime-yellow
+                                        '#fff8e1', // light amber
+                                        '#fbe9e7', // light deep orange
+                                    ];
+                                    $nameColorMap = [];
+                                    foreach ($uniqueNames as $index => $name) {
+                                        $nameColorMap[$name] = $colors[$index % count($colors)];
+                                    }
+                                @endphp
                                 @foreach($barangs as $barang)
+                                @php
+                                    $normalizedName = trim($barang->namabarang);
+                                    $rowColor = $nameColorMap[$normalizedName] ?? '#ffffff';
+                                @endphp
                                 <tr data-barang-id="{{ $barang->id }}" data-price="{{ $barang->display_price }}">
-                                    <td class="sticky-col-1 fw-bold bg-white">
+                                    <td class="sticky-col-1 fw-bold" style="background-color: {{ $rowColor }} !important;">
                                         <div class="text-dark">{{ $barang->namabarang }}</div>
                                         <div class="small text-muted fw-normal" style="font-size: 0.7rem;">Uk: {{ $barang->ukuran }}</div>
                                     </td>
-                                    <td class="sticky-col-2 text-end bg-light">{{ number_format($barang->display_price, 0, ',', '.') }}</td>
+                                    <td class="sticky-col-2 text-end" style="background-color: {{ $rowColor }} !important;">{{ number_format($barang->display_price, 0, ',', '.') }}</td>
                                     @for($w=1; $w<=5; $w++) @for($d=0; $d<7; $d++) @php $dateStr=$startDate->
                                         copy()->addDays(($w-1)*7 + $d)->format('Y-m-d');
                                         $qty = 0;
@@ -90,7 +118,7 @@
                                         $qty = $detail ? $detail->jumlah : 0;
                                         }
                                         @endphp
-                                        <td class="qty-cell">
+                                        <td class="qty-cell bg-white">
                                             <input type="number" name="data[{{ $dateStr }}][{{ $barang->id }}]"
                                                 class="qty-input" value="{{ $qty }}" min="0" data-date="{{ $dateStr }}"
                                                 data-week="{{ $w }}">
@@ -328,7 +356,7 @@
         }
 
         .qty-input {
-            width: 55px;
+            width: 70px;
             height: 35px;
             border: none;
             text-align: center;

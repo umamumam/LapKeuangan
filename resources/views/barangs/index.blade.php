@@ -33,6 +33,9 @@
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="fas fa-boxes text-primary"></i> Daftar Barang</h5>
                         <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-danger btn-sm" id="btnDeleteAll">
+                                <i class="fas fa-trash-alt"></i> Hapus Semua
+                            </button>
                             <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">
                                 <i class="fas fa-file-import"></i> Import
                             </button>
@@ -44,6 +47,10 @@
                                 <i class="fas fa-plus"></i> Tambah Barang
                             </button>
                         </div>
+                        <form id="formDeleteAll" action="{{ route('barangs.deleteAll') }}" method="POST" style="display: none;">
+                            @csrf
+                            @method('DELETE')
+                        </form>
                     </div>
 
                     <div class="card-body" style="overflow-x:auto;">
@@ -276,6 +283,27 @@
                     this.value = this.value.toUpperCase();
                 });
             });
+
+            // Delete All Confirmation
+            const btnDeleteAll = document.getElementById('btnDeleteAll');
+            if (btnDeleteAll) {
+                btnDeleteAll.addEventListener('click', function() {
+                    Swal.fire({
+                        title: 'Apakah Anda yakin?',
+                        text: "Semua data barang akan dihapus dan tidak dapat dikembalikan!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Ya, hapus semua!',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById('formDeleteAll').submit();
+                        }
+                    });
+                });
+            }
         });
     </script>
 </x-app-layout>

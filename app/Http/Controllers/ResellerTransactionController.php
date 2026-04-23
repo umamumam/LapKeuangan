@@ -59,8 +59,7 @@ class ResellerTransactionController extends Controller
             })
             ->whereNotNull('namabarang')
             ->where('namabarang', '!=', '')
-            ->orderBy('namabarang')
-            ->orderBy('ukuran')
+            ->orderBy('id', 'asc')
             ->get();
         
         // Map price field based on type

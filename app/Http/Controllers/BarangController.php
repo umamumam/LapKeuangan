@@ -68,6 +68,22 @@ class BarangController extends Controller
         }
     }
 
+    public function deleteAll()
+    {
+        try {
+            $count = Barang::count();
+            
+            if ($count === 0) {
+                return redirect()->back()->with('error', 'Tidak ada data barang yang bisa dihapus.');
+            }
+
+            Barang::query()->delete();
+            return redirect()->back()->with('success', 'Semua data barang berhasil dihapus!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal menghapus semua barang: ' . $e->getMessage());
+        }
+    }
+
     public function export()
     {
         $filename = 'data_barang_' . date('Y-m-d_H-i-s') . '.xlsx';
