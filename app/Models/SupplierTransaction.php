@@ -11,22 +11,18 @@ class SupplierTransaction extends Model
 
     protected $fillable = [
         'supplier_id',
-        'tgl',
-        'total_barang',
-        'total_uang',
-        'bayar',
-        'total_tagihan',
-        'retur',
-        'bukti_tf',
+        'tanggal',
+        'sisa_nota',
+        'lusin',
+        'potong',
+        'nama_barang',
+        'harga',
+        'jumlah',
+        'tf',
     ];
 
     public function supplier()
     {
         return $this->belongsTo(Supplier::class);
-    }
-
-    public function details()
-    {
-        return $this->hasMany(SupplierTransactionDetail::class, 'supplier_transaction_id');
     }
 }

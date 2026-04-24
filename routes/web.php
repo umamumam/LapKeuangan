@@ -179,13 +179,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/reseller_transactions/save-matrix', [ResellerTransactionController::class, 'saveMatrix'])->name('reseller_transactions.save_matrix');
     Route::post('/reseller_transactions/save-payment', [ResellerTransactionController::class, 'savePayment'])->name('reseller_transactions.save_payment');
 
-    // Supplier Transactions
-    Route::get('/supplier_transactions/matrix', [SupplierTransactionController::class, 'matrix'])->name('supplier_transactions.matrix');
-    Route::post('/supplier_transactions/save-matrix', [SupplierTransactionController::class, 'saveMatrix'])->name('supplier_transactions.save_matrix');
-    Route::post('/supplier_transactions/save-payment', [SupplierTransactionController::class, 'savePayment'])->name('supplier_transactions.save_payment');
-    
-    Route::post('/supplier_transactions/supplier/{supplier}/pay_debt', [SupplierTransactionController::class, 'payDebt'])->name('supplier_transactions.pay_debt');
-    Route::get('/supplier_transactions/supplier/{supplier}', [SupplierTransactionController::class, 'supplierShow'])->name('supplier_transactions.show_supplier');
+    Route::post('/supplier_transactions/store-tf', [SupplierTransactionController::class, 'storeTF'])->name('supplier_transactions.store_tf');
+    Route::post('/supplier_transactions/update-sisa', [SupplierTransactionController::class, 'updateSisaNota'])->name('supplier_transactions.update_sisa');
     Route::resource('supplier_transactions', SupplierTransactionController::class);
 });
 
