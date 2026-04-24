@@ -176,9 +176,8 @@
                                         \Carbon\Carbon::parse($date)->format('d/m/y') }}</td>
                                     @endif
 
-                                    <td class="text-center">{{ $item->lusin ?: '' }} {{ $item->lusin ? 'Ls' : '' }}</td>
-                                    <td class="text-center">{{ $item->potong ?: '' }} {{ $item->potong ? 'Ptg' : '' }}
-                                    </td>
+                                    <td class="text-center">{{ $item->lusin ?: '' }}</td>
+                                    <td class="text-center">{{ $item->potong ?: '' }}</td>
                                     <td>
                                         {{ $item->nama_barang }}
                                         @if($item->tf > 0 && $item->jumlah == 0)
@@ -309,7 +308,7 @@
                         const h = parseFloat(harga.value) || 0;
                         
                         const total = (l * h) + (p * (h / 12));
-                        jumlahAuto.value = 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(total));
+                        jumlahAuto.value = 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.floor(total));
                     }
 
                     if(lusin && potong && harga) {

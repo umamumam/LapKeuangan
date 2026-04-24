@@ -62,7 +62,7 @@ class SupplierTransactionController extends Controller
         $potong = (float)($request->potong ?? 0);
         $harga = (float)$request->harga;
 
-        $subtotal = ($lusin * $harga) + ($potong * ($harga / 12));
+        $subtotal = floor(($lusin * $harga) + ($potong * ($harga / 12)));
 
         SupplierTransaction::create([
             'supplier_id' => $request->supplier_id,
