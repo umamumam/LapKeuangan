@@ -4,7 +4,8 @@
             <div
                 class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3">
                 <div>
-                    <h5 class="mb-0 fw-bolder text-primary"><i class="fas fa-file-invoice me-2"></i> Transaksi {{ strtoupper($type) }}: {{
+                    <h5 class="mb-0 fw-bolder text-primary"><i class="fas fa-file-invoice me-2"></i> Transaksi {{
+                        strtoupper($type) }}: {{
                         $reseller->nama }}</h5>
                     <div class="d-flex align-items-center gap-2 mt-1">
                         <span class="badge bg-light text-dark border px-2 small">
@@ -23,8 +24,8 @@
                     <button type="button" class="btn btn-sm btn-outline-primary fw-bold" data-bs-toggle="modal"
                         data-bs-target="#rekapModal">REKAP</button>
                     <button type="button" class="btn btn-sm btn-primary fw-bold" id="btnSave">SIMPAN DATA</button>
-                    <a href="{{ route('reseller_transactions.index', ['type' => $type]) }}" class="btn btn-sm btn-secondary"><i
-                            class="fas fa-times"></i></a>
+                    <a href="{{ route('reseller_transactions.index', ['type' => $type]) }}"
+                        class="btn btn-sm btn-secondary"><i class="fas fa-times"></i></a>
                 </div>
             </div>
 
@@ -32,10 +33,11 @@
             <div class="excel-tabs-container mb-0 px-1">
                 <div class="d-flex overflow-auto hide-scrollbar">
                     @foreach($periods as $p)
-                    <a href="{{ route('reseller_transactions.matrix', ['reseller_id' => $reseller->id, 'type' => $type, 'period_id' => $p->id]) }}" 
-                       class="excel-tab {{ $periodId == $p->id ? 'active' : '' }}">
+                    <a href="{{ route('reseller_transactions.matrix', ['reseller_id' => $reseller->id, 'type' => $type, 'period_id' => $p->id]) }}"
+                        class="excel-tab {{ $periodId == $p->id ? 'active' : '' }}">
                         <span class="tab-title">{{ $p->title }}</span>
-                        <span class="tab-date">{{ \Carbon\Carbon::parse($p->start_date)->format('d/m') }} - {{ \Carbon\Carbon::parse($p->end_date)->format('d/m') }}</span>
+                        <span class="tab-date">{{ \Carbon\Carbon::parse($p->start_date)->format('d/m') }} - {{
+                            \Carbon\Carbon::parse($p->end_date)->format('d/m') }}</span>
                     </a>
                     @endforeach
                 </div>
@@ -48,129 +50,123 @@
                         <input type="hidden" name="type" value="{{ $type }}">
                         <table class="table-matrix" id="matrixTable">
                             @php
-                                $totalDays = count($dates);
-                                $totalWeeks = ceil($totalDays / 7);
+                            $totalDays = count($dates);
+                            $totalWeeks = ceil($totalDays / 7);
                             @endphp
                             <thead>
                                 <tr>
                                     <th class="sticky-col-1 bg-grey" rowspan="3">NAMA BARANG</th>
                                     <th class="sticky-col-2 bg-grey text-uppercase" rowspan="3">HARGA {{ $type }}</th>
-                                    @for($w=1; $w<=$totalWeeks; $w++) 
-                                        @php
-                                            $daysInThisWeek = min(7, $totalDays - ($w-1)*7);
-                                        @endphp
-                                        <th class="bg-soft-purple text-uppercase" colspan="{{ $daysInThisWeek }}">MINGGU {{ $w }}</th>
+                                    @for($w=1; $w<=$totalWeeks; $w++) @php $daysInThisWeek=min(7, $totalDays -
+                                        ($w-1)*7); @endphp <th class="bg-soft-purple text-uppercase"
+                                        colspan="{{ $daysInThisWeek }}">MINGGU {{ $w }}</th>
                                         <th class="bg-orange" rowspan="3">JUMLAH</th>
                                         <th class="bg-orange" rowspan="3">TOTAL HARGA</th>
                                         <th class="separator" rowspan="3"></th>
-                                    @endfor
-                                    <th class="bg-dark text-white fw-bold" rowspan="3">GRAND TOTAL</th>
+                                        @endfor
+                                        <th class="bg-dark text-white fw-bold" rowspan="3">GRAND TOTAL</th>
                                 </tr>
                                 <tr>
-                                    @for($w=1; $w<=$totalWeeks; $w++) 
-                                        @for($d=0; $d<7; $d++) 
-                                            @php 
-                                                $idx = ($w-1)*7 + $d;
-                                                if ($idx >= $totalDays) break;
-                                                $current = $dates[$idx];
-                                            @endphp
-                                            <th class="day-header {{ $current->isWeekend() ? 'weekend' : '' }}">{{ $current->translatedFormat('D') }}</th>
+                                    @for($w=1; $w<=$totalWeeks; $w++) @for($d=0; $d<7; $d++) @php $idx=($w-1)*7 + $d; if
+                                        ($idx>= $totalDays) break;
+                                        $current = $dates[$idx];
+                                        @endphp
+                                        <th class="day-header {{ $current->isWeekend() ? 'weekend' : '' }}">{{
+                                            $current->translatedFormat('D') }}</th>
                                         @endfor
-                                    @endfor
+                                        @endfor
                                 </tr>
                                 <tr>
-                                    @for($w=1; $w<=$totalWeeks; $w++) 
-                                        @for($d=0; $d<7; $d++) 
-                                            @php 
-                                                $idx = ($w-1)*7 + $d;
-                                                if ($idx >= $totalDays) break;
-                                                $current = $dates[$idx];
-                                            @endphp
-                                            <th class="date-header {{ $current->isWeekend() ? 'weekend' : '' }} small">{{ $current->format('d M') }}</th>
+                                    @for($w=1; $w<=$totalWeeks; $w++) @for($d=0; $d<7; $d++) @php $idx=($w-1)*7 + $d; if
+                                        ($idx>= $totalDays) break;
+                                        $current = $dates[$idx];
+                                        @endphp
+                                        <th class="date-header {{ $current->isWeekend() ? 'weekend' : '' }} small">{{
+                                            $current->format('d M') }}</th>
                                         @endfor
-                                    @endfor
+                                        @endfor
                                 </tr>
                             </thead>
                             <tbody>
                                 @php
-                                    // Normalisasi nama (trim) untuk pemetaan warna agar konsisten
-                                    $uniqueNames = $barangs->map(fn($b) => trim($b->namabarang))->unique()->values()->toArray();
-                                    $colors = [
-                                        '#e8f5e9', // light green
-                                        '#fff3e0', // light orange
-                                        '#fce4ec', // light pink
-                                        '#e1f5fe', // light blue
-                                        '#f3e5f5', // light purple
-                                        '#efebe9', // light brown
-                                        '#fafafa', // light grey
-                                        '#fffde7', // light yellow
-                                        '#f1f8e9', // light lime
-                                        '#e0f2f1', // light teal
-                                        '#e8eaf6', // light indigo
-                                        '#f9fbe7', // light lime-yellow
-                                        '#fff8e1', // light amber
-                                        '#fbe9e7', // light deep orange
-                                    ];
-                                    $nameColorMap = [];
-                                    foreach ($uniqueNames as $index => $name) {
-                                        $nameColorMap[$name] = $colors[$index % count($colors)];
-                                    }
+                                // Normalisasi nama (trim) untuk pemetaan warna agar konsisten
+                                $uniqueNames = $barangs->map(fn($b) =>
+                                trim($b->namabarang))->unique()->values()->toArray();
+                                $colors = [
+                                '#9bc2e6', // Light Blue
+                                '#ffc000',
+                                '#b6d7a8',
+                                '#9fc5e8',
+                                '#ffe599',
+                                '#ff99cc',
+                                '#b4a7d6',
+                                '#00ffff',
+                                '#b6d7a8',
+                                '#ffe599',
+                                '#76a5af',
+                                '#b4a7d6',
+                                '#ea9999',
+                                '#ffe599',
+                                ];
+                                $nameColorMap = [];
+                                foreach ($uniqueNames as $index => $name) {
+                                $nameColorMap[$name] = $colors[$index % count($colors)];
+                                }
                                 @endphp
                                 @foreach($barangs as $barang)
                                 @php
-                                    $normalizedName = trim($barang->namabarang);
-                                    $rowColor = $nameColorMap[$normalizedName] ?? '#ffffff';
+                                $normalizedName = trim($barang->namabarang);
+                                $rowColor = $nameColorMap[$normalizedName] ?? '#ffffff';
                                 @endphp
                                 <tr data-barang-id="{{ $barang->id }}" data-price="{{ $barang->display_price }}">
-                                    <td class="sticky-col-1 fw-bold" style="background-color: {{ $rowColor }} !important;">
+                                    <td class="sticky-col-1 fw-bold"
+                                        style="background-color: {{ $rowColor }} !important;">
                                         <div class="text-dark">{{ $barang->namabarang }}</div>
-                                        <div class="small text-muted fw-normal" style="font-size: 0.7rem;">Uk: {{ $barang->ukuran }}</div>
+                                        <div class="small text-muted fw-normal" style="font-size: 0.7rem;">Uk: {{
+                                            $barang->ukuran }}</div>
                                     </td>
-                                    <td class="sticky-col-2 text-end" style="background-color: {{ $rowColor }} !important;">{{ number_format($barang->display_price, 0, ',', '.') }}</td>
-                                    @for($w=1; $w<=$totalWeeks; $w++) 
-                                        @for($d=0; $d<7; $d++) 
-                                            @php 
-                                                $idx = ($w-1)*7 + $d;
-                                                if ($idx >= $totalDays) break;
-                                                $current = $dates[$idx];
-                                                $dateStr = $current->format('Y-m-d');
-                                                $qty = 0;
-                                                if (isset($transactions[$dateStr])) {
-                                                    $detail = $transactions[$dateStr]->details->where('barang_id', $barang->id)->first();
-                                                    $qty = $detail ? $detail->jumlah : 0;
-                                                }
-                                            @endphp
-                                            <td class="qty-cell bg-white">
-                                                <input type="number" name="data[{{ $dateStr }}][{{ $barang->id }}]"
-                                                    class="qty-input" value="{{ $qty }}" min="0" data-date="{{ $dateStr }}"
-                                                    data-week="{{ $w }}">
-                                            </td>
+                                    <td class="sticky-col-2 text-end"
+                                        style="background-color: {{ $rowColor }} !important;">{{
+                                        number_format($barang->display_price, 0, ',', '.') }}</td>
+                                    @for($w=1; $w<=$totalWeeks; $w++) @for($d=0; $d<7; $d++) @php $idx=($w-1)*7 + $d; if
+                                        ($idx>= $totalDays) break;
+                                        $current = $dates[$idx];
+                                        $dateStr = $current->format('Y-m-d');
+                                        $qty = 0;
+                                        if (isset($transactions[$dateStr])) {
+                                        $detail = $transactions[$dateStr]->details->where('barang_id',
+                                        $barang->id)->first();
+                                        $qty = $detail ? $detail->jumlah : 0;
+                                        }
+                                        @endphp
+                                        <td class="qty-cell bg-white">
+                                            <input type="number" name="data[{{ $dateStr }}][{{ $barang->id }}]"
+                                                class="qty-input" value="{{ $qty }}" min="0" data-date="{{ $dateStr }}"
+                                                data-week="{{ $w }}">
+                                        </td>
                                         @endfor
                                         <td class="text-center fw-bold bg-light-muted week-qty-{{ $w }}">0</td>
                                         <td class="text-end fw-bold bg-light-muted week-total-{{ $w }}">0</td>
                                         <td class="separator"></td>
-                                    @endfor
-                                    <td class="text-end fw-bold bg-soft-orange row-grand-total">0</td>
+                                        @endfor
+                                        <td class="text-end fw-bold bg-soft-orange row-grand-total">0</td>
                                 </tr>
                                 @endforeach
                             </tbody>
                             <tfoot>
                                 <tr>
                                     <td colspan="2" class="sticky-col-footer">TOTAL PER TANGGAL</td>
-                                    @for($w=1; $w<=$totalWeeks; $w++) 
-                                        @for($d=0; $d<7; $d++) 
-                                            @php 
-                                                $idx = ($w-1)*7 + $d;
-                                                if ($idx >= $totalDays) break;
-                                                $dateStr = $dates[$idx]->format('Y-m-d');
-                                            @endphp
-                                            <td class="text-center col-total-{{ $dateStr }} small">0</td>
+                                    @for($w=1; $w<=$totalWeeks; $w++) @for($d=0; $d<7; $d++) @php $idx=($w-1)*7 + $d; if
+                                        ($idx>= $totalDays) break;
+                                        $dateStr = $dates[$idx]->format('Y-m-d');
+                                        @endphp
+                                        <td class="text-center col-total-{{ $dateStr }} small">0</td>
                                         @endfor
                                         <td class="text-center bg-grey week-foot-qty-{{ $w }}">0</td>
                                         <td class="text-end bg-grey week-foot-total-{{ $w }}">0</td>
                                         <td class="separator"></td>
-                                    @endfor
-                                    <td class="text-end bg-dark text-white fw-bold" id="finalGrandTotal">0</td>
+                                        @endfor
+                                        <td class="text-end bg-dark text-white fw-bold" id="finalGrandTotal">0</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -200,32 +196,33 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @for($w=1; $w<=$totalWeeks; $w++) 
-                                    @php 
-                                        $wStart = $startDate->copy()->addDays(($w-1)*7);
-                                        $daysInWeek = min(7, $totalDays - ($w-1)*7);
-                                        $wEnd = $wStart->copy()->addDays($daysInWeek - 1);
-                                        $wPays = $payments->filter(fn($p) => $p->tgl >= $wStart->format('Y-m-d') && $p->tgl <= $wEnd->format('Y-m-d'))->sum('nominal');
-                                    @endphp
-                                    <tr>
-                                        <td class="ps-4">
-                                            <div class="fw-bold text-dark">MINGGU {{ $w }}</div>
-                                            <div class="small text-muted">{{ $wStart->format('d M') }} - {{ $wEnd->format('d M') }}</div>
-                                        </td>
-                                        <td class="text-end pe-4 fw-bold text-dark minggu-total-{{ $w }}">0</td>
-                                        <td class="pe-4">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <span class="fw-bold modal-week-bayar-{{ $w }}"
-                                                    data-bayar="{{ $wPays }}">Rp {{ number_format($wPays, 0, ',', '.') }}</span>
-                                                <button
-                                                    class="btn btn-sm btn-outline-primary btn-pay-week fw-bold px-3 py-1"
-                                                    data-date="{{ $wEnd->format('Y-m-d') }}" data-week="{{ $w }}">
-                                                    BAYAR
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endfor
+                                @for($w=1; $w<=$totalWeeks; $w++) @php $wStart=$startDate->copy()->addDays(($w-1)*7);
+                                    $daysInWeek = min(7, $totalDays - ($w-1)*7);
+                                    $wEnd = $wStart->copy()->addDays($daysInWeek - 1);
+                                    $wPays = $payments->filter(fn($p) => $p->tgl >= $wStart->format('Y-m-d') && $p->tgl
+                                    <= $wEnd->format('Y-m-d'))->sum('nominal');
+                                        @endphp
+                                        <tr>
+                                            <td class="ps-4">
+                                                <div class="fw-bold text-dark">MINGGU {{ $w }}</div>
+                                                <div class="small text-muted">{{ $wStart->format('d M') }} - {{
+                                                    $wEnd->format('d M') }}</div>
+                                            </td>
+                                            <td class="text-end pe-4 fw-bold text-dark minggu-total-{{ $w }}">0</td>
+                                            <td class="pe-4">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="fw-bold modal-week-bayar-{{ $w }}"
+                                                        data-bayar="{{ $wPays }}">Rp {{ number_format($wPays, 0, ',',
+                                                        '.') }}</span>
+                                                    <button
+                                                        class="btn btn-sm btn-outline-primary btn-pay-week fw-bold px-3 py-1"
+                                                        data-date="{{ $wEnd->format('Y-m-d') }}" data-week="{{ $w }}">
+                                                        BAYAR
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        @endfor
                             </tbody>
                             <tfoot class="border-top">
                                 <tr class="bg-light fw-bold text-dark">
@@ -260,39 +257,48 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
                 <div class="modal-header bg-white border-bottom py-3 px-4">
-                    <h5 class="modal-title fw-bold text-dark"><i class="fas fa-calendar-alt text-primary me-2"></i> Kelola Periode</h5>
+                    <h5 class="modal-title fw-bold text-dark"><i class="fas fa-calendar-alt text-primary me-2"></i>
+                        Kelola Periode</h5>
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <form id="periodForm" action="{{ route('reseller_periods.store') }}" method="POST" class="mb-4 p-3 bg-light rounded shadow-sm border border-primary border-opacity-10">
+                    <form id="periodForm" action="{{ route('reseller_periods.store') }}" method="POST"
+                        class="mb-4 p-3 bg-light rounded shadow-sm border border-primary border-opacity-10">
                         @csrf
                         <div id="methodField"></div>
                         <h6 class="fw-bold mb-3 text-primary" id="formTitle">TAMBAH PERIODE BARU</h6>
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <label class="form-label small fw-bold">Judul Periode</label>
-                                <input type="text" name="title" id="p_title" class="form-control form-control-sm" placeholder="Contoh: April 2026" required>
+                                <input type="text" name="title" id="p_title" class="form-control form-control-sm"
+                                    placeholder="Contoh: April 2026" required>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label small fw-bold">Tgl Awal</label>
-                                <input type="date" name="start_date" id="p_start" class="form-control form-control-sm" required>
+                                <input type="date" name="start_date" id="p_start" class="form-control form-control-sm"
+                                    required>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label small fw-bold">Tgl Akhir</label>
-                                <input type="date" name="end_date" id="p_end" class="form-control form-control-sm" required>
+                                <input type="date" name="end_date" id="p_end" class="form-control form-control-sm"
+                                    required>
                             </div>
                             <div class="col-md-2 d-flex align-items-end gap-1">
-                                <button type="submit" class="btn btn-primary btn-sm flex-grow-1 fw-bold" id="p_btn">SIMPAN</button>
-                                <button type="button" class="btn btn-secondary btn-sm d-none" id="p_cancel" onclick="resetPeriodForm()"><i class="fas fa-times"></i></button>
+                                <button type="submit" class="btn btn-primary btn-sm flex-grow-1 fw-bold"
+                                    id="p_btn">SIMPAN</button>
+                                <button type="button" class="btn btn-secondary btn-sm d-none" id="p_cancel"
+                                    onclick="resetPeriodForm()"><i class="fas fa-times"></i></button>
                             </div>
                         </div>
                     </form>
 
                     <div class="alert alert-info py-2 px-3 small border-0 shadow-sm mb-4" style="border-radius: 10px;">
-                        <i class="fas fa-info-circle me-1 text-primary"></i> 
-                        <strong>Rentang Terpakai:</strong> 
+                        <i class="fas fa-info-circle me-1 text-primary"></i>
+                        <strong>Rentang Terpakai:</strong>
                         @foreach($periods as $p)
-                            <span class="badge bg-white text-dark border ms-1">{{ \Carbon\Carbon::parse($p->start_date)->format('d/m') }}-{{ \Carbon\Carbon::parse($p->end_date)->format('d/m') }}</span>
+                        <span class="badge bg-white text-dark border ms-1">{{
+                            \Carbon\Carbon::parse($p->start_date)->format('d/m') }}-{{
+                            \Carbon\Carbon::parse($p->end_date)->format('d/m') }}</span>
                         @endforeach
                     </div>
 
@@ -311,23 +317,29 @@
                                 <tr>
                                     <td>{{ $p->id }}</td>
                                     <td class="fw-bold">{{ $p->title }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($p->start_date)->format('d M Y') }} - {{ \Carbon\Carbon::parse($p->end_date)->format('d M Y') }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($p->start_date)->format('d M Y') }} - {{
+                                        \Carbon\Carbon::parse($p->end_date)->format('d M Y') }}</td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-2">
-                                            <button type="button" class="btn btn-link text-primary p-0" 
+                                            <button type="button" class="btn btn-link text-primary p-0"
                                                 onclick="editPeriod({{ $p->id }}, '{{ $p->title }}', '{{ $p->start_date }}', '{{ $p->end_date }}')">
                                                 <i class="fas fa-edit"></i>
                                             </button>
-                                            <form action="{{ route('reseller_periods.destroy', $p->id) }}" method="POST" onsubmit="return confirm('Hapus periode ini?')">
+                                            <form action="{{ route('reseller_periods.destroy', $p->id) }}" method="POST"
+                                                onsubmit="return confirm('Hapus periode ini?')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-link text-danger p-0"><i class="fas fa-trash"></i></button>
+                                                <button type="submit" class="btn btn-link text-danger p-0"><i
+                                                        class="fas fa-trash"></i></button>
                                             </form>
                                         </div>
                                     </td>
                                 </tr>
                                 @empty
-                                <tr><td colspan="4" class="text-center py-3 text-muted italic">Belum ada periode manual.</td></tr>
+                                <tr>
+                                    <td colspan="4" class="text-center py-3 text-muted italic">Belum ada periode manual.
+                                    </td>
+                                </tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -484,19 +496,23 @@
         }
 
         .bg-grey {
-            background-color: #f8f9fa !important;
+            background-color: #ffff00 !important;
+            /* Yellow */
+            color: #000;
             font-weight: bold;
         }
 
         .bg-soft-purple {
-            background-color: #f8f9ff !important;
-            color: #4e73df;
+            background-color: #ead1dc !important;
+            /* Soft Pink */
+            color: #000;
             font-weight: bold;
         }
 
         .bg-orange {
-            background-color: #fff9f0 !important;
-            color: #d68910;
+            background-color: #00ffff !important;
+            /* Cyan */
+            color: #000;
             font-weight: bold;
         }
 
@@ -563,6 +579,7 @@
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
         }
+
         .hide-scrollbar {
             -ms-overflow-style: none;
             scrollbar-width: none;
