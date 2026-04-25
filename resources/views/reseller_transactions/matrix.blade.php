@@ -4,18 +4,16 @@
             <div
                 class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3">
                 <div>
-                    <h5 class="mb-0 fw-bolder text-primary"><i class="fas fa-file-invoice me-2"></i> Transaksi {{
-                        strtoupper($type) }}: {{
-                        $reseller->nama }}</h5>
-                    <div class="d-flex align-items-center gap-2 mt-1">
-                        <span class="badge bg-light text-dark border px-2 small">
-                            {{ $startDate->translatedFormat('d M Y') }} - {{
-                            $startDate->copy()->addDays(34)->translatedFormat('d M Y') }}
+                    <div class="d-flex align-items-center gap-2">
+                        <h5 class="mb-0 fw-bolder text-primary"><i class="fas fa-file-invoice me-2"></i> Transaksi {{ strtoupper($type) }}: {{ $reseller->nama }}</h5>
+                        <span class="badge bg-light text-dark border px-2 small fw-bold">
+                            {{ $startDate->translatedFormat('d M Y') }} - {{ $startDate->copy()->addDays(34)->translatedFormat('d M Y') }}
                         </span>
-                        <div class="ms-2 d-none d-md-flex gap-3 small fw-bold">
-                            <span class="text-muted">TOTAL PERIODE: <span class="text-dark" id="summaryTotal">Rp 0</span></span>
-                            <span class="text-muted">SISA TAGIHAN: <span class="text-danger" id="summarySisa">Rp {{ number_format($globalSisa, 0, ',', '.') }}</span></span>
-                        </div>
+                    </div>
+                    <div class="mt-2 d-none d-md-flex gap-4 small fw-bold">
+                        <span class="text-muted">BELANJA PERIODE: <span class="text-dark" id="summaryTotal">Rp 0</span></span>
+                        <span class="text-muted">TAGIHAN PERIODE: <span class="text-primary" id="summarySisaPeriod">Rp 0</span></span>
+                        <span class="text-muted" title="Total Hutang Keseluruhan">SISA SEMUA TAGIHAN: <span class="text-danger" id="summarySisaGlobal">Rp {{ number_format($globalSisa, 0, ',', '.') }}</span></span>
                     </div>
                 </div>
                 <div class="d-flex gap-2">
@@ -270,6 +268,42 @@
                             </tfoot>
                         </table>
                     </div>
+
+                    <!-- Riwayat Setoran -->
+                    <div class="p-4 border-top">
+                        <h6 class="fw-bold mb-3 text-secondary"><i class="fas fa-history me-2"></i> RIWAYAT SETORAN PERIODE INI</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle">
+                                <thead class="bg-light small">
+                                    <tr>
+                                        <th>TANGGAL</th>
+                                        <th class="text-end">NOMINAL</th>
+                                        <th class="text-center">AKSI</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($payments->sortByDesc('tgl') as $p)
+                                    <tr>
+                                        <td>{{ \Carbon\Carbon::parse($p->tgl)->format('d/m/Y') }}</td>
+                                        <td class="text-end fw-bold text-success">Rp {{ number_format($p->nominal, 0, ',', '.') }}</td>
+                                        <td class="text-center">
+                                            <div class="d-flex justify-content-center gap-1">
+                                                <button class="btn btn-sm btn-link text-primary p-0" onclick="editPayment({{ $p->id }}, '{{ $p->tgl }}', {{ $p->nominal }})">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-link text-danger p-0" onclick="deletePayment({{ $p->id }})">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr><td colspan="3" class="text-center py-3 text-muted italic small">Belum ada setoran di periode ini.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -380,6 +414,38 @@
                     </div>
                     <div class="modal-footer border-0 p-4 pt-0">
                         <button type="submit" class="btn btn-secondary w-100 fw-bold py-2 shadow-sm">SIMPAN PERUBAHAN</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Payment -->
+    <div class="modal fade" id="editPaymentModal" tabindex="-1">
+        <div class="modal-dialog modal-md modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                <form id="editPaymentForm" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-header bg-warning text-dark py-3">
+                        <h5 class="modal-title fw-bold"><i class="fas fa-edit me-2"></i> EDIT PEMBAYARAN</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">TANGGAL</label>
+                            <input type="date" name="tgl" id="edit_p_tgl" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">NOMINAL</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">Rp</span>
+                                <input type="number" name="nominal" id="edit_p_nominal" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 p-4 pt-0">
+                        <button type="submit" class="btn btn-warning w-100 fw-bold py-2 shadow-sm">SIMPAN PERUBAHAN</button>
                     </div>
                 </form>
             </div>
@@ -626,6 +692,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const hAwal = {{ $sisaSebelumnya ?? 0 }};
+            const bSetelah = {{ $bayarSetelahnya ?? 0 }};
             const fmt = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
             const p = v => parseFloat(v) || 0;
 
@@ -697,8 +764,12 @@
                     if(bCell) tPay += p(bCell.dataset.bayar);
                 }
                 document.getElementById('modalTotalBayar').textContent = fmt(tPay).replace('Rp','');
-                document.getElementById('modalSisaNota').textContent = fmt(gT + hAwal - tPay);
-                document.getElementById('summarySisa').textContent = fmt(gT + hAwal - tPay);
+                const periodSisa = gT + hAwal - tPay;
+                document.getElementById('modalSisaNota').textContent = fmt(periodSisa);
+                
+                document.getElementById('summaryTotal').textContent = fmt(gT);
+                document.getElementById('summarySisaPeriod').textContent = fmt(Math.max(0, gT - Math.max(0, tPay - hAwal)));
+                document.getElementById('summarySisaGlobal').textContent = fmt(periodSisa - bSetelah);
             }
 
             // Pay Week Logic
@@ -765,6 +836,36 @@
                 fetch("{{ route('reseller_transactions.save_payment') }}", {method:'POST', headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}'}, body:new FormData(this)})
                 .then(r=>r.json()).then(d=>{if(d.success) location.reload();});
             });
+
+            // Edit Payment Logic
+            const editPaymentModal = new bootstrap.Modal(document.getElementById('editPaymentModal'));
+            window.editPayment = function(id, tgl, nominal) {
+                const form = document.getElementById('editPaymentForm');
+                form.action = `/reseller_payments/${id}`;
+                document.getElementById('edit_p_tgl').value = tgl;
+                document.getElementById('edit_p_nominal').value = nominal;
+                rekapModal.hide();
+                editPaymentModal.show();
+            };
+
+            document.getElementById('editPaymentForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                Swal.fire({title:'Memperbarui Setoran...', didOpen:()=>Swal.showLoading()});
+                fetch(this.action, {
+                    method:'POST', 
+                    headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}'}, 
+                    body:new FormData(this)
+                })
+                .then(r=>r.json()).then(d=>{if(d.success) location.reload();});
+            });
+
+            window.deletePayment = function(id) {
+                fetch(`/reseller_payments/${id}`, {
+                    method:'DELETE',
+                    headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}'}
+                })
+                .then(r=>r.json()).then(d=>{if(d.success) location.reload();});
+            };
 
             // Period Management Logic
             window.editPeriod = function(id, title, start, end) {

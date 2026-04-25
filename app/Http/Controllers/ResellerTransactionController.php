@@ -116,10 +116,19 @@ class ResellerTransactionController extends Controller
             ->sum('nominal');
         $sisaSebelumnya = ($reseller->hutang_awal ?? 0) + $uangSebelumnya - $bayarSebelumnya;
 
+        // Payments after this period
+        $bayarSetelahnya = ResellerPayment::where('reseller_id', $resellerId)
+            ->where('tgl', '>', $endDate->format('Y-m-d'))
+            ->sum('nominal');
+
+        $allPayments = ResellerPayment::where('reseller_id', $resellerId)
+            ->orderBy('tgl', 'desc')
+            ->get();
+
         return view('reseller_transactions.matrix', compact(
             'reseller', 'barangs', 'dates', 'transactions', 'payments', 
             'startDate', 'endDate', 'periods', 'periodId', 'type',
-            'globalSisa', 'sisaSebelumnya', 'totalUangGlobal', 'totalBayarGlobal'
+            'globalSisa', 'sisaSebelumnya', 'totalUangGlobal', 'totalBayarGlobal', 'bayarSetelahnya', 'allPayments'
         ));
     }
 
@@ -271,6 +280,27 @@ class ResellerTransactionController extends Controller
         ]);
 
         ResellerPayment::create($request->all());
+
+        return response()->json(['success' => true]);
+    }
+
+    public function updatePayment(Request $request, $id)
+    {
+        $request->validate([
+            'nominal' => 'required|numeric',
+            'tgl' => 'required|date',
+        ]);
+
+        $payment = ResellerPayment::findOrFail($id);
+        $payment->update($request->all());
+
+        return response()->json(['success' => true]);
+    }
+
+    public function destroyPayment($id)
+    {
+        $payment = ResellerPayment::findOrFail($id);
+        $payment->delete();
 
         return response()->json(['success' => true]);
     }
