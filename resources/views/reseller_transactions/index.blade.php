@@ -41,8 +41,11 @@
                                         <h3 class="mb-1 text-white fw-bolder text-truncate" style="letter-spacing: -0.5px;" title="{{ $reseller->nama }}">
                                             {{ strtoupper($reseller->nama) }}
                                         </h3>
-                                        <div class="d-flex align-items-center text-white text-opacity-75 mb-1" style="font-size: 0.8rem;">
-                                            Sisa: Rp {{ number_format($reseller->sisa_nota, 0, ',', '.') }}
+                                        <div class="d-flex flex-column text-white text-opacity-75 mb-1" style="font-size: 0.8rem;">
+                                            @if($reseller->hutang_awal > 0)
+                                            <span>Awal: Rp {{ number_format($reseller->hutang_awal, 0, ',', '.') }}</span>
+                                            @endif
+                                            <span>Tagihan: Rp {{ number_format($reseller->sisa_nota, 0, ',', '.') }}</span>
                                         </div>
                                         <div class="border-top border-white border-opacity-25 pt-2 mt-2">
                                             <div style="font-size: 0.7rem; color: rgba(255,255,255,0.9);" class="mb-1 fw-medium">

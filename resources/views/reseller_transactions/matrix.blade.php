@@ -13,12 +13,15 @@
                             $startDate->copy()->addDays(34)->translatedFormat('d M Y') }}
                         </span>
                         <div class="ms-2 d-none d-md-flex gap-3 small fw-bold">
-                            <span class="text-muted">TOTAL: <span class="text-dark" id="summaryTotal">Rp 0</span></span>
-                            <span class="text-muted">SISA: <span class="text-danger" id="summarySisa">Rp 0</span></span>
+                            <span class="text-muted">TOTAL PERIODE: <span class="text-dark" id="summaryTotal">Rp 0</span></span>
+                            <span class="text-muted">SISA TAGIHAN: <span class="text-danger" id="summarySisa">Rp {{ number_format($globalSisa, 0, ',', '.') }}</span></span>
                         </div>
                     </div>
                 </div>
                 <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-danger fw-bold" id="btnReset"><i class="fas fa-trash-alt me-1"></i> RESET</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary fw-bold" data-bs-toggle="modal"
+                        data-bs-target="#modalHutangAwal"><i class="fas fa-edit me-1"></i> HUTANG AWAL</button>
                     <button type="button" class="btn btn-sm btn-outline-dark fw-bold" data-bs-toggle="modal"
                         data-bs-target="#managePeriodsModal"><i class="fas fa-calendar-alt me-1"></i> PERIODE</button>
                     <button type="button" class="btn btn-sm btn-outline-primary fw-bold" data-bs-toggle="modal"
@@ -113,6 +116,26 @@
                                 $nameColorMap[$name] = $colors[$index % count($colors)];
                                 }
                                 @endphp
+
+                                <!-- Sisa Sebelumnya Row -->
+                                @if($sisaSebelumnya != 0)
+                                <tr class="bg-light-warning">
+                                    <td class="sticky-col-1 fw-bold text-end" colspan="2" style="background: #fff8e1 !important;">SISA SEBELUMNYA (Tagihan Awal + Periode Lalu)</td>
+                                    @for($w=1; $w<=$totalWeeks; $w++)
+                                        @php
+                                            $daysInThisWeek = min(7, $totalDays - ($w-1)*7);
+                                        @endphp
+                                        <td colspan="{{ $daysInThisWeek + 2 }}" style="background: #fff8e1 !important;" class="text-end fw-bold text-danger">
+                                            @if($w == 1)
+                                                Rp {{ number_format($sisaSebelumnya, 0, ',', '.') }}
+                                            @endif
+                                        </td>
+                                        <td class="separator" style="background: #fff8e1 !important;"></td>
+                                    @endfor
+                                    <td class="text-end fw-bold text-danger bg-light-warning" style="background: #fff8e1 !important;">Rp {{ number_format($sisaSebelumnya, 0, ',', '.') }}</td>
+                                </tr>
+                                @endif
+
                                 @foreach($barangs as $barang)
                                 @php
                                 $normalizedName = trim($barang->namabarang);
@@ -254,51 +277,42 @@
 
     <!-- Modal Manage Periods -->
     <div class="modal fade" id="managePeriodsModal" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
-                <div class="modal-header bg-white border-bottom py-3 px-4">
-                    <h5 class="modal-title fw-bold text-dark"><i class="fas fa-calendar-alt text-primary me-2"></i>
-                        Kelola Periode</h5>
-                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                <div class="modal-header bg-primary text-white py-3">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-calendar-alt me-2"></i> KELOLA PERIODE</h5>
+                    <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <form id="periodForm" action="{{ route('reseller_periods.store') }}" method="POST"
-                        class="mb-4 p-3 bg-light rounded shadow-sm border border-primary border-opacity-10">
+                    <form id="periodForm" action="{{ route('reseller_periods.store') }}" method="POST" class="mb-4 p-3 bg-light rounded shadow-sm border border-primary border-opacity-10">
                         @csrf
                         <div id="methodField"></div>
                         <h6 class="fw-bold mb-3 text-primary" id="formTitle">TAMBAH PERIODE BARU</h6>
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <label class="form-label small fw-bold">Judul Periode</label>
-                                <input type="text" name="title" id="p_title" class="form-control form-control-sm"
-                                    placeholder="Contoh: April 2026" required>
+                                <input type="text" name="title" id="p_title" class="form-control form-control-sm" placeholder="Contoh: April 2026" required>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label small fw-bold">Tgl Awal</label>
-                                <input type="date" name="start_date" id="p_start" class="form-control form-control-sm"
-                                    required>
+                                <input type="date" name="start_date" id="p_start" class="form-control form-control-sm" required>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label small fw-bold">Tgl Akhir</label>
-                                <input type="date" name="end_date" id="p_end" class="form-control form-control-sm"
-                                    required>
+                                <input type="date" name="end_date" id="p_end" class="form-control form-control-sm" required>
                             </div>
                             <div class="col-md-2 d-flex align-items-end gap-1">
-                                <button type="submit" class="btn btn-primary btn-sm flex-grow-1 fw-bold"
-                                    id="p_btn">SIMPAN</button>
-                                <button type="button" class="btn btn-secondary btn-sm d-none" id="p_cancel"
-                                    onclick="resetPeriodForm()"><i class="fas fa-times"></i></button>
+                                <button type="submit" class="btn btn-primary btn-sm flex-grow-1 fw-bold" id="p_btn">SIMPAN</button>
+                                <button type="button" class="btn btn-secondary btn-sm d-none" id="p_cancel" onclick="resetPeriodForm()"><i class="fas fa-times"></i></button>
                             </div>
                         </div>
                     </form>
 
                     <div class="alert alert-info py-2 px-3 small border-0 shadow-sm mb-4" style="border-radius: 10px;">
-                        <i class="fas fa-info-circle me-1 text-primary"></i>
-                        <strong>Rentang Terpakai:</strong>
+                        <i class="fas fa-info-circle me-1 text-primary"></i> 
+                        <strong>Rentang Terpakai:</strong> 
                         @foreach($periods as $p)
-                        <span class="badge bg-white text-dark border ms-1">{{
-                            \Carbon\Carbon::parse($p->start_date)->format('d/m') }}-{{
-                            \Carbon\Carbon::parse($p->end_date)->format('d/m') }}</span>
+                            <span class="badge bg-white text-dark border ms-1">{{ \Carbon\Carbon::parse($p->start_date)->format('d/m') }}-{{ \Carbon\Carbon::parse($p->end_date)->format('d/m') }}</span>
                         @endforeach
                     </div>
 
@@ -317,34 +331,57 @@
                                 <tr>
                                     <td>{{ $p->id }}</td>
                                     <td class="fw-bold">{{ $p->title }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($p->start_date)->format('d M Y') }} - {{
-                                        \Carbon\Carbon::parse($p->end_date)->format('d M Y') }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($p->start_date)->format('d M Y') }} - {{ \Carbon\Carbon::parse($p->end_date)->format('d M Y') }}</td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-2">
-                                            <button type="button" class="btn btn-link text-primary p-0"
+                                            <button type="button" class="btn btn-link text-primary p-0" 
                                                 onclick="editPeriod({{ $p->id }}, '{{ $p->title }}', '{{ $p->start_date }}', '{{ $p->end_date }}')">
                                                 <i class="fas fa-edit"></i>
                                             </button>
-                                            <form action="{{ route('reseller_periods.destroy', $p->id) }}" method="POST"
-                                                onsubmit="return confirm('Hapus periode ini?')">
+                                            <form action="{{ route('reseller_periods.destroy', $p->id) }}" method="POST" onsubmit="return confirm('Hapus periode ini?')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-link text-danger p-0"><i
-                                                        class="fas fa-trash"></i></button>
+                                                <button type="submit" class="btn btn-link text-danger p-0"><i class="fas fa-trash"></i></button>
                                             </form>
                                         </div>
                                     </td>
                                 </tr>
                                 @empty
-                                <tr>
-                                    <td colspan="4" class="text-center py-3 text-muted italic">Belum ada periode manual.
-                                    </td>
-                                </tr>
+                                <tr><td colspan="4" class="text-center py-3 text-muted italic">Belum ada periode manual.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Hutang Awal -->
+    <div class="modal fade" id="modalHutangAwal" tabindex="-1">
+        <div class="modal-dialog modal-md modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                <form action="{{ route('reseller_transactions.update_sisa') }}" method="POST">
+                    @csrf
+                    <div class="modal-header bg-secondary text-white py-3">
+                        <h5 class="modal-title fw-bold"><i class="fas fa-money-bill-alt me-2"></i> HUTANG AWAL</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <input type="hidden" name="reseller_id" value="{{ $reseller->id }}">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">HUTANG AWAL / SALDO AWAL</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">Rp</span>
+                                <input type="number" name="sisa_nota" class="form-control" value="{{ $reseller->hutang_awal ?? 0 }}" required>
+                            </div>
+                            <div class="form-text small text-muted">Nilai ini akan ditambahkan ke total tagihan reseller secara global.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 p-4 pt-0">
+                        <button type="submit" class="btn btn-secondary w-100 fw-bold py-2 shadow-sm">SIMPAN PERUBAHAN</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -588,7 +625,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const hAwal = {{ $reseller->hutang_awal ?? 0 }};
+            const hAwal = {{ $sisaSebelumnya ?? 0 }};
             const fmt = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
             const p = v => parseFloat(v) || 0;
 
@@ -603,7 +640,7 @@
                 const weekWS = Array(totalWeeks + 1).fill(0);
                 const rowWS = {}; 
 
-                document.querySelectorAll('#matrixTable tbody tr').forEach(row => {
+                document.querySelectorAll('#matrixTable tbody tr[data-barang-id]').forEach(row => {
                     const price = p(row.dataset.price);
                     const rId = row.dataset.barangId;
                     rowWS[rId] = Array(totalWeeks + 1).fill(0);
@@ -687,6 +724,39 @@
                 const fd = new FormData(document.getElementById('matrixForm'));
                 Swal.fire({title:'Menyimpan...', didOpen:()=>Swal.showLoading()});
                 fetch("{{ route('reseller_transactions.save_matrix') }}", {method:'POST', headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}'}, body:fd}).then(r=>r.json()).then(d=>Swal.fire(d.success?'Berhasil':'Error', d.message, d.success?'success':'error'));
+            });
+
+            document.getElementById('btnReset').addEventListener('click', () => {
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: "Semua transaksi untuk reseller ini akan DIHAPUS PERMANEN (Termasuk periode lain)!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Reset Semua!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({title:'Mereset data...', didOpen:()=>Swal.showLoading()});
+                        fetch("{{ route('reseller_transactions.reset') }}", {
+                            method:'POST', 
+                            headers:{
+                                'X-CSRF-TOKEN':'{{ csrf_token() }}',
+                                'Content-Type': 'application/json'
+                            }, 
+                            body: JSON.stringify({ reseller_id: "{{ $reseller->id }}" })
+                        })
+                        .then(r=>r.json())
+                        .then(d=>{
+                            if(d.success) {
+                                Swal.fire('Berhasil', d.message, 'success').then(() => location.reload());
+                            } else {
+                                Swal.fire('Error', d.message, 'error');
+                            }
+                        });
+                    }
+                });
             });
 
             document.getElementById('pForm').addEventListener('submit', function(e) {

@@ -178,6 +178,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/reseller_transactions/matrix', [ResellerTransactionController::class, 'matrix'])->name('reseller_transactions.matrix');
     Route::post('/reseller_transactions/save-matrix', [ResellerTransactionController::class, 'saveMatrix'])->name('reseller_transactions.save_matrix');
     Route::post('/reseller_transactions/save-payment', [ResellerTransactionController::class, 'savePayment'])->name('reseller_transactions.save_payment');
+    Route::post('/reseller_transactions/update-sisa', [ResellerTransactionController::class, 'updateSisaNota'])->name('reseller_transactions.update_sisa');
+    Route::post('/reseller_transactions/reset', [ResellerTransactionController::class, 'resetTransactions'])->name('reseller_transactions.reset');
 
     // Reseller Periods
     Route::post('/reseller_periods', [ResellerTransactionController::class, 'storePeriod'])->name('reseller_periods.store');

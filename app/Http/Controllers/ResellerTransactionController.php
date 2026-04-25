@@ -102,9 +102,24 @@ class ResellerTransactionController extends Controller
             ->whereBetween('tgl', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->get();
 
+        // Global Totals for Summary
+        $totalUangGlobal = ResellerTransaction::where('reseller_id', $resellerId)->sum('total_uang');
+        $totalBayarGlobal = ResellerPayment::where('reseller_id', $resellerId)->sum('nominal');
+        $globalSisa = ($reseller->hutang_awal ?? 0) + $totalUangGlobal - $totalBayarGlobal;
+
+        // Calculate Previous Balance (Sisa Sebelum Periode Ini)
+        $uangSebelumnya = ResellerTransaction::where('reseller_id', $resellerId)
+            ->where('tgl', '<', $startDate->format('Y-m-d'))
+            ->sum('total_uang');
+        $bayarSebelumnya = ResellerPayment::where('reseller_id', $resellerId)
+            ->where('tgl', '<', $startDate->format('Y-m-d'))
+            ->sum('nominal');
+        $sisaSebelumnya = ($reseller->hutang_awal ?? 0) + $uangSebelumnya - $bayarSebelumnya;
+
         return view('reseller_transactions.matrix', compact(
             'reseller', 'barangs', 'dates', 'transactions', 'payments', 
-            'startDate', 'endDate', 'periods', 'periodId', 'type'
+            'startDate', 'endDate', 'periods', 'periodId', 'type',
+            'globalSisa', 'sisaSebelumnya', 'totalUangGlobal', 'totalBayarGlobal'
         ));
     }
 
@@ -258,5 +273,50 @@ class ResellerTransactionController extends Controller
         ResellerPayment::create($request->all());
 
         return response()->json(['success' => true]);
+    }
+
+    public function updateSisaNota(Request $request)
+    {
+        $request->validate([
+            'reseller_id' => 'required|exists:resellers,id',
+            'sisa_nota' => 'required|numeric',
+        ]);
+
+        $reseller = Reseller::findOrFail($request->reseller_id);
+        $reseller->update([
+            'hutang_awal' => $request->sisa_nota
+        ]);
+
+        return back()->with('success', 'Hutang awal berhasil diperbarui.');
+    }
+
+    public function resetTransactions(Request $request)
+    {
+        $request->validate([
+            'reseller_id' => 'required|exists:resellers,id',
+        ]);
+
+        $resellerId = $request->reseller_id;
+
+        try {
+            DB::beginTransaction();
+
+            // Delete details first
+            DB::table('reseller_transaction_details')
+                ->whereIn('reseller_transaction_id', function($query) use ($resellerId) {
+                    $query->select('id')
+                        ->from('reseller_transactions')
+                        ->where('reseller_id', $resellerId);
+                })->delete();
+
+            // Delete transactions
+            ResellerTransaction::where('reseller_id', $resellerId)->delete();
+
+            DB::commit();
+            return response()->json(['success' => true, 'message' => 'Semua transaksi berhasil direset.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 }
