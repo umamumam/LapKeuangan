@@ -18,23 +18,26 @@
                     </div>
                 </div>
                 <div class="d-flex gap-2">
-                    <form action="{{ route('reseller_transactions.matrix') }}" method="GET" class="d-flex gap-1">
-                        <input type="hidden" name="reseller_id" value="{{ $reseller->id }}">
-                        <input type="hidden" name="type" value="{{ $type }}">
-                        <select name="period_index" class="form-select form-select-sm border-primary shadow-none"
-                            style="width: auto;" onchange="this.form.submit()">
-                            @foreach($periods as $p)
-                            <option value="{{ $p['index'] }}" {{ $periodIndex==$p['index'] ? 'selected' : '' }}>
-                                {{ $p['label'] }}
-                            </option>
-                            @endforeach
-                        </select>
-                    </form>
+                    <button type="button" class="btn btn-sm btn-outline-dark fw-bold" data-bs-toggle="modal"
+                        data-bs-target="#managePeriodsModal"><i class="fas fa-calendar-alt me-1"></i> PERIODE</button>
                     <button type="button" class="btn btn-sm btn-outline-primary fw-bold" data-bs-toggle="modal"
                         data-bs-target="#rekapModal">REKAP</button>
                     <button type="button" class="btn btn-sm btn-primary fw-bold" id="btnSave">SIMPAN DATA</button>
                     <a href="{{ route('reseller_transactions.index', ['type' => $type]) }}" class="btn btn-sm btn-secondary"><i
                             class="fas fa-times"></i></a>
+                </div>
+            </div>
+
+            <!-- Excel Style Tabs -->
+            <div class="excel-tabs-container mb-0 px-1">
+                <div class="d-flex overflow-auto hide-scrollbar">
+                    @foreach($periods as $p)
+                    <a href="{{ route('reseller_transactions.matrix', ['reseller_id' => $reseller->id, 'type' => $type, 'period_id' => $p->id]) }}" 
+                       class="excel-tab {{ $periodId == $p->id ? 'active' : '' }}">
+                        <span class="tab-title">{{ $p->title }}</span>
+                        <span class="tab-date">{{ \Carbon\Carbon::parse($p->start_date)->format('d/m') }} - {{ \Carbon\Carbon::parse($p->end_date)->format('d/m') }}</span>
+                    </a>
+                    @endforeach
                 </div>
             </div>
 
@@ -44,33 +47,48 @@
                         <input type="hidden" name="reseller_id" value="{{ $reseller->id }}">
                         <input type="hidden" name="type" value="{{ $type }}">
                         <table class="table-matrix" id="matrixTable">
+                            @php
+                                $totalDays = count($dates);
+                                $totalWeeks = ceil($totalDays / 7);
+                            @endphp
                             <thead>
                                 <tr>
                                     <th class="sticky-col-1 bg-grey" rowspan="3">NAMA BARANG</th>
                                     <th class="sticky-col-2 bg-grey text-uppercase" rowspan="3">HARGA {{ $type }}</th>
-                                    @for($w=1; $w<=5; $w++) <th class="bg-soft-purple text-uppercase" colspan="7">MINGGU
-                                        {{ $w }}</th>
+                                    @for($w=1; $w<=$totalWeeks; $w++) 
+                                        @php
+                                            $daysInThisWeek = min(7, $totalDays - ($w-1)*7);
+                                        @endphp
+                                        <th class="bg-soft-purple text-uppercase" colspan="{{ $daysInThisWeek }}">MINGGU {{ $w }}</th>
                                         <th class="bg-orange" rowspan="3">JUMLAH</th>
                                         <th class="bg-orange" rowspan="3">TOTAL HARGA</th>
                                         <th class="separator" rowspan="3"></th>
-                                        @endfor
-                                        <th class="bg-dark text-white fw-bold" rowspan="3">GRAND TOTAL</th>
+                                    @endfor
+                                    <th class="bg-dark text-white fw-bold" rowspan="3">GRAND TOTAL</th>
                                 </tr>
                                 <tr>
-                                    @for($w=1; $w<=5; $w++) @for($d=0; $d<7; $d++) @php $current=$startDate->
-                                        copy()->addDays(($w-1)*7 + $d); @endphp
-                                        <th class="day-header {{ $current->isWeekend() ? 'weekend' : '' }}">{{
-                                            $current->translatedFormat('D') }}</th>
+                                    @for($w=1; $w<=$totalWeeks; $w++) 
+                                        @for($d=0; $d<7; $d++) 
+                                            @php 
+                                                $idx = ($w-1)*7 + $d;
+                                                if ($idx >= $totalDays) break;
+                                                $current = $dates[$idx];
+                                            @endphp
+                                            <th class="day-header {{ $current->isWeekend() ? 'weekend' : '' }}">{{ $current->translatedFormat('D') }}</th>
                                         @endfor
-                                        @endfor
+                                    @endfor
                                 </tr>
                                 <tr>
-                                    @for($w=1; $w<=5; $w++) @for($d=0; $d<7; $d++) @php $current=$startDate->
-                                        copy()->addDays(($w-1)*7 + $d); @endphp
-                                        <th class="date-header {{ $current->isWeekend() ? 'weekend' : '' }} small">{{
-                                            $current->format('d M') }}</th>
+                                    @for($w=1; $w<=$totalWeeks; $w++) 
+                                        @for($d=0; $d<7; $d++) 
+                                            @php 
+                                                $idx = ($w-1)*7 + $d;
+                                                if ($idx >= $totalDays) break;
+                                                $current = $dates[$idx];
+                                            @endphp
+                                            <th class="date-header {{ $current->isWeekend() ? 'weekend' : '' }} small">{{ $current->format('d M') }}</th>
                                         @endfor
-                                        @endfor
+                                    @endfor
                                 </tr>
                             </thead>
                             <tbody>
@@ -109,41 +127,50 @@
                                         <div class="small text-muted fw-normal" style="font-size: 0.7rem;">Uk: {{ $barang->ukuran }}</div>
                                     </td>
                                     <td class="sticky-col-2 text-end" style="background-color: {{ $rowColor }} !important;">{{ number_format($barang->display_price, 0, ',', '.') }}</td>
-                                    @for($w=1; $w<=5; $w++) @for($d=0; $d<7; $d++) @php $dateStr=$startDate->
-                                        copy()->addDays(($w-1)*7 + $d)->format('Y-m-d');
-                                        $qty = 0;
-                                        if (isset($transactions[$dateStr])) {
-                                        $detail = $transactions[$dateStr]->details->where('barang_id',
-                                        $barang->id)->first();
-                                        $qty = $detail ? $detail->jumlah : 0;
-                                        }
-                                        @endphp
-                                        <td class="qty-cell bg-white">
-                                            <input type="number" name="data[{{ $dateStr }}][{{ $barang->id }}]"
-                                                class="qty-input" value="{{ $qty }}" min="0" data-date="{{ $dateStr }}"
-                                                data-week="{{ $w }}">
-                                        </td>
+                                    @for($w=1; $w<=$totalWeeks; $w++) 
+                                        @for($d=0; $d<7; $d++) 
+                                            @php 
+                                                $idx = ($w-1)*7 + $d;
+                                                if ($idx >= $totalDays) break;
+                                                $current = $dates[$idx];
+                                                $dateStr = $current->format('Y-m-d');
+                                                $qty = 0;
+                                                if (isset($transactions[$dateStr])) {
+                                                    $detail = $transactions[$dateStr]->details->where('barang_id', $barang->id)->first();
+                                                    $qty = $detail ? $detail->jumlah : 0;
+                                                }
+                                            @endphp
+                                            <td class="qty-cell bg-white">
+                                                <input type="number" name="data[{{ $dateStr }}][{{ $barang->id }}]"
+                                                    class="qty-input" value="{{ $qty }}" min="0" data-date="{{ $dateStr }}"
+                                                    data-week="{{ $w }}">
+                                            </td>
                                         @endfor
                                         <td class="text-center fw-bold bg-light-muted week-qty-{{ $w }}">0</td>
                                         <td class="text-end fw-bold bg-light-muted week-total-{{ $w }}">0</td>
                                         <td class="separator"></td>
-                                        @endfor
-                                        <td class="text-end fw-bold bg-soft-orange row-grand-total">0</td>
+                                    @endfor
+                                    <td class="text-end fw-bold bg-soft-orange row-grand-total">0</td>
                                 </tr>
                                 @endforeach
                             </tbody>
                             <tfoot>
                                 <tr>
                                     <td colspan="2" class="sticky-col-footer">TOTAL PER TANGGAL</td>
-                                    @for($w=1; $w<=5; $w++) @for($d=0; $d<7; $d++) @php $dateStr=$startDate->
-                                        copy()->addDays(($w-1)*7 + $d)->format('Y-m-d'); @endphp
-                                        <td class="text-center col-total-{{ $dateStr }} small">0</td>
+                                    @for($w=1; $w<=$totalWeeks; $w++) 
+                                        @for($d=0; $d<7; $d++) 
+                                            @php 
+                                                $idx = ($w-1)*7 + $d;
+                                                if ($idx >= $totalDays) break;
+                                                $dateStr = $dates[$idx]->format('Y-m-d');
+                                            @endphp
+                                            <td class="text-center col-total-{{ $dateStr }} small">0</td>
                                         @endfor
                                         <td class="text-center bg-grey week-foot-qty-{{ $w }}">0</td>
                                         <td class="text-end bg-grey week-foot-total-{{ $w }}">0</td>
                                         <td class="separator"></td>
-                                        @endfor
-                                        <td class="text-end bg-dark text-white fw-bold" id="finalGrandTotal">0</td>
+                                    @endfor
+                                    <td class="text-end bg-dark text-white fw-bold" id="finalGrandTotal">0</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -173,32 +200,32 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @for($w=1; $w<=5; $w++) @php $wStart=$startDate->copy()->addDays(($w-1)*7);
-                                    $wEnd = $wStart->copy()->addDays(6);
-                                    $wPays = $payments->filter(fn($p) => $p->tgl >= $wStart->format('Y-m-d') && $p->tgl
-                                    <= $wEnd->format('Y-m-d'))->sum('nominal');
-                                        @endphp
-                                        <tr>
-                                            <td class="ps-4">
-                                                <div class="fw-bold text-dark">MINGGU {{ $w }}</div>
-                                                <div class="small text-muted">{{ $wStart->format('d M') }} - {{
-                                                    $wEnd->format('d M') }}</div>
-                                            </td>
-                                            <td class="text-end pe-4 fw-bold text-dark minggu-total-{{ $w }}">0</td>
-                                            <td class="pe-4">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <span class="fw-bold modal-week-bayar-{{ $w }}"
-                                                        data-bayar="{{ $wPays }}">Rp {{ number_format($wPays, 0, ',',
-                                                        '.') }}</span>
-                                                    <button
-                                                        class="btn btn-sm btn-outline-primary btn-pay-week fw-bold px-3 py-1"
-                                                        data-date="{{ $wEnd->format('Y-m-d') }}" data-week="{{ $w }}">
-                                                        BAYAR
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        @endfor
+                                @for($w=1; $w<=$totalWeeks; $w++) 
+                                    @php 
+                                        $wStart = $startDate->copy()->addDays(($w-1)*7);
+                                        $daysInWeek = min(7, $totalDays - ($w-1)*7);
+                                        $wEnd = $wStart->copy()->addDays($daysInWeek - 1);
+                                        $wPays = $payments->filter(fn($p) => $p->tgl >= $wStart->format('Y-m-d') && $p->tgl <= $wEnd->format('Y-m-d'))->sum('nominal');
+                                    @endphp
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="fw-bold text-dark">MINGGU {{ $w }}</div>
+                                            <div class="small text-muted">{{ $wStart->format('d M') }} - {{ $wEnd->format('d M') }}</div>
+                                        </td>
+                                        <td class="text-end pe-4 fw-bold text-dark minggu-total-{{ $w }}">0</td>
+                                        <td class="pe-4">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="fw-bold modal-week-bayar-{{ $w }}"
+                                                    data-bayar="{{ $wPays }}">Rp {{ number_format($wPays, 0, ',', '.') }}</span>
+                                                <button
+                                                    class="btn btn-sm btn-outline-primary btn-pay-week fw-bold px-3 py-1"
+                                                    data-date="{{ $wEnd->format('Y-m-d') }}" data-week="{{ $w }}">
+                                                    BAYAR
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endfor
                             </tbody>
                             <tfoot class="border-top">
                                 <tr class="bg-light fw-bold text-dark">
@@ -221,6 +248,88 @@
                                     </td>
                                 </tr>
                             </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Manage Periods -->
+    <div class="modal fade" id="managePeriodsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                <div class="modal-header bg-white border-bottom py-3 px-4">
+                    <h5 class="modal-title fw-bold text-dark"><i class="fas fa-calendar-alt text-primary me-2"></i> Kelola Periode</h5>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="periodForm" action="{{ route('reseller_periods.store') }}" method="POST" class="mb-4 p-3 bg-light rounded shadow-sm border border-primary border-opacity-10">
+                        @csrf
+                        <div id="methodField"></div>
+                        <h6 class="fw-bold mb-3 text-primary" id="formTitle">TAMBAH PERIODE BARU</h6>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Judul Periode</label>
+                                <input type="text" name="title" id="p_title" class="form-control form-control-sm" placeholder="Contoh: April 2026" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Tgl Awal</label>
+                                <input type="date" name="start_date" id="p_start" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Tgl Akhir</label>
+                                <input type="date" name="end_date" id="p_end" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end gap-1">
+                                <button type="submit" class="btn btn-primary btn-sm flex-grow-1 fw-bold" id="p_btn">SIMPAN</button>
+                                <button type="button" class="btn btn-secondary btn-sm d-none" id="p_cancel" onclick="resetPeriodForm()"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="alert alert-info py-2 px-3 small border-0 shadow-sm mb-4" style="border-radius: 10px;">
+                        <i class="fas fa-info-circle me-1 text-primary"></i> 
+                        <strong>Rentang Terpakai:</strong> 
+                        @foreach($periods as $p)
+                            <span class="badge bg-white text-dark border ms-1">{{ \Carbon\Carbon::parse($p->start_date)->format('d/m') }}-{{ \Carbon\Carbon::parse($p->end_date)->format('d/m') }}</span>
+                        @endforeach
+                    </div>
+
+                    <div class="table-responsive" style="max-height: 300px;">
+                        <table class="table table-sm align-middle table-hover">
+                            <thead class="sticky-top bg-white">
+                                <tr class="text-secondary small">
+                                    <th>ID</th>
+                                    <th>JUDUL</th>
+                                    <th>RANGE TANGGAL</th>
+                                    <th class="text-center">AKSI</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($periods as $p)
+                                <tr>
+                                    <td>{{ $p->id }}</td>
+                                    <td class="fw-bold">{{ $p->title }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($p->start_date)->format('d M Y') }} - {{ \Carbon\Carbon::parse($p->end_date)->format('d M Y') }}</td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <button type="button" class="btn btn-link text-primary p-0" 
+                                                onclick="editPeriod({{ $p->id }}, '{{ $p->title }}', '{{ $p->start_date }}', '{{ $p->end_date }}')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <form action="{{ route('reseller_periods.destroy', $p->id) }}" method="POST" onsubmit="return confirm('Hapus periode ini?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-link text-danger p-0"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr><td colspan="4" class="text-center py-3 text-muted italic">Belum ada periode manual.</td></tr>
+                                @endforelse
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -407,6 +516,57 @@
         .bg-light-muted {
             background: #fafafa !important;
         }
+
+        /* Excel Style Tabs */
+        .excel-tabs-container {
+            background: #f1f3f4;
+            border-bottom: 1px solid #ddd;
+            margin-top: 10px;
+        }
+
+        .excel-tab {
+            display: flex;
+            flex-direction: column;
+            padding: 8px 20px;
+            text-decoration: none;
+            color: #5f6368;
+            background: #f1f3f4;
+            border-right: 1px solid #ddd;
+            min-width: 120px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .excel-tab:hover {
+            background: #e8eaed;
+            color: #202124;
+        }
+
+        .excel-tab.active {
+            background: #fff;
+            color: #1a73e8;
+            font-weight: bold;
+            border-bottom: 2px solid #1a73e8;
+        }
+
+        .excel-tab .tab-title {
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        .excel-tab .tab-date {
+            font-size: 0.7rem;
+            opacity: 0.8;
+            white-space: nowrap;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 
     <script>
@@ -418,16 +578,18 @@
             const rekapModal = new bootstrap.Modal(document.getElementById('rekapModal'));
             const pModal = new bootstrap.Modal(document.getElementById('pModal'));
 
+            const totalWeeks = {{ $totalWeeks }};
+
             function update() {
                 let gT = 0;
                 const colS = {}; 
-                const weekWS = [0,0,0,0,0,0];
+                const weekWS = Array(totalWeeks + 1).fill(0);
                 const rowWS = {}; 
 
                 document.querySelectorAll('#matrixTable tbody tr').forEach(row => {
                     const price = p(row.dataset.price);
                     const rId = row.dataset.barangId;
-                    rowWS[rId] = [0,0,0,0,0,0];
+                    rowWS[rId] = Array(totalWeeks + 1).fill(0);
                     let rGT = 0;
 
                     row.querySelectorAll('.qty-input').forEach((inp, idx) => {
@@ -436,32 +598,39 @@
                         const w = p(inp.dataset.week);
                         
                         if(!colS[d]) colS[d] = 0;
-                        colS[d] += (q * price);
+                        colS[d] += q;
                         
                         rowWS[rId][w] += q;
                         weekWS[w] += (q * price);
                         rGT += (q * price);
                     });
 
-                    for(let w=1; w<=5; w++) {
-                        row.querySelector(`.week-qty-${w}`).textContent = rowWS[rId][w];
-                        row.querySelector(`.week-total-${w}`).textContent = fmt(rowWS[rId][w] * price).replace('Rp','');
+                    for(let w=1; w<=totalWeeks; w++) {
+                        const qCell = row.querySelector(`.week-qty-${w}`);
+                        const tCell = row.querySelector(`.week-total-${w}`);
+                        if(qCell) qCell.textContent = rowWS[rId][w];
+                        if(tCell) tCell.textContent = fmt(rowWS[rId][w] * price).replace('Rp','');
                     }
                     row.querySelector('.row-grand-total').textContent = fmt(rGT).replace('Rp','');
                     gT += rGT;
                 });
 
-                for(let w=1; w<=5; w++) {
+                for(let w=1; w<=totalWeeks; w++) {
                     let wFQ = 0;
                     document.querySelectorAll(`.qty-input[data-week="${w}"]`).forEach(i => wFQ += p(i.value));
-                    document.querySelector(`.week-foot-qty-${w}`).textContent = wFQ;
-                    document.querySelector(`.week-foot-total-${w}`).textContent = fmt(weekWS[w]).replace('Rp','');
-                    document.querySelector(`.minggu-total-${w}`).textContent = fmt(weekWS[w]).replace('Rp','');
+                    
+                    const fqCell = document.querySelector(`.week-foot-qty-${w}`);
+                    const ftCell = document.querySelector(`.week-foot-total-${w}`);
+                    const mtCell = document.querySelector(`.minggu-total-${w}`);
+                    
+                    if(fqCell) fqCell.textContent = wFQ;
+                    if(ftCell) ftCell.textContent = fmt(weekWS[w]).replace('Rp','');
+                    if(mtCell) mtCell.textContent = fmt(weekWS[w]).replace('Rp','');
                 }
 
                 Object.keys(colS).forEach(d => {
                     const td = document.querySelector(`.col-total-${d}`);
-                    if(td) td.textContent = fmt(colS[d]).replace('Rp','');
+                    if(td) td.textContent = colS[d];
                 });
 
                 document.getElementById('finalGrandTotal').textContent = fmt(gT).replace('Rp','');
@@ -469,7 +638,10 @@
                 document.getElementById('modalTotalNota').textContent = fmt(gT).replace('Rp','');
                 
                 let tPay = 0;
-                for(let w=1; w<=5; w++) tPay += p(document.querySelector(`.modal-week-bayar-${w}`).dataset.bayar);
+                for(let w=1; w<=totalWeeks; w++) {
+                    const bCell = document.querySelector(`.modal-week-bayar-${w}`);
+                    if(bCell) tPay += p(bCell.dataset.bayar);
+                }
                 document.getElementById('modalTotalBayar').textContent = fmt(tPay).replace('Rp','');
                 document.getElementById('modalSisaNota').textContent = fmt(gT + hAwal - tPay);
                 document.getElementById('summarySisa').textContent = fmt(gT + hAwal - tPay);
@@ -507,7 +679,55 @@
                 .then(r=>r.json()).then(d=>{if(d.success) location.reload();});
             });
 
+            // Period Management Logic
+            window.editPeriod = function(id, title, start, end) {
+                const form = document.getElementById('periodForm');
+                const titleEl = document.getElementById('formTitle');
+                const btnEl = document.getElementById('p_btn');
+                const cancelEl = document.getElementById('p_cancel');
+                const methodEl = document.getElementById('methodField');
+
+                form.action = `/reseller_periods/${id}`;
+                methodEl.innerHTML = '@method("PUT")';
+                titleEl.textContent = 'EDIT PERIODE: ' + title;
+                titleEl.classList.replace('text-primary', 'text-warning');
+                btnEl.textContent = 'UPDATE';
+                btnEl.classList.replace('btn-primary', 'btn-warning');
+                cancelEl.classList.remove('d-none');
+
+                document.getElementById('p_title').value = title;
+                document.getElementById('p_start').value = start;
+                document.getElementById('p_end').value = end;
+                
+                document.getElementById('p_title').focus();
+            };
+
+            window.resetPeriodForm = function() {
+                const form = document.getElementById('periodForm');
+                const titleEl = document.getElementById('formTitle');
+                const btnEl = document.getElementById('p_btn');
+                const cancelEl = document.getElementById('p_cancel');
+                const methodEl = document.getElementById('methodField');
+
+                form.action = "{{ route('reseller_periods.store') }}";
+                methodEl.innerHTML = '';
+                titleEl.textContent = 'TAMBAH PERIODE BARU';
+                titleEl.classList.replace('text-warning', 'text-primary');
+                btnEl.textContent = 'SIMPAN';
+                btnEl.classList.replace('btn-warning', 'btn-primary');
+                cancelEl.classList.add('d-none');
+
+                form.reset();
+            };
+
             update();
+
+            @if(session('success'))
+                Swal.fire('Berhasil', "{{ session('success') }}", 'success');
+            @endif
+            @if(session('error'))
+                Swal.fire('Gagal', "{{ session('error') }}", 'error');
+            @endif
         });
     </script>
 </x-app-layout>

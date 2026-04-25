@@ -7,6 +7,7 @@ use App\Models\Barang;
 use App\Models\ResellerTransaction;
 use App\Models\ResellerTransactionDetail;
 use App\Models\ResellerPayment;
+use App\Models\ResellerPeriod;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -47,11 +48,6 @@ class ResellerTransactionController extends Controller
 
         $reseller = Reseller::findOrFail($resellerId);
         
-        $baseDate = Carbon::parse('2025-12-31');
-        $now = Carbon::now();
-        
-        // Logic: Show general products (reseller_id IS NULL AND supplier_id IS NULL) 
-        // AND products specifically assigned to this reseller
         $barangs = Barang::where(function($q) use ($resellerId) {
                 $q->where(function($q2) {
                     $q2->whereNull('reseller_id')->whereNull('supplier_id');
@@ -62,49 +58,116 @@ class ResellerTransactionController extends Controller
             ->orderBy('id', 'asc')
             ->get();
         
-        // Map price field based on type
         foreach ($barangs as $barang) {
             $barang->display_price = ($type == 'hpp') ? ($barang->hpp ?? 0) : ($barang->harga_grosir ?? 0);
         }
         
-        // Calculate which period we are in (every 35 days)
-        $diffInDays = $baseDate->diffInDays($now, false);
-        $currentPeriodIndex = floor($diffInDays / 35);
-        if ($currentPeriodIndex < 0) $currentPeriodIndex = 0;
-
-        $periodIndex = $request->query('period_index', $currentPeriodIndex);
-        $startDate = $baseDate->copy()->addDays($periodIndex * 35);
+        $periods = ResellerPeriod::orderBy('id', 'asc')->get();
         
-        // Generate a list of periods for the dropdown
-        $periods = [];
-        for ($i = 0; $i <= $currentPeriodIndex + 2; $i++) {
-            $pStart = $baseDate->copy()->addDays($i * 35);
-            $pEnd = $pStart->copy()->addDays(34);
-            $periods[] = [
-                'index' => $i,
-                'label' => $pStart->translatedFormat('d M Y') . ' - ' . $pEnd->translatedFormat('d M Y'),
-                'is_current' => ($i == $currentPeriodIndex)
-            ];
+        $periodId = $request->query('period_id');
+        $selectedPeriod = null;
+
+        if ($periodId) {
+            $selectedPeriod = ResellerPeriod::find($periodId);
+        }
+
+        if (!$selectedPeriod && $periods->count() > 0) {
+            $selectedPeriod = $periods->first();
+            $periodId = $selectedPeriod->id;
+        }
+
+        if ($selectedPeriod) {
+            $startDate = Carbon::parse($selectedPeriod->start_date);
+            $endDate = Carbon::parse($selectedPeriod->end_date);
+            $diffInDays = $startDate->diffInDays($endDate) + 1;
+        } else {
+            // Fallback to default 35 days logic if no periods exist
+            $startDate = Carbon::parse('2025-12-31');
+            $endDate = $startDate->copy()->addDays(34);
+            $diffInDays = 35;
         }
         
         $dates = [];
-        for ($i = 0; $i < 35; $i++) {
+        for ($i = 0; $i < $diffInDays; $i++) {
             $dates[] = $startDate->copy()->addDays($i);
         }
         
-        // Fetch existing transactions for this period
         $transactions = ResellerTransaction::with('details')
             ->where('reseller_id', $resellerId)
-            ->whereBetween('tgl', [$startDate->format('Y-m-d'), $dates[34]->format('Y-m-d')])
+            ->whereBetween('tgl', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->get()
             ->keyBy('tgl');
 
-        // Fetch payments for rekap
         $payments = ResellerPayment::where('reseller_id', $resellerId)
-            ->whereBetween('tgl', [$startDate->format('Y-m-d'), $dates[34]->format('Y-m-d')])
+            ->whereBetween('tgl', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->get();
 
-        return view('reseller_transactions.matrix', compact('reseller', 'barangs', 'dates', 'transactions', 'payments', 'startDate', 'periods', 'periodIndex', 'type'));
+        return view('reseller_transactions.matrix', compact(
+            'reseller', 'barangs', 'dates', 'transactions', 'payments', 
+            'startDate', 'endDate', 'periods', 'periodId', 'type'
+        ));
+    }
+
+    public function storePeriod(Request $request)
+    {
+        $request->validate([
+            'title' => 'required',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ]);
+
+        // Check for overlaps
+        $overlap = ResellerPeriod::where(function($q) use ($request) {
+            $q->whereBetween('start_date', [$request->start_date, $request->end_date])
+              ->orWhereBetween('end_date', [$request->start_date, $request->end_date])
+              ->orWhere(function($q2) use ($request) {
+                  $q2->where('start_date', '<=', $request->start_date)
+                     ->where('end_date', '>=', $request->end_date);
+              });
+        })->exists();
+
+        if ($overlap) {
+            return back()->with('error', 'Tanggal tersebut sudah masuk dalam range periode lain.');
+        }
+
+        ResellerPeriod::create($request->all());
+
+        return back()->with('success', 'Periode berhasil ditambahkan.');
+    }
+
+    public function updatePeriod(Request $request, $id)
+    {
+        $request->validate([
+            'title' => 'required',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ]);
+
+        // Check for overlaps (excluding current ID)
+        $overlap = ResellerPeriod::where('id', '!=', $id)
+            ->where(function($q) use ($request) {
+                $q->whereBetween('start_date', [$request->start_date, $request->end_date])
+                  ->orWhereBetween('end_date', [$request->start_date, $request->end_date])
+                  ->orWhere(function($q2) use ($request) {
+                      $q2->where('start_date', '<=', $request->start_date)
+                         ->where('end_date', '>=', $request->end_date);
+                  });
+            })->exists();
+
+        if ($overlap) {
+            return back()->with('error', 'Tanggal tersebut sudah masuk dalam range periode lain.');
+        }
+
+        $period = ResellerPeriod::findOrFail($id);
+        $period->update($request->all());
+
+        return back()->with('success', 'Periode berhasil diperbarui.');
+    }
+
+    public function destroyPeriod($id)
+    {
+        ResellerPeriod::findOrFail($id)->delete();
+        return back()->with('success', 'Periode berhasil dihapus.');
     }
 
     public function saveMatrix(Request $request)

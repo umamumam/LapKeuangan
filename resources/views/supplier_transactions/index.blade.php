@@ -87,6 +87,10 @@
                                 data-bs-toggle="modal" data-bs-target="#modalSisaNota">
                                 <i class="fas fa-edit me-1"></i> Sisa Nota Sebelumnya
                             </button>
+                            <button type="button" class="btn btn-outline-info btn-sm fw-bold shadow-sm"
+                                data-bs-toggle="modal" data-bs-target="#modalNota">
+                                <i class="fas fa-file-upload me-1"></i> Upload Nota
+                            </button>
                             <button type="button" class="btn btn-danger btn-sm fw-bold shadow-sm" data-bs-toggle="modal"
                                 data-bs-target="#modalTf">
                                 <i class="fas fa-money-bill-wave me-1"></i> Input TF (Bayar)
@@ -179,10 +183,33 @@
                                     <td class="text-center">{{ $item->lusin ?: '' }}</td>
                                     <td class="text-center">{{ $item->potong ?: '' }}</td>
                                     <td>
-                                        {{ $item->nama_barang }}
-                                        @if($item->tf > 0 && $item->jumlah == 0)
-                                        <span class="badge bg-danger ms-1">TF</span>
-                                        @endif
+                                        <div class="d-flex align-items-center">
+                                            <span>{{ $item->nama_barang }}</span>
+                                            @if($item->tf > 0 && $item->jumlah == 0)
+                                            <span class="badge bg-danger ms-1">TF</span>
+                                            @endif
+
+                                            @if($item->nota)
+                                            <div class="ms-2 d-flex align-items-center">
+                                                <a href="javascript:void(0)"
+                                                    onclick="previewNota('{{ asset('storage/' . $item->nota) }}')"
+                                                    class="badge bg-info text-white text-decoration-none">
+                                                    <i class="fas fa-image me-1"></i> Lihat Nota
+                                                </a>
+                                                <form
+                                                    action="{{ route('supplier_transactions.delete_nota', $item->id) }}"
+                                                    method="POST" class="d-inline ms-1">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-link text-danger p-0"
+                                                        style="font-size: 0.7rem;"
+                                                        onclick="return confirm('Hapus gambar nota saja?')">
+                                                        <i class="fas fa-times-circle"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="text-end text-muted">{{ $item->harga > 0 ? number_format($item->harga, 0,
                                         ',', '.') : '-' }}</td>
@@ -295,6 +322,59 @@
                 </div>
             </div>
 
+            <!-- Modal Upload Nota -->
+            <div class="modal fade" id="modalNota" tabindex="-1">
+                <div class="modal-dialog modal-md">
+                    <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                        <form action="{{ route('supplier_transactions.store_nota') }}" method="POST"
+                            enctype="multipart/form-data">
+                            @csrf
+                            <div class="modal-header bg-info text-white py-3">
+                                <h5 class="modal-title fw-bold"><i class="fas fa-file-invoice me-2"></i> Upload Nota
+                                    Belanja</h5>
+                                <button type="button" class="btn-close btn-close-white"
+                                    data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <input type="hidden" name="supplier_id" value="{{ $supplier->id }}">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-secondary">TANGGAL NOTA</label>
+                                    <input type="date" name="tanggal" class="form-control border-info border-opacity-25"
+                                        value="{{ date('Y-m-d') }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-secondary">FILE GAMBAR NOTA</label>
+                                    <input type="file" name="nota" class="form-control border-info border-opacity-25"
+                                        accept="image/*" required>
+                                    <div class="form-text small text-muted">Format: JPG, PNG, JPEG. Max: 5MB.</div>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0 p-4 pt-0">
+                                <button type="submit" class="btn btn-info text-white w-100 fw-bold py-2 shadow-sm">
+                                    <i class="fas fa-upload me-1"></i> UPLOAD NOTA
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Preview Nota -->
+            <div class="modal fade" id="modalPreviewNota" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 bg-transparent">
+                        <div class="modal-header border-0 p-0 mb-2">
+                            <button type="button" class="btn-close btn-close-white ms-auto"
+                                data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-0 text-center">
+                            <img src="" id="imgPreviewNota" class="img-fluid rounded shadow-lg"
+                                style="max-height: 85vh;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     const lusin = document.getElementById('lusin');
@@ -316,6 +396,11 @@
                         potong.addEventListener('input', calculate);
                         harga.addEventListener('input', calculate);
                     }
+
+                    window.previewNota = function(url) {
+                        document.getElementById('imgPreviewNota').src = url;
+                        new bootstrap.Modal(document.getElementById('modalPreviewNota')).show();
+                    };
                 });
             </script>
             @endif

@@ -19,6 +19,7 @@ class SupplierTransaction extends Model
         'harga',
         'jumlah',
         'tf',
+        'nota',
     ];
 
     public function supplier()
