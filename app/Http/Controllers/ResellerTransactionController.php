@@ -70,7 +70,7 @@ class ResellerTransactionController extends Controller
             $barang->display_price = ($type == 'hpp') ? ($barang->hpp ?? 0) : ($barang->harga_grosir ?? 0);
         }
         
-        $periods = ResellerPeriod::orderBy('id', 'asc')->get();
+        $periods = ResellerPeriod::where('type', $type)->orderBy('start_date', 'asc')->get();
         
         $periodId = $request->query('period_id');
         $selectedPeriod = null;
@@ -151,19 +151,21 @@ class ResellerTransactionController extends Controller
     {
         $request->validate([
             'title' => 'required',
+            'type' => 'required',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
         ]);
 
         // Check for overlaps
-        $overlap = ResellerPeriod::where(function($q) use ($request) {
-            $q->whereBetween('start_date', [$request->start_date, $request->end_date])
-              ->orWhereBetween('end_date', [$request->start_date, $request->end_date])
-              ->orWhere(function($q2) use ($request) {
-                  $q2->where('start_date', '<=', $request->start_date)
-                     ->where('end_date', '>=', $request->end_date);
-              });
-        })->exists();
+        $overlap = ResellerPeriod::where('type', $request->type)
+            ->where(function($q) use ($request) {
+                $q->whereBetween('start_date', [$request->start_date, $request->end_date])
+                  ->orWhereBetween('end_date', [$request->start_date, $request->end_date])
+                  ->orWhere(function($q2) use ($request) {
+                      $q2->where('start_date', '<=', $request->start_date)
+                         ->where('end_date', '>=', $request->end_date);
+                  });
+            })->exists();
 
         if ($overlap) {
             return back()->with('error', 'Tanggal tersebut sudah masuk dalam range periode lain.');
@@ -178,12 +180,14 @@ class ResellerTransactionController extends Controller
     {
         $request->validate([
             'title' => 'required',
+            'type' => 'required',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
         ]);
 
         // Check for overlaps (excluding current ID)
         $overlap = ResellerPeriod::where('id', '!=', $id)
+            ->where('type', $request->type)
             ->where(function($q) use ($request) {
                 $q->whereBetween('start_date', [$request->start_date, $request->end_date])
                   ->orWhereBetween('end_date', [$request->start_date, $request->end_date])

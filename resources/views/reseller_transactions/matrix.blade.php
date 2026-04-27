@@ -319,6 +319,7 @@
                 <div class="modal-body p-4">
                     <form id="periodForm" action="{{ route('reseller_periods.store') }}" method="POST" class="mb-4 p-3 bg-light rounded shadow-sm border border-primary border-opacity-10">
                         @csrf
+                        <input type="hidden" name="type" value="{{ $type }}">
                         <div id="methodField"></div>
                         <h6 class="fw-bold mb-3 text-primary" id="formTitle">TAMBAH PERIODE BARU</h6>
                         <div class="row g-3">

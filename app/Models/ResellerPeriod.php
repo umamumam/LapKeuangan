@@ -8,6 +8,7 @@ class ResellerPeriod extends Model
 {
     protected $fillable = [
         'title',
+        'type',
         'start_date',
         'end_date',
     ];
