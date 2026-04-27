@@ -17,7 +17,11 @@ class ResellerTransactionController extends Controller
     public function index(Request $request)
     {
         $type = $request->query('type', 'grosir'); // default to grosir
-        $resellers = Reseller::with(['transactions', 'payments'])->orderBy('nama')->get();
+        $resellers = Reseller::with(['transactions' => function($q) use ($type) {
+            $q->where('type', $type);
+        }, 'payments' => function($q) use ($type) {
+            $q->where('type', $type);
+        }])->orderBy('nama')->get();
         
         foreach ($resellers as $reseller) {
             $totalUang = $reseller->transactions->sum('total_uang');
@@ -29,6 +33,7 @@ class ResellerTransactionController extends Controller
                 ->join('reseller_transactions', 'reseller_transaction_details.reseller_transaction_id', '=', 'reseller_transactions.id')
                 ->join('barangs', 'reseller_transaction_details.barang_id', '=', 'barangs.id')
                 ->where('reseller_transactions.reseller_id', $reseller->id)
+                ->where('reseller_transactions.type', $type)
                 ->distinct()
                 ->limit(3)
                 ->pluck('barangs.namabarang');
@@ -94,34 +99,40 @@ class ResellerTransactionController extends Controller
         
         $transactions = ResellerTransaction::with('details')
             ->where('reseller_id', $resellerId)
+            ->where('type', $type)
             ->whereBetween('tgl', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->get()
             ->keyBy('tgl');
 
         $payments = ResellerPayment::where('reseller_id', $resellerId)
+            ->where('type', $type)
             ->whereBetween('tgl', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->get();
 
         // Global Totals for Summary
-        $totalUangGlobal = ResellerTransaction::where('reseller_id', $resellerId)->sum('total_uang');
-        $totalBayarGlobal = ResellerPayment::where('reseller_id', $resellerId)->sum('nominal');
+        $totalUangGlobal = ResellerTransaction::where('reseller_id', $resellerId)->where('type', $type)->sum('total_uang');
+        $totalBayarGlobal = ResellerPayment::where('reseller_id', $resellerId)->where('type', $type)->sum('nominal');
         $globalSisa = ($reseller->hutang_awal ?? 0) + $totalUangGlobal - $totalBayarGlobal;
 
         // Calculate Previous Balance (Sisa Sebelum Periode Ini)
         $uangSebelumnya = ResellerTransaction::where('reseller_id', $resellerId)
+            ->where('type', $type)
             ->where('tgl', '<', $startDate->format('Y-m-d'))
             ->sum('total_uang');
         $bayarSebelumnya = ResellerPayment::where('reseller_id', $resellerId)
+            ->where('type', $type)
             ->where('tgl', '<', $startDate->format('Y-m-d'))
             ->sum('nominal');
         $sisaSebelumnya = ($reseller->hutang_awal ?? 0) + $uangSebelumnya - $bayarSebelumnya;
 
         // Payments after this period
         $bayarSetelahnya = ResellerPayment::where('reseller_id', $resellerId)
+            ->where('type', $type)
             ->where('tgl', '>', $endDate->format('Y-m-d'))
             ->sum('nominal');
 
         $allPayments = ResellerPayment::where('reseller_id', $resellerId)
+            ->where('type', $type)
             ->orderBy('tgl', 'desc')
             ->get();
 
@@ -212,6 +223,7 @@ class ResellerTransactionController extends Controller
 
                 $transaction = ResellerTransaction::where('reseller_id', $resellerId)
                     ->where('tgl', $date)
+                    ->where('type', $type)
                     ->first();
 
                 if (!$hasItems) {
@@ -226,6 +238,7 @@ class ResellerTransactionController extends Controller
                     $transaction = ResellerTransaction::create([
                         'reseller_id' => $resellerId,
                         'tgl' => $date,
+                        'type' => $type,
                     ]);
                 }
 
@@ -277,6 +290,7 @@ class ResellerTransactionController extends Controller
             'reseller_id' => 'required',
             'tgl' => 'required|date',
             'nominal' => 'required|numeric',
+            'type' => 'required',
         ]);
 
         ResellerPayment::create($request->all());
@@ -324,23 +338,29 @@ class ResellerTransactionController extends Controller
     {
         $request->validate([
             'reseller_id' => 'required|exists:resellers,id',
+            'type' => 'required',
         ]);
 
         $resellerId = $request->reseller_id;
+        $type = $request->type;
 
         try {
             DB::beginTransaction();
 
             // Delete details first
             DB::table('reseller_transaction_details')
-                ->whereIn('reseller_transaction_id', function($query) use ($resellerId) {
+                ->whereIn('reseller_transaction_id', function($query) use ($resellerId, $type) {
                     $query->select('id')
                         ->from('reseller_transactions')
-                        ->where('reseller_id', $resellerId);
+                        ->where('reseller_id', $resellerId)
+                        ->where('type', $type);
                 })->delete();
 
             // Delete transactions
-            ResellerTransaction::where('reseller_id', $resellerId)->delete();
+            ResellerTransaction::where('reseller_id', $resellerId)->where('type', $type)->delete();
+
+            // Delete payments of this type?
+            ResellerPayment::where('reseller_id', $resellerId)->where('type', $type)->delete();
 
             DB::commit();
             return response()->json(['success' => true, 'message' => 'Semua transaksi berhasil direset.']);

@@ -463,6 +463,7 @@
                 <form id="pForm">
                     <div class="modal-body p-4">
                         <input type="hidden" name="reseller_id" value="{{ $reseller->id }}">
+                        <input type="hidden" name="type" value="{{ $type }}">
                         <div class="form-group mb-3">
                             <label class="form-label small fw-bold text-secondary mb-1">TANGGAL</label>
                             <input type="date" name="tgl" id="payDateInput"
@@ -816,7 +817,7 @@
                                 'X-CSRF-TOKEN':'{{ csrf_token() }}',
                                 'Content-Type': 'application/json'
                             }, 
-                            body: JSON.stringify({ reseller_id: "{{ $reseller->id }}" })
+                            body: JSON.stringify({ reseller_id: "{{ $reseller->id }}", type: "{{ $type }}" })
                         })
                         .then(r=>r.json())
                         .then(d=>{
