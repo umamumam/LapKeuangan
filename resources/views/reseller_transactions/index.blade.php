@@ -42,8 +42,8 @@
                                             {{ strtoupper($reseller->nama) }}
                                         </h3>
                                         <div class="d-flex flex-column text-white text-opacity-75 mb-1" style="font-size: 0.8rem;">
-                                            @if($reseller->hutang_awal > 0)
-                                            <span>Awal: Rp {{ number_format($reseller->hutang_awal, 0, ',', '.') }}</span>
+                                            @if($reseller->display_hutang_awal > 0)
+                                            <span>Awal: Rp {{ number_format($reseller->display_hutang_awal, 0, ',', '.') }}</span>
                                             @endif
                                             <span>Tagihan: Rp {{ number_format($reseller->sisa_nota, 0, ',', '.') }}</span>
                                         </div>

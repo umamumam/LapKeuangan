@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Reseller extends Model
 {
-    protected $fillable = ['nama', 'hutang_awal'];
+    protected $fillable = ['nama', 'hutang_awal', 'hutang_awal_hpp'];
 
     public function barangs()
     {

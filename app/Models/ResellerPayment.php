@@ -11,6 +11,7 @@ class ResellerPayment extends Model
 
     protected $fillable = [
         'reseller_id',
+        'type',
         'tgl',
         'nominal',
         'keterangan',

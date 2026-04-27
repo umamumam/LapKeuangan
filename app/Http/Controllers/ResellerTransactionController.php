@@ -26,7 +26,10 @@ class ResellerTransactionController extends Controller
         foreach ($resellers as $reseller) {
             $totalUang = $reseller->transactions->sum('total_uang');
             $totalBayar = $reseller->payments->sum('nominal');
-            $reseller->sisa_nota = $totalUang + ($reseller->hutang_awal ?? 0) - $totalBayar;
+            
+            $hAwal = ($type == 'hpp') ? ($reseller->hutang_awal_hpp ?? 0) : ($reseller->hutang_awal ?? 0);
+            $reseller->sisa_nota = $totalUang + $hAwal - $totalBayar;
+            $reseller->display_hutang_awal = $hAwal;
             
             // Get unique barang names for the card preview
             $reseller->barang_preview = DB::table('reseller_transaction_details')
@@ -110,9 +113,10 @@ class ResellerTransactionController extends Controller
             ->get();
 
         // Global Totals for Summary
+        $hAwal = ($type == 'hpp') ? ($reseller->hutang_awal_hpp ?? 0) : ($reseller->hutang_awal ?? 0);
         $totalUangGlobal = ResellerTransaction::where('reseller_id', $resellerId)->where('type', $type)->sum('total_uang');
         $totalBayarGlobal = ResellerPayment::where('reseller_id', $resellerId)->where('type', $type)->sum('nominal');
-        $globalSisa = ($reseller->hutang_awal ?? 0) + $totalUangGlobal - $totalBayarGlobal;
+        $globalSisa = $hAwal + $totalUangGlobal - $totalBayarGlobal;
 
         // Calculate Previous Balance (Sisa Sebelum Periode Ini)
         $uangSebelumnya = ResellerTransaction::where('reseller_id', $resellerId)
@@ -123,7 +127,7 @@ class ResellerTransactionController extends Controller
             ->where('type', $type)
             ->where('tgl', '<', $startDate->format('Y-m-d'))
             ->sum('nominal');
-        $sisaSebelumnya = ($reseller->hutang_awal ?? 0) + $uangSebelumnya - $bayarSebelumnya;
+        $sisaSebelumnya = $hAwal + $uangSebelumnya - $bayarSebelumnya;
 
         // Payments after this period
         $bayarSetelahnya = ResellerPayment::where('reseller_id', $resellerId)
@@ -324,12 +328,17 @@ class ResellerTransactionController extends Controller
         $request->validate([
             'reseller_id' => 'required|exists:resellers,id',
             'sisa_nota' => 'required|numeric',
+            'type' => 'required'
         ]);
 
         $reseller = Reseller::findOrFail($request->reseller_id);
-        $reseller->update([
-            'hutang_awal' => $request->sisa_nota
-        ]);
+        $type = $request->input('type', 'grosir');
+        
+        if ($type == 'hpp') {
+            $reseller->update(['hutang_awal_hpp' => $request->sisa_nota]);
+        } else {
+            $reseller->update(['hutang_awal' => $request->sisa_nota]);
+        }
 
         return back()->with('success', 'Hutang awal berhasil diperbarui.');
     }

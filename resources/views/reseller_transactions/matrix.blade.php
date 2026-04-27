@@ -253,8 +253,7 @@
                                 </tr>
                                 <tr class="bg-light-muted fw-bold">
                                     <td class="ps-4 py-3">PIUTANG AWAL</td>
-                                    <td class="text-end pe-4">Rp {{ number_format($reseller->hutang_awal ?? 0, 0, ',',
-                                        '.') }}</td>
+                                    <td class="text-end pe-4">Rp {{ number_format($type == 'hpp' ? $reseller->hutang_awal_hpp : $reseller->hutang_awal, 0, ',', '.') }}</td>
                                     <td></td>
                                 </tr>
                                 <tr class="bg-white fw-bolder fs-5">
@@ -403,11 +402,12 @@
                     </div>
                     <div class="modal-body p-4">
                         <input type="hidden" name="reseller_id" value="{{ $reseller->id }}">
+                        <input type="hidden" name="type" value="{{ $type }}">
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-secondary">HUTANG AWAL / SALDO AWAL</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light">Rp</span>
-                                <input type="number" name="sisa_nota" class="form-control" value="{{ $reseller->hutang_awal ?? 0 }}" required>
+                                <input type="number" name="sisa_nota" class="form-control" value="{{ $type == 'hpp' ? $reseller->hutang_awal_hpp : $reseller->hutang_awal }}" required>
                             </div>
                             <div class="form-text small text-muted">Nilai ini akan ditambahkan ke total tagihan reseller secara global.</div>
                         </div>

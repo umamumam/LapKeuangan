@@ -11,6 +11,7 @@ class ResellerTransaction extends Model
 
     protected $fillable = [
         'reseller_id',
+        'type',
         'tgl',
         'total_barang',
         'total_uang',
