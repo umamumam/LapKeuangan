@@ -172,4 +172,38 @@ class SupplierTransactionController extends Controller
         return redirect()->route('supplier_transactions.index', ['supplier_id' => $supplierId])
             ->with('success', 'Transaksi berhasil dihapus!');
     }
+
+    public function invoice(Request $request)
+    {
+        $request->validate([
+            'supplier_id' => 'required|exists:suppliers,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+        ]);
+
+        $supplierId = $request->supplier_id;
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+
+        $supplier = Supplier::findOrFail($supplierId);
+
+        // Calculate sisa tagihan sblmnya (before start date)
+        $previousTransactions = SupplierTransaction::where('supplier_id', $supplierId)
+            ->where('tanggal', '<', $startDate)
+            ->get();
+        
+        $sisaSebelumnya = $supplier->hutang_awal;
+        foreach ($previousTransactions as $pt) {
+            $sisaSebelumnya += ($pt->jumlah - $pt->tf);
+        }
+
+        // Get transactions for the period
+        $transactions = SupplierTransaction::where('supplier_id', $supplierId)
+            ->whereBetween('tanggal', [$startDate, $endDate])
+            ->orderBy('tanggal', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        return view('supplier_transactions.invoice', compact('supplier', 'startDate', 'endDate', 'sisaSebelumnya', 'transactions'));
+    }
 }

@@ -91,6 +91,10 @@
                                 data-bs-toggle="modal" data-bs-target="#modalNota">
                                 <i class="fas fa-file-upload me-1"></i> Upload Nota
                             </button>
+                            <button type="button" class="btn btn-primary btn-sm fw-bold shadow-sm"
+                                data-bs-toggle="modal" data-bs-target="#modalInvoice">
+                                <i class="fas fa-print me-1"></i> Cetak Invoice
+                            </button>
                             <button type="button" class="btn btn-danger btn-sm fw-bold shadow-sm" data-bs-toggle="modal"
                                 data-bs-target="#modalTf">
                                 <i class="fas fa-money-bill-wave me-1"></i> Input TF (Bayar)
@@ -316,6 +320,36 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="submit" class="btn btn-danger btn-sm w-100">Simpan TF</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Cetak Invoice -->
+            <div class="modal fade" id="modalInvoice" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form action="{{ route('supplier_transactions.invoice') }}" method="GET" target="_blank">
+                            <input type="hidden" name="supplier_id" value="{{ $supplier->id }}">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title fw-bold">Pilih Periode Invoice</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label small fw-bold">Dari Tanggal</label>
+                                        <input type="date" name="start_date" class="form-control" value="{{ date('Y-m-01') }}" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label small fw-bold">Sampai Tanggal</label>
+                                        <input type="date" name="end_date" class="form-control" value="{{ date('Y-m-d') }}" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary btn-sm w-100">Buka Invoice</button>
                             </div>
                         </form>
                     </div>

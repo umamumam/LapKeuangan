@@ -192,6 +192,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/supplier_transactions/store-nota', [SupplierTransactionController::class, 'storeNota'])->name('supplier_transactions.store_nota');
     Route::delete('/supplier_transactions/delete-nota/{id}', [SupplierTransactionController::class, 'deleteNota'])->name('supplier_transactions.delete_nota');
     Route::post('/supplier_transactions/update-sisa', [SupplierTransactionController::class, 'updateSisaNota'])->name('supplier_transactions.update_sisa');
+    Route::get('/supplier_transactions/invoice', [SupplierTransactionController::class, 'invoice'])->name('supplier_transactions.invoice');
     Route::resource('supplier_transactions', SupplierTransactionController::class);
 });
 
