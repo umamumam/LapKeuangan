@@ -237,8 +237,9 @@
         <table class="invoice-table">
             <thead>
                 <tr>
+                    <th width="12%">Tgl</th>
                     <th width="15%">Banyaknya</th>
-                    <th width="45%">Nama Barang</th>
+                    <th width="33%">Nama Barang</th>
                     <th width="20%">@ Harga</th>
                     <th width="20%">Jumlah</th>
                 </tr>
@@ -246,6 +247,7 @@
             <tbody>
                 <!-- Sisa Nota Sebelumnya -->
                 <tr>
+                    <td></td>
                     <td></td>
                     <td class="fw-bold">Sisa nota sebelumnya</td>
                     <td></td>
@@ -258,18 +260,27 @@
                 @endphp
 
                 @foreach($transactionsByDate as $date => $items)
-                <!-- Date Group -->
-                <tr>
-                    <td></td>
-                    <td class="date-separator">({{ \Carbon\Carbon::parse($date)->format('d-m-y') }})</td>
-                    <td></td>
-                    <td></td>
-                </tr>
+                @php
+                    // Hitung rowspan untuk kolom tanggal
+                    $rowSpan = 0;
+                    foreach($items as $item) {
+                        if($item->jumlah > 0) $rowSpan++;
+                        if($item->tf > 0) $rowSpan++;
+                    }
+                    $rowSpan++; // untuk baris subtotal
+                    $isFirstRow = true;
+                @endphp
 
                 @foreach($items as $item)
                 @if($item->jumlah > 0)
                 @php $runningBalance += $item->jumlah; @endphp
                 <tr>
+                    @if($isFirstRow)
+                    <td rowspan="{{ $rowSpan }}" class="text-center" style="vertical-align: top; font-weight: 600;">
+                        {{ \Carbon\Carbon::parse($date)->format('d/m/y') }}
+                    </td>
+                    @php $isFirstRow = false; @endphp
+                    @endif
                     <td class="text-center">
                         @if($item->lusin > 0) {{ $item->lusin }} lsn @endif
                         @if($item->lusin > 0 && $item->potong > 0) + @endif
@@ -284,6 +295,12 @@
                 @if($item->tf > 0)
                 @php $runningBalance -= $item->tf; @endphp
                 <tr style="background-color: #fff5f5;">
+                    @if($isFirstRow)
+                    <td rowspan="{{ $rowSpan }}" class="text-center" style="vertical-align: top; font-weight: 600;">
+                        {{ \Carbon\Carbon::parse($date)->format('d/m/y') }}
+                    </td>
+                    @php $isFirstRow = false; @endphp
+                    @endif
                     <td></td>
                     <td></td>
                     <td class="text-right fw-bold" style="color: red;">
@@ -298,6 +315,12 @@
 
                 <!-- Running Subtotal after date group -->
                 <tr class="subtotal-row">
+                    @if($isFirstRow)
+                    <td rowspan="{{ $rowSpan }}" class="text-center" style="vertical-align: top; font-weight: 600;">
+                        {{ \Carbon\Carbon::parse($date)->format('d/m/y') }}
+                    </td>
+                    @php $isFirstRow = false; @endphp
+                    @endif
                     <td colspan="3"></td>
                     <td class="text-right fw-bold" style="font-size: 14px;">
                         {{ number_format($runningBalance, 0, ',', '.') }}
@@ -307,7 +330,7 @@
 
                 <!-- Final Row -->
                 <tr class="final-total-row">
-                    <td colspan="3" class="text-right fw-bold" style="font-size: 16px;">SISA TAGIHAN AKHIR</td>
+                    <td colspan="4" class="text-right fw-bold" style="font-size: 16px;">SISA TAGIHAN AKHIR</td>
                     <td class="text-right fw-bold" style="font-size: 18px;">
                         Rp {{ number_format($runningBalance, 0, ',', '.') }}
                     </td>
