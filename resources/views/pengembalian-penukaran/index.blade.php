@@ -81,7 +81,7 @@
                                     'jenis' => request('jenis') ?? '',
                                     'marketplace' => request('marketplace') ?? ''
                                 ]) }}" class="btn btn-warning btn-sm">
-                                    <i class="fas fa-file-export"></i> Export
+                                <i class="fas fa-file-export"></i> Export
                             </a>
                             @if($pengembalianPenukaran->count() > 0)
                             <button class="btn btn-danger btn-sm" onclick="confirmDeleteAll()">
@@ -98,14 +98,15 @@
                                 <i class="fas fa-filter"></i> Hapus Filter
                             </button>
                             <form id="deleteByFilterForm"
-                                action="{{ route('pengembalian-penukaran.delete-by-filter') }}"
-                                method="POST" style="display: none;">
+                                action="{{ route('pengembalian-penukaran.delete-by-filter') }}" method="POST"
+                                style="display: none;">
                                 @csrf
                                 @method('DELETE')
                                 <input type="hidden" name="start_date" id="filter_start_date">
-                                <input type="hidden" name="end_date"   id="filter_end_date">
-                                <input type="hidden" name="jenis"      id="filter_jenis">
+                                <input type="hidden" name="end_date" id="filter_end_date">
+                                <input type="hidden" name="jenis" id="filter_jenis">
                                 <input type="hidden" name="marketplace" id="filter_marketplace">
+                                <input type="hidden" name="toko_id" id="filter_toko_id">
                             </form>
                             <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createModal">
                                 <i class="fas fa-plus"></i> Tambah Data
@@ -116,7 +117,8 @@
                     <!-- Form Filter -->
                     <div class="card-header">
                         <h5 class="mb-3"><i class="fas fa-filter"></i> Filter Data</h5>
-                        <form method="GET" action="{{ route('pengembalian-penukaran.index') }}" class="row g-3 align-items-end">
+                        <form method="GET" action="{{ route('pengembalian-penukaran.index') }}"
+                            class="row g-3 align-items-end">
                             <!-- Tanggal Mulai -->
                             <div class="col-md-2">
                                 <label for="start_date" class="form-label">Tanggal Mulai</label>
@@ -132,7 +134,7 @@
                             </div>
 
                             <!-- Jenis -->
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <label for="jenis" class="form-label">Jenis</label>
                                 <select class="form-select" id="jenis" name="jenis">
                                     <option value="">Semua Jenis</option>
@@ -145,7 +147,7 @@
                             </div>
 
                             <!-- Marketplace -->
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <label for="marketplace" class="form-label">Marketplace</label>
                                 <select class="form-select" id="marketplace" name="marketplace">
                                     <option value="">Semua Marketplace</option>
@@ -157,12 +159,27 @@
                                 </select>
                             </div>
 
+                            <!-- Toko -->
+                            <div class="col-md-2">
+                                <label for="toko_id" class="form-label">Toko</label>
+                                <select class="form-select" id="toko_id" name="toko_id">
+                                    <option value="">Semua Toko</option>
+                                    @foreach($tokos as $toko)
+                                    <option value="{{ $toko->id }}" {{ request('toko_id')==$toko->id ? 'selected' : ''
+                                        }}>
+                                        {{ $toko->nama }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
                             <!-- Tombol Filter & Reset di samping kanan -->
                             <div class="col-md-2 d-flex align-items-end gap-2">
                                 <button type="submit" class="btn btn-primary flex-fill">
                                     <i class="fas fa-search"></i> Filter
                                 </button>
-                                <a href="{{ route('pengembalian-penukaran.index') }}" class="btn btn-secondary flex-fill">
+                                <a href="{{ route('pengembalian-penukaran.index') }}"
+                                    class="btn btn-secondary flex-fill">
                                     <i class="fas fa-redo"></i> Reset
                                 </a>
                             </div>
@@ -179,6 +196,7 @@
                                     <th>Tanggal</th>
                                     <th>Jenis</th>
                                     <th>Marketplace</th>
+                                    <th>Toko</th>
                                     <th>Nama Pengirim</th>
                                     <th>No HP</th>
                                     <th>Resi Penerimaan</th>
@@ -213,6 +231,7 @@
                                         <span class="badge bg-secondary">{{ $item->marketplace }}</span>
                                         @endif
                                     </td>
+                                    <td>{{ $item->toko->nama ?? '-' }}</td>
                                     <td>{{ $item->nama_pengirim }}</td>
                                     <td>{{ $item->no_hp }}</td>
                                     <td>{{ $item->resi_penerimaan ?? '-' }}</td>
@@ -238,7 +257,8 @@
                                                 data-pembayaran="{{ $item->pembayaran }}"
                                                 data-nama_pengirim="{{ $item->nama_pengirim }}"
                                                 data-no_hp="{{ $item->no_hp }}" data-alamat="{{ $item->alamat }}"
-                                                data-keterangan="{{ $item->keterangan }}" onclick="editData(this)">
+                                                data-keterangan="{{ $item->keterangan }}"
+                                                data-toko_id="{{ $item->toko_id }}" onclick="editData(this)">
                                                 <i class="fas fa-edit"></i>
                                             </button>
                                             <form action="{{ route('pengembalian-penukaran.destroy', $item->id) }}"
@@ -302,6 +322,15 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
+                                <label for="create_toko_id" class="form-label">Toko</label>
+                                <select class="form-select" id="create_toko_id" name="toko_id">
+                                    <option value="">Pilih Toko</option>
+                                    @foreach($tokos as $toko)
+                                    <option value="{{ $toko->id }}">{{ $toko->nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <label for="create_marketplace" class="form-label">Marketplace</label>
                                 <select class="form-select" id="create_marketplace" name="marketplace" required>
                                     <option value="">Pilih Marketplace</option>
@@ -310,7 +339,10 @@
                                     <option value="Reguler">Reguler</option>
                                 </select>
                             </div>
-                            <div class="col-md-6 mb-3">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
                                 <label for="create_pembayaran" class="form-label">Pembayaran</label>
                                 <select class="form-select" id="create_pembayaran" name="pembayaran" required>
                                     <option value="">Pilih Pembayaran</option>
@@ -319,9 +351,6 @@
                                     <option value="DFOD">DFOD</option>
                                 </select>
                             </div>
-                        </div>
-
-                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="create_resi_penerimaan" class="form-label">Resi Penerimaan</label>
                                 <input type="text" class="form-control" id="create_resi_penerimaan"
@@ -332,9 +361,6 @@
                                 <input type="text" class="form-control" id="create_resi_pengiriman"
                                     name="resi_pengiriman">
                             </div>
-                        </div>
-
-                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="create_nama_pengirim" class="form-label">Nama Pengirim</label>
                                 <input type="text" class="form-control" id="create_nama_pengirim" name="nama_pengirim"
@@ -396,6 +422,15 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
+                                <label for="edit_toko_id" class="form-label">Toko</label>
+                                <select class="form-select" id="edit_toko_id" name="toko_id">
+                                    <option value="">Pilih Toko</option>
+                                    @foreach($tokos as $toko)
+                                    <option value="{{ $toko->id }}">{{ $toko->nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <label for="edit_marketplace" class="form-label">Marketplace</label>
                                 <select class="form-select" id="edit_marketplace" name="marketplace" required>
                                     <option value="Tiktok">Tiktok</option>
@@ -403,7 +438,10 @@
                                     <option value="Reguler">Reguler</option>
                                 </select>
                             </div>
-                            <div class="col-md-6 mb-3">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
                                 <label for="edit_pembayaran" class="form-label">Pembayaran</label>
                                 <select class="form-select" id="edit_pembayaran" name="pembayaran" required>
                                     <option value="Sistem">Sistem</option>
@@ -482,7 +520,7 @@
                         <div class="alert alert-info">
                             <small>
                                 <i class="fas fa-info-circle"></i>
-                                Pastikan file memiliki kolom: Tanggal, Jenis, Marketplace, Resi Penerimaan, Resi
+                                Pastikan file memiliki kolom: Tanggal, Jenis, Marketplace, Toko, Resi Penerimaan, Resi
                                 Pengiriman, Pembayaran, Nama Pengirim, No HP, Alamat, Keterangan
                             </small>
                         </div>
@@ -511,6 +549,7 @@
             const noHp = button.getAttribute('data-no_hp');
             const alamat = button.getAttribute('data-alamat');
             const keterangan = button.getAttribute('data-keterangan');
+            const tokoId = button.getAttribute('data-toko_id');
 
             // Set form action
             document.getElementById('editForm').action = `/pengembalian-penukaran/${id}`;
@@ -526,6 +565,7 @@
             document.getElementById('edit_no_hp').value = noHp;
             document.getElementById('edit_alamat').value = alamat;
             document.getElementById('edit_keterangan').value = keterangan;
+            document.getElementById('edit_toko_id').value = tokoId || '';
         }
 
         function confirmDeleteAll() {
@@ -550,17 +590,23 @@
             const endDate    = document.getElementById('end_date').value;
             const jenis      = document.getElementById('jenis').value;
             const marketplace = document.getElementById('marketplace').value;
+            const tokoId     = document.getElementById('toko_id').value;
 
             // Isi hidden form
             document.getElementById('filter_start_date').value  = startDate;
             document.getElementById('filter_end_date').value    = endDate;
             document.getElementById('filter_jenis').value       = jenis;
             document.getElementById('filter_marketplace').value = marketplace;
+            document.getElementById('filter_toko_id').value     = tokoId;
 
             // Buat label info filter untuk ditampilkan di SweetAlert
             let filterInfo = `Tanggal: <b>${startDate}</b> s/d <b>${endDate}</b>`;
             if (jenis)       filterInfo += `<br>Jenis: <b>${jenis}</b>`;
             if (marketplace) filterInfo += `<br>Marketplace: <b>${marketplace}</b>`;
+            if (tokoId) {
+                const tokoName = document.querySelector(`#toko_id option[value="${tokoId}"]`).text;
+                filterInfo += `<br>Toko: <b>${tokoName}</b>`;
+            }
 
             Swal.fire({
                 title: 'Hapus Data Berdasarkan Filter?',
@@ -591,6 +637,7 @@
             document.getElementById('create_no_hp').value = '';
             document.getElementById('create_alamat').value = '';
             document.getElementById('create_keterangan').value = '';
+            document.getElementById('create_toko_id').value = '';
         });
 
         // Reset edit form when modal is closed

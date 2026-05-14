@@ -21,6 +21,7 @@ class PengembalianPenukaran extends Model
         'alamat',
         'keterangan',
         'statusditerima',
+        'toko_id',
     ];
 
     protected $casts = [
@@ -100,5 +101,10 @@ class PengembalianPenukaran extends Model
             $query->whereDate('tanggal', '<=', $endDate);
         }
         return $query;
+    }
+
+    public function toko()
+    {
+        return $this->belongsTo(Toko::class);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\PengembalianPenukaran;
+use App\Models\Toko;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Concerns\ToCollection;
@@ -14,10 +15,14 @@ class PengembalianPenukaranImport implements ToCollection, WithHeadingRow
     private $failedRows = [];
     private $rowCount = 0;
     private $successCount = 0;
+    private $tokos = [];
 
     public function collection(Collection $rows)
     {
         $this->rowCount = count($rows);
+        $this->tokos = Toko::all()->pluck('id', 'nama')->mapWithKeys(function ($id, $nama) {
+            return [strtolower(trim($nama)) => $id];
+        })->toArray();
 
         foreach ($rows as $index => $row) {
             $rowNumber = $index + 2; // +2 karena baris header +1 dan index dimulai dari 0
@@ -35,6 +40,7 @@ class PengembalianPenukaranImport implements ToCollection, WithHeadingRow
                 $alamat = $this->getCellValue($row, ['alamat', 'address']);
                 $keterangan = $this->getCellValue($row, ['keterangan', 'description', 'note']);
                 $statusditerima = $this->getCellValue($row, ['statusditerima', 'status diterima', 'status_received', 'status received']);
+                $tokoNama = $this->getCellValue($row, ['toko', 'shop', 'nama_toko', 'nama toko']);
 
                 // Skip baris kosong
                 if (empty($namaPengirim) && empty($noHp)) {
@@ -70,6 +76,13 @@ class PengembalianPenukaranImport implements ToCollection, WithHeadingRow
                     $statusditerima = 'Belum';
                 }
 
+                // Cari toko_id
+                $tokoId = null;
+                if ($tokoNama) {
+                    $cleanTokoNama = strtolower(trim($tokoNama));
+                    $tokoId = $this->tokos[$cleanTokoNama] ?? null;
+                }
+
                 // Siapkan data untuk disimpan
                 $data = [
                     'tanggal' => $tanggalFormatted,
@@ -83,6 +96,7 @@ class PengembalianPenukaranImport implements ToCollection, WithHeadingRow
                     'alamat' => $this->cleanString($alamat),
                     'keterangan' => $this->cleanString($keterangan),
                     'statusditerima' => $statusditerima,
+                    'toko_id' => $tokoId,
                 ];
 
                 // Validasi data
@@ -98,6 +112,7 @@ class PengembalianPenukaranImport implements ToCollection, WithHeadingRow
                     'alamat' => 'required|string',
                     'keterangan' => 'nullable|string',
                     'statusditerima' => 'nullable|in:OK,Belum',
+                    'toko_id' => 'nullable|exists:tokos,id',
                 ]);
 
                 if ($validator->fails()) {

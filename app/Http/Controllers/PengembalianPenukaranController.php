@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PengembalianPenukaran;
+use App\Models\Toko;
 use Illuminate\Http\Request;
 use App\Exports\PengembalianPenukaranExport;
 use App\Imports\PengembalianPenukaranImport;
@@ -22,18 +23,24 @@ class PengembalianPenukaranController extends Controller
             $query->where('marketplace', $request->marketplace);
         }
 
+        if ($request->filled('toko_id')) {
+            $query->where('toko_id', $request->toko_id);
+        }
+
         $startDate = $request->filled('start_date') ? $request->start_date : now()->startOfMonth()->format('Y-m-d');
         $endDate = $request->filled('end_date') ? $request->end_date : now()->endOfMonth()->format('Y-m-d');
         $query->whereBetween('tanggal', [$startDate, $endDate]);
-        $pengembalianPenukaran = $query->orderBy('tanggal', 'desc')->get();
+        $pengembalianPenukaran = $query->with('toko')->orderBy('tanggal', 'desc')->get();
         $jenisOptions = PengembalianPenukaran::JENIS;
         $marketplaceOptions = PengembalianPenukaran::MARKETPLACE;
+        $tokos = Toko::orderBy('nama')->get();
         session(['last_pengembalian_index_url' => $request->fullUrl()]);
 
         return view('pengembalian-penukaran.index', compact(
             'pengembalianPenukaran',
             'jenisOptions',
             'marketplaceOptions',
+            'tokos',
             'startDate',
             'endDate'
         ));
@@ -51,18 +58,24 @@ class PengembalianPenukaranController extends Controller
             $query->where('marketplace', $request->marketplace);
         }
 
+        if ($request->filled('toko_id')) {
+            $query->where('toko_id', $request->toko_id);
+        }
+
         $startDate = $request->filled('start_date') ? $request->start_date : now()->startOfMonth()->format('Y-m-d');
         $endDate = $request->filled('end_date') ? $request->end_date : now()->endOfMonth()->format('Y-m-d');
         $query->whereBetween('tanggal', [$startDate, $endDate]);
 
-        $pengembalianPenukaran = $query->orderBy('tanggal', 'desc')->get();
+        $pengembalianPenukaran = $query->with('toko')->orderBy('tanggal', 'desc')->get();
         $jenisOptions = PengembalianPenukaran::JENIS;
         $marketplaceOptions = PengembalianPenukaran::MARKETPLACE;
+        $tokos = Toko::orderBy('nama')->get();
 
         return view('pengembalian-penukaran.ok', compact(
             'pengembalianPenukaran',
             'jenisOptions',
             'marketplaceOptions',
+            'tokos',
             'startDate',
             'endDate'
         ));
@@ -80,18 +93,24 @@ class PengembalianPenukaranController extends Controller
             $query->where('marketplace', $request->marketplace);
         }
 
+        if ($request->filled('toko_id')) {
+            $query->where('toko_id', $request->toko_id);
+        }
+
         $startDate = $request->filled('start_date') ? $request->start_date : now()->startOfMonth()->format('Y-m-d');
         $endDate = $request->filled('end_date') ? $request->end_date : now()->endOfMonth()->format('Y-m-d');
         $query->whereBetween('tanggal', [$startDate, $endDate]);
 
-        $pengembalianPenukaran = $query->orderBy('tanggal', 'desc')->get();
+        $pengembalianPenukaran = $query->with('toko')->orderBy('tanggal', 'desc')->get();
         $jenisOptions = PengembalianPenukaran::JENIS;
         $marketplaceOptions = PengembalianPenukaran::MARKETPLACE;
+        $tokos = Toko::orderBy('nama')->get();
 
         return view('pengembalian-penukaran.belum', compact(
             'pengembalianPenukaran',
             'jenisOptions',
             'marketplaceOptions',
+            'tokos',
             'startDate',
             'endDate'
         ));
@@ -103,6 +122,7 @@ class PengembalianPenukaranController extends Controller
             'tanggal' => 'required|date',
             'jenis' => 'required|in:' . implode(',', array_keys(PengembalianPenukaran::JENIS)),
             'marketplace' => 'required|in:' . implode(',', array_keys(PengembalianPenukaran::MARKETPLACE)),
+            'toko_id' => 'nullable|exists:tokos,id',
             'resi_penerimaan' => 'nullable|string|max:100',
             'resi_pengiriman' => 'nullable|string|max:100',
             'pembayaran' => 'required|in:' . implode(',', array_keys(PengembalianPenukaran::PEMBAYARAN)),
@@ -131,6 +151,7 @@ class PengembalianPenukaranController extends Controller
             'tanggal' => 'required|date',
             'jenis' => 'required|in:' . implode(',', array_keys(PengembalianPenukaran::JENIS)),
             'marketplace' => 'required|in:' . implode(',', array_keys(PengembalianPenukaran::MARKETPLACE)),
+            'toko_id' => 'nullable|exists:tokos,id',
             'resi_penerimaan' => 'nullable|string|max:100',
             'resi_pengiriman' => 'nullable|string|max:100',
             'pembayaran' => 'required|in:' . implode(',', array_keys(PengembalianPenukaran::PEMBAYARAN)),
@@ -200,11 +221,15 @@ class PengembalianPenukaranController extends Controller
             $query->where('marketplace', $request->marketplace);
         }
 
+        if ($request->filled('toko_id')) {
+            $query->where('toko_id', $request->toko_id);
+        }
+
         $startDate = $request->filled('start_date') ? $request->start_date : now()->startOfMonth()->format('Y-m-d');
         $endDate = $request->filled('end_date') ? $request->end_date : now()->endOfMonth()->format('Y-m-d');
         $query->whereBetween('tanggal', [$startDate, $endDate]);
 
-        $pengembalianPenukaran = $query->orderBy('tanggal', 'desc')->get();
+        $pengembalianPenukaran = $query->with('toko')->orderBy('tanggal', 'desc')->get();
 
         $filename = 'data_pengembalian_penukaran_' . date('Y-m-d_H-i-s') . '.xlsx';
 
@@ -342,11 +367,15 @@ class PengembalianPenukaranController extends Controller
             $query->where('marketplace', $request->marketplace);
         }
 
+        if ($request->filled('toko_id')) {
+            $query->where('toko_id', $request->toko_id);
+        }
+
         $startDate = $request->filled('start_date') ? $request->start_date : now()->startOfMonth()->format('Y-m-d');
         $endDate = $request->filled('end_date') ? $request->end_date : now()->endOfMonth()->format('Y-m-d');
         $query->whereBetween('tanggal', [$startDate, $endDate]);
 
-        $pengembalianPenukaran = $query->orderBy('tanggal', 'desc')->get();
+        $pengembalianPenukaran = $query->with('toko')->orderBy('tanggal', 'desc')->get();
 
         $filename = 'data_status_' . strtolower($status) . '_' . date('Y-m-d_H-i-s') . '.xlsx';
 
@@ -377,6 +406,10 @@ class PengembalianPenukaranController extends Controller
 
             if ($request->filled('marketplace')) {
                 $query->where('marketplace', $request->marketplace);
+            }
+
+            if ($request->filled('toko_id')) {
+                $query->where('toko_id', $request->toko_id);
             }
 
             $count = $query->count();

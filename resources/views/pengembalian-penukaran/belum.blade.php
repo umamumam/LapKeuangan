@@ -31,12 +31,14 @@
                             <a href="{{ route('pengembalian-penukaran.ok') }}" class="btn btn-success btn-sm">
                                 <i class="fas fa-check-circle"></i> Status OK
                             </a>
-                            <form action="{{ route('pengembalian-penukaran.export.filtered') }}" method="GET" class="d-inline">
+                            <form action="{{ route('pengembalian-penukaran.export.filtered') }}" method="GET"
+                                class="d-inline">
                                 <input type="hidden" name="status" value="Belum">
                                 <input type="hidden" name="start_date" value="{{ $startDate ?? '' }}">
                                 <input type="hidden" name="end_date" value="{{ $endDate ?? '' }}">
                                 <input type="hidden" name="jenis" value="{{ request('jenis') ?: 'Pengiriman Gagal' }}">
                                 <input type="hidden" name="marketplace" value="{{ request('marketplace') ?? '' }}">
+                                <input type="hidden" name="toko_id" value="{{ request('toko_id') ?? '' }}">
                                 <button type="submit" class="btn btn-warning btn-sm">
                                     <i class="fas fa-file-export"></i> Export
                                 </button>
@@ -47,7 +49,8 @@
                     <!-- Form Filter -->
                     <div class="card-header">
                         <h5 class="mb-3"><i class="fas fa-filter"></i> Filter Data Status Belum</h5>
-                        <form method="GET" action="{{ route('pengembalian-penukaran.belum') }}" class="row g-3 align-items-end">
+                        <form method="GET" action="{{ route('pengembalian-penukaran.belum') }}"
+                            class="row g-3 align-items-end">
                             <!-- Tanggal Mulai -->
                             <div class="col-md-2">
                                 <label for="start_date" class="form-label">Tanggal Mulai</label>
@@ -63,7 +66,7 @@
                             </div>
 
                             <!-- Jenis -->
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <label for="jenis" class="form-label">Jenis</label>
                                 <select class="form-select" id="jenis" name="jenis">
                                     <option value="">Semua Jenis</option>
@@ -76,7 +79,7 @@
                             </div>
 
                             <!-- Marketplace -->
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <label for="marketplace" class="form-label">Marketplace</label>
                                 <select class="form-select" id="marketplace" name="marketplace">
                                     <option value="">Semua Marketplace</option>
@@ -88,12 +91,27 @@
                                 </select>
                             </div>
 
+                            <!-- Toko -->
+                            <div class="col-md-2">
+                                <label for="toko_id" class="form-label">Toko</label>
+                                <select class="form-select" id="toko_id" name="toko_id">
+                                    <option value="">Semua Toko</option>
+                                    @foreach($tokos as $toko)
+                                    <option value="{{ $toko->id }}" {{ request('toko_id')==$toko->id ? 'selected' : ''
+                                        }}>
+                                        {{ $toko->nama }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
                             <!-- Tombol Filter & Reset di samping kanan -->
                             <div class="col-md-2 d-flex align-items-end gap-2">
                                 <button type="submit" class="btn btn-primary flex-fill">
                                     <i class="fas fa-search"></i> Filter
                                 </button>
-                                <a href="{{ route('pengembalian-penukaran.belum') }}" class="btn btn-secondary flex-fill">
+                                <a href="{{ route('pengembalian-penukaran.belum') }}"
+                                    class="btn btn-secondary flex-fill">
                                     <i class="fas fa-redo"></i> Reset
                                 </a>
                             </div>
@@ -115,6 +133,7 @@
                                     <th>#</th>
                                     <th>Tanggal</th>
                                     <th>Jenis</th>
+                                    <th>Toko</th>
                                     <th>Resi Penerimaan</th>
                                     <th>Resi Pengiriman</th>
                                     {{-- <th>Pembayaran</th> --}}
@@ -139,6 +158,7 @@
                                         <span class="badge bg-success">{{ $item->jenis }}</span>
                                         @endif
                                     </td>
+                                    <td>{{ $item->toko->nama ?? '-' }}</td>
                                     <td>{{ $item->resi_penerimaan ?? '-' }}</td>
                                     <td>{{ $item->resi_pengiriman ?? '-' }}</td>
                                     {{-- <td>
@@ -166,7 +186,8 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <button class="btn btn-success btn-sm" onclick="markAsOK('{{ $item->id }}', '{{ $item->resi_penerimaan ?: $item->resi_pengiriman }}')">
+                                        <button class="btn btn-success btn-sm"
+                                            onclick="markAsOK('{{ $item->id }}', '{{ $item->resi_penerimaan ?: $item->resi_pengiriman }}')">
                                             <i class="fas fa-check"></i> Tandai OK
                                         </button>
                                     </td>
