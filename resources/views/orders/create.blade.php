@@ -94,12 +94,9 @@
                                     <select class="form-control @error('periode_id') is-invalid @enderror" id="periode_id"
                                         name="periode_id">
                                         <option value="">Pilih Periode (Opsional)</option>
-                                        @php
-                                            $periodes = \App\Models\Periode::orderBy('nama_periode', 'desc')->get();
-                                        @endphp
                                         @foreach($periodes as $periode)
                                         <option value="{{ $periode->id }}" {{ old('periode_id')==$periode->id ? 'selected' : '' }}>
-                                            {{ $periode->nama_periode }} ({{ $periode->marketplace }})
+                                            {{ $periode->nama_periode }} - {{ $periode->toko->nama ?? 'Tanpa Toko' }} ({{ $periode->marketplace }})
                                         </option>
                                         @endforeach
                                     </select>

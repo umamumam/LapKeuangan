@@ -88,8 +88,8 @@
                                                     <option value="">Pilih Default Periode</option>
                                                     @foreach($periodes as $periode)
                                                     <option value="{{ $periode->id }}" {{
-                                                        old('default_periode_id')==$periode->id ? 'selected' : '' }}>
-                                                        {{ $periode->nama_periode }} - {{ $periode->toko->nama }} ({{
+                                                         old('default_periode_id')==$periode->id ? 'selected' : '' }}>
+                                                        {{ $periode->nama_periode }} - {{ $periode->toko->nama ?? 'Tanpa Toko' }} ({{
                                                         $periode->marketplace }})
                                                     </option>
                                                     @endforeach
@@ -230,7 +230,7 @@
                                 <tr>
                                     <td><strong>{{ $periode->id }}</strong></td>
                                     <td>{{ $periode->nama_periode }}</td>
-                                    <td>{{ $periode->toko->nama }}</td>
+                                    <td>{{ $periode->toko->nama ?? 'Tanpa Toko' }}</td>
                                     <td>
                                         <span
                                             class="badge bg-{{ $periode->marketplace == 'Shopee' ? 'warning' : 'info' }}">
@@ -285,7 +285,7 @@
         let text = "ID Periode\tNama Periode\tToko\tMarketplace\tTanggal Mulai\tTanggal Selesai\n";
 
         @foreach($periodes as $periode)
-        text += "{{ $periode->id }}\t{{ $periode->nama_periode }}\t{{ $periode->toko->nama }}\t{{ $periode->marketplace }}\t{{ $periode->tanggal_mulai->format('d/m/Y') }}\t{{ $periode->tanggal_selesai->format('d/m/Y') }}\n";
+        text += "{{ $periode->id }}\t{{ $periode->nama_periode }}\t{{ $periode->toko->nama ?? 'Tanpa Toko' }}\t{{ $periode->marketplace }}\t{{ $periode->tanggal_mulai->format('d/m/Y') }}\t{{ $periode->tanggal_selesai->format('d/m/Y') }}\n";
         @endforeach
 
         navigator.clipboard.writeText(text).then(() => {

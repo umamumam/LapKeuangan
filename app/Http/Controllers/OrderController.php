@@ -20,7 +20,7 @@ class OrderController extends Controller
     {
         $orders = Order::with('produk', 'periode')->orderBy('id', 'desc')->paginate(200);
         $totalOrders = Order::count();
-        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
+        $periodes = Periode::with('toko')->orderBy('nama_periode', 'desc')->get();
         return view('orders.index', compact('orders', 'totalOrders', 'periodes'));
     }
 
@@ -30,7 +30,7 @@ class OrderController extends Controller
     public function create()
     {
         $produks = Produk::all();
-        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
+        $periodes = Periode::with('toko')->orderBy('nama_periode', 'desc')->get();
         return view('orders.create', compact('produks', 'periodes'));
     }
 
@@ -75,7 +75,7 @@ class OrderController extends Controller
     public function edit(Order $order)
     {
         $produks = Produk::all();
-        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
+        $periodes = Periode::with('toko')->orderBy('nama_periode', 'desc')->get();
         return view('orders.edit', compact('order', 'produks', 'periodes'));
     }
 
@@ -140,7 +140,7 @@ class OrderController extends Controller
      */
     public function importForm()
     {
-        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
+        $periodes = Periode::with('toko')->orderBy('nama_periode', 'desc')->get();
         return view('orders.import', compact('periodes'));
     }
 

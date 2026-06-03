@@ -64,7 +64,7 @@
                                             <button type="submit" class="dropdown-item" style="cursor: pointer;">
                                                 <i class="fas fa-calendar-alt me-2"></i>
                                                 {{ $periode->nama_periode }}
-                                                <small class="text-muted ms-1">({{ $periode->marketplace }})</small>
+                                                <small class="text-muted ms-1">({{ $periode->toko->nama ?? 'Tanpa Toko' }} - {{ $periode->marketplace }})</small>
                                             </button>
                                         </form>
                                     </li>
@@ -288,11 +288,11 @@ function deleteByPeriode() {
                     <select class="form-select" id="periodeSelect">
                         <option value="">-- Pilih Periode --</option>
                         @php
-                            $periodes = \App\Models\Periode::orderBy('nama_periode', 'desc')->get();
+                            $periodes = \App\Models\Periode::with('toko')->orderBy('nama_periode', 'desc')->get();
                         @endphp
                         @foreach($periodes as $periode)
                             <option value="{{ $periode->id }}">
-                                {{ $periode->nama_periode }} ({{ $periode->marketplace }})
+                                {{ $periode->nama_periode }} - {{ $periode->toko->nama ?? 'Tanpa Toko' }} ({{ $periode->marketplace }})
                             </option>
                         @endforeach
                     </select>

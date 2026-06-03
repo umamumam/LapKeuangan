@@ -62,7 +62,7 @@
                                             @foreach($periodes as $periode)
                                                 <option value="{{ $periode->id }}"
                                                     {{ old('periode_id') == $periode->id ? 'selected' : '' }}>
-                                                    {{ $periode->nama_periode }} - {{ $periode->toko->nama }} ({{ $periode->marketplace }})
+                                                    {{ $periode->nama_periode }} - {{ $periode->toko->nama ?? 'Tanpa Toko' }} ({{ $periode->marketplace }})
                                                 </option>
                                             @endforeach
                                         </select>

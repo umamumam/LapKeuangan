@@ -27,7 +27,7 @@ class IncomeController extends Controller
         $totalIncomeBulanIni = Income::where('created_at', '>=', $startOfMonth)->sum('total_penghasilan');
 
         // Ambil semua periode untuk dropdown filter
-        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
+        $periodes = Periode::with('toko')->orderBy('nama_periode', 'desc')->get();
 
         return view('incomes.index', compact(
             'incomes',
@@ -40,7 +40,7 @@ class IncomeController extends Controller
     public function create()
     {
         $orders = Order::select('no_pesanan')->distinct()->get();
-        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
+        $periodes = Periode::with('toko')->orderBy('nama_periode', 'desc')->get();
         return view('incomes.create', compact('orders', 'periodes'));
     }
 
@@ -73,7 +73,7 @@ class IncomeController extends Controller
     public function edit(Income $income)
     {
         $orders = Order::select('no_pesanan')->distinct()->get();
-        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
+        $periodes = Periode::with('toko')->orderBy('nama_periode', 'desc')->get();
         return view('incomes.edit', compact('income', 'orders', 'periodes'));
     }
 
@@ -191,7 +191,7 @@ class IncomeController extends Controller
 
     public function importForm()
     {
-        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
+        $periodes = Periode::with('toko')->orderBy('nama_periode', 'desc')->get();
         return view('incomes.import', compact('periodes'));
     }
 
@@ -285,7 +285,7 @@ class IncomeController extends Controller
 
     public function hasil(Request $request)
     {
-        $periodes = Periode::orderBy('nama_periode', 'desc')->get();
+        $periodes = Periode::with('toko')->orderBy('nama_periode', 'desc')->get();
 
         $query = Income::with(['orders.produk', 'periode.toko'])
             ->orderBy('created_at', 'desc');

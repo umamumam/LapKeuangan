@@ -85,7 +85,7 @@
                                                     @foreach($periodes as $periode)
                                                     <option value="{{ $periode->id }}" {{
                                                         old('default_periode_id')==$periode->id ? 'selected' : '' }}>
-                                                        {{ $periode->nama_periode }} - {{ $periode->toko->nama }} ({{
+                                                        {{ $periode->nama_periode }} - {{ $periode->toko->nama ?? 'Tanpa Toko' }} ({{
                                                         $periode->marketplace }})
                                                     </option>
                                                     @endforeach
@@ -208,7 +208,7 @@
                                 <tr>
                                     <td><strong>{{ $periode->id }}</strong></td>
                                     <td>{{ $periode->nama_periode }}</td>
-                                    <td>{{ $periode->toko->nama }}</td>
+                                    <td>{{ $periode->toko->nama ?? 'Tanpa Toko' }}</td>
                                     <td>
                                         <span
                                             class="badge bg-{{ $periode->marketplace == 'Shopee' ? 'warning' : 'info' }}">
