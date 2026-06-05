@@ -20,19 +20,19 @@
                         <i class="ti ti-search"></i>
                     </a>
                     <div class="dropdown-menu pc-h-dropdown drp-search">
-                        <form class="px-3">
+                        <form class="px-3" onsubmit="return false;">
                             <div class="form-group mb-0 d-flex align-items-center">
                                 <i data-feather="search"></i>
-                                <input type="search" class="form-control border-0 shadow-none"
+                                <input type="search" class="form-control border-0 shadow-none global-search-input"
                                     placeholder="Search here. . .">
                             </div>
                         </form>
                     </div>
                 </li>
                 <li class="pc-h-item d-none d-md-inline-flex">
-                    <form class="header-search">
+                    <form class="header-search" onsubmit="return false;">
                         <i data-feather="search" class="icon-search"></i>
-                        <input type="search" class="form-control" placeholder="Search here. . .">
+                        <input type="search" class="form-control global-search-input" placeholder="Search here. . .">
                     </form>
                 </li>
             </ul>
@@ -212,3 +212,83 @@
         </div>
     </div>
 </header>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInputs = document.querySelectorAll(".global-search-input");
+
+    searchInputs.forEach(input => {
+        input.addEventListener("input", function () {
+            const query = this.value.toLowerCase().trim();
+
+            // Synchronize all search inputs (mobile & desktop)
+            searchInputs.forEach(otherInput => {
+                if (otherInput !== input) {
+                    otherInput.value = this.value;
+                }
+            });
+
+            // 1. Search in DataTables if any
+            if (window.jQuery && $.fn.DataTable) {
+                try {
+                    const tables = $.fn.dataTable.tables({ visible: true, api: true });
+                    if (tables && typeof tables.search === "function") {
+                        tables.search(query).draw();
+                    }
+                } catch (e) {
+                    console.log("DataTable search error:", e);
+                }
+            }
+
+            // 2. Search in standard tables (non-DataTables)
+            const standardTables = document.querySelectorAll("table:not(.dataTable)");
+            standardTables.forEach(table => {
+                const rows = table.querySelectorAll("tbody tr");
+                rows.forEach(row => {
+                    // Skip helper/empty rows
+                    if (row.classList.contains("no-results-row") || (row.cells.length === 1 && row.textContent.includes("Tidak ditemukan"))) {
+                        return;
+                    }
+                    const text = row.textContent.toLowerCase();
+                    if (text.includes(query)) {
+                        row.style.display = "";
+                    } else {
+                        row.style.display = "none";
+                    }
+                });
+            });
+
+            // 3. Search in hover-cards (like partners or other custom card grids)
+            const hoverCards = document.querySelectorAll(".hover-card");
+            if (hoverCards.length > 0) {
+                hoverCards.forEach(card => {
+                    const col = card.closest("[class*='col-']");
+                    const targetElement = col || card;
+                    const text = card.textContent.toLowerCase();
+                    if (text.includes(query)) {
+                        targetElement.style.setProperty("display", "", "important");
+                    } else {
+                        targetElement.style.setProperty("display", "none", "important");
+                    }
+                });
+            }
+
+            // 4. Search in list-group items
+            const listItems = document.querySelectorAll(".list-group-item");
+            if (listItems.length > 0) {
+                listItems.forEach(item => {
+                    if (item.closest(".pc-header") || item.closest(".dropdown-menu")) {
+                        return;
+                    }
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(query)) {
+                        item.style.setProperty("display", "", "important");
+                    } else {
+                        item.style.setProperty("display", "none", "important");
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
