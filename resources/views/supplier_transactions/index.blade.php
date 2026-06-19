@@ -140,8 +140,10 @@
                                 placeholder="Rp 0">
                         </div>
                         <div class="col-md-12 mt-3 text-end">
-                            <button type="submit" class="btn btn-success btn-sm fw-bold px-4"><i
+                            <button type="submit" name="is_rijek" value="0" class="btn btn-success btn-sm fw-bold px-4"><i
                                     class="fas fa-plus"></i> Tambah</button>
+                            <button type="submit" name="is_rijek" value="1" class="btn btn-warning btn-sm text-dark fw-bold px-4 ms-2"><i
+                                    class="fas fa-ban"></i> Rijek</button>
                         </div>
                     </form>
 
@@ -189,6 +191,9 @@
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <span>{{ $item->nama_barang }}</span>
+                                            @if($item->is_rijek)
+                                            <span class="badge bg-warning text-dark ms-1">Rijek</span>
+                                            @endif
                                             @if($item->tf > 0 && $item->jumlah == 0)
                                             <span class="badge bg-danger ms-1">TF</span>
                                             @endif
@@ -217,8 +222,13 @@
                                     </td>
                                     <td class="text-end text-muted">{{ $item->harga > 0 ? number_format($item->harga, 0,
                                         ',', '.') : '-' }}</td>
-                                    <td class="text-end fw-bold">{{ $item->jumlah > 0 ? number_format($item->jumlah, 0,
-                                        ',', '.') : '-' }}</td>
+                                    <td class="text-end fw-bold {{ $item->is_rijek ? 'text-danger' : '' }}">
+                                        @if($item->is_rijek)
+                                            -{{ number_format($item->jumlah, 0, ',', '.') }}
+                                        @else
+                                            {{ $item->jumlah > 0 ? number_format($item->jumlah, 0, ',', '.') : '-' }}
+                                        @endif
+                                    </td>
 
                                     @if($index === 0)
                                     <td rowspan="{{ $rowspan }}"

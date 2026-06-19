@@ -30,7 +30,9 @@ class SupplierTransactionController extends Controller
 
             $transactionsByDate = $transactions->groupBy('tanggal');
             foreach ($transactionsByDate as $date => $items) {
-                $sumJumlah = $items->sum('jumlah');
+                $sumJumlah = $items->sum(function ($item) {
+                    return $item->is_rijek ? -$item->jumlah : $item->jumlah;
+                });
                 $sumTf = $items->sum('tf');
                 $runningTagihan += $sumJumlah - $sumTf;
 
@@ -57,6 +59,7 @@ class SupplierTransactionController extends Controller
             'potong' => 'nullable|numeric',
             'nama_barang' => 'required|string',
             'harga' => 'required|numeric',
+            'is_rijek' => 'nullable|boolean',
         ]);
 
         $lusin = (float)($request->lusin ?? 0);
@@ -74,6 +77,7 @@ class SupplierTransactionController extends Controller
             'harga' => $harga,
             'jumlah' => $subtotal,
             'tf' => 0,
+            'is_rijek' => $request->is_rijek ? true : false,
         ]);
 
         return redirect()->route('supplier_transactions.index', ['supplier_id' => $request->supplier_id])
@@ -194,7 +198,7 @@ class SupplierTransactionController extends Controller
         
         $sisaSebelumnya = $supplier->hutang_awal;
         foreach ($previousTransactions as $pt) {
-            $sisaSebelumnya += ($pt->jumlah - $pt->tf);
+            $sisaSebelumnya += (($pt->is_rijek ? -$pt->jumlah : $pt->jumlah) - $pt->tf);
         }
 
         // Get transactions for the period

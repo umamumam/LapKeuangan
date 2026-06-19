@@ -273,7 +273,13 @@
 
                 @foreach($items as $item)
                 @if($item->jumlah > 0)
-                @php $runningBalance += $item->jumlah; @endphp
+                @php
+                    if ($item->is_rijek) {
+                        $runningBalance -= $item->jumlah;
+                    } else {
+                        $runningBalance += $item->jumlah;
+                    }
+                @endphp
                 <tr>
                     @if($isFirstRow)
                     <td rowspan="{{ $rowSpan }}" class="text-center" style="vertical-align: top; font-weight: 600;">
@@ -286,9 +292,16 @@
                         @if($item->lusin > 0 && $item->potong > 0) + @endif
                         @if($item->potong > 0) {{ $item->potong }} ptg @endif
                     </td>
-                    <td>{{ $item->nama_barang }}</td>
+                    <td>
+                        {{ $item->nama_barang }}
+                        @if($item->is_rijek)
+                        <span style="color: red; font-weight: bold; margin-left: 5px;">(Rijek)</span>
+                        @endif
+                    </td>
                     <td class="text-right">{{ number_format($item->harga, 0, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($item->jumlah, 0, ',', '.') }}</td>
+                    <td class="text-right" style="{{ $item->is_rijek ? 'color: red;' : '' }}">
+                        {{ $item->is_rijek ? '-' : '' }}{{ number_format($item->jumlah, 0, ',', '.') }}
+                    </td>
                 </tr>
                 @endif
 
