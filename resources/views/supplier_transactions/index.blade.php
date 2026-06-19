@@ -140,10 +140,11 @@
                                 placeholder="Rp 0">
                         </div>
                         <div class="col-md-12 mt-3 text-end">
-                            <button type="submit" name="is_rijek" value="0" class="btn btn-success btn-sm fw-bold px-4"><i
-                                    class="fas fa-plus"></i> Tambah</button>
-                            <button type="submit" name="is_rijek" value="1" class="btn btn-warning btn-sm text-dark fw-bold px-4 ms-2"><i
-                                    class="fas fa-ban"></i> Rijek</button>
+                            <button type="submit" name="is_rijek" value="1"
+                                class="btn btn-warning btn-sm text-dark fw-bold px-4 ms-2"><i class="fas fa-ban"></i>
+                                Rijek</button>
+                            <button type="submit" name="is_rijek" value="0"
+                                class="btn btn-success btn-sm fw-bold px-4"><i class="fas fa-plus"></i> Tambah</button>
                         </div>
                     </form>
 
@@ -224,9 +225,9 @@
                                         ',', '.') : '-' }}</td>
                                     <td class="text-end fw-bold {{ $item->is_rijek ? 'text-danger' : '' }}">
                                         @if($item->is_rijek)
-                                            -{{ number_format($item->jumlah, 0, ',', '.') }}
+                                        -{{ number_format($item->jumlah, 0, ',', '.') }}
                                         @else
-                                            {{ $item->jumlah > 0 ? number_format($item->jumlah, 0, ',', '.') : '-' }}
+                                        {{ $item->jumlah > 0 ? number_format($item->jumlah, 0, ',', '.') : '-' }}
                                         @endif
                                     </td>
 
@@ -344,17 +345,20 @@
                             <input type="hidden" name="supplier_id" value="{{ $supplier->id }}">
                             <div class="modal-header bg-primary text-white">
                                 <h5 class="modal-title fw-bold">Pilih Periode Invoice</h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                <button type="button" class="btn-close btn-close-white"
+                                    data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label small fw-bold">Dari Tanggal</label>
-                                        <input type="date" name="start_date" class="form-control" value="{{ date('Y-m-01') }}" required>
+                                        <input type="date" name="start_date" class="form-control"
+                                            value="{{ date('Y-m-01') }}" required>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label small fw-bold">Sampai Tanggal</label>
-                                        <input type="date" name="end_date" class="form-control" value="{{ date('Y-m-d') }}" required>
+                                        <input type="date" name="end_date" class="form-control"
+                                            value="{{ date('Y-m-d') }}" required>
                                     </div>
                                 </div>
                             </div>
