@@ -109,7 +109,7 @@
                 <li class="pc-item">
                     <a href="/bandings/search" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-qrcode"></i></span>
-                        <span class="pc-mtext">Scan Resi</span>
+                        <span class="pc-mtext">Scan Banding</span>
                     </a>
                 </li>
                 {{-- <li class="pc-item">
@@ -121,7 +121,7 @@
                 <li class="pc-item">
                     <a href="/scan-ok" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-barcode"></i></span>
-                        <span class="pc-mtext">Scan Resi V2</span>
+                        <span class="pc-mtext">Scan Pengembalian</span>
                     </a>
                 </li>
                 {{-- <li class="pc-item">
@@ -177,11 +177,14 @@
                         <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
                     </a>
                     <ul class="pc-submenu">
-                        <li class="pc-item {{ Request::get('type') == 'grosir' || !Request::has('type') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('reseller_transactions.index', ['type' => 'grosir']) }}">Per Grosir</a>
+                        <li
+                            class="pc-item {{ Request::get('type') == 'grosir' || !Request::has('type') ? 'active' : '' }}">
+                            <a class="pc-link"
+                                href="{{ route('reseller_transactions.index', ['type' => 'grosir']) }}">Per Grosir</a>
                         </li>
                         <li class="pc-item {{ Request::get('type') == 'hpp' ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('reseller_transactions.index', ['type' => 'hpp']) }}">Per HPP</a>
+                            <a class="pc-link" href="{{ route('reseller_transactions.index', ['type' => 'hpp']) }}">Per
+                                HPP</a>
                         </li>
                     </ul>
                 </li>

@@ -29,6 +29,81 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <!-- Filter Form -->
+                        <form action="{{ route('monthly-finances.index') }}" method="GET" class="row g-3 mb-4 p-3 bg-light rounded border align-items-end">
+                            <div class="col-md-3">
+                                <label for="periode" class="form-label fw-semibold">
+                                    <i class="fas fa-calendar-alt text-primary me-1"></i> Periode
+                                </label>
+                                <select name="periode" id="periode" class="form-select">
+                                    <option value="all">Semua Periode</option>
+                                    @foreach($periodeOptions as $optPeriode)
+                                    <option value="{{ $optPeriode }}" {{ ($periode ?? '') == $optPeriode ? 'selected' : '' }}>
+                                        {{ $optPeriode }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label for="toko_id" class="form-label fw-semibold">
+                                    <i class="fas fa-store text-success me-1"></i> Toko
+                                </label>
+                                <select name="toko_id" id="toko_id" class="form-select">
+                                    <option value="all">Semua Toko</option>
+                                    @foreach($tokoOptions as $toko)
+                                    <option value="{{ $toko->id }}" {{ ($tokoId ?? '') == $toko->id ? 'selected' : '' }}>
+                                        {{ $toko->nama }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label for="marketplace" class="form-label fw-semibold">
+                                    <i class="fas fa-shopping-bag text-warning me-1"></i> Marketplace
+                                </label>
+                                <select name="marketplace" id="marketplace" class="form-select">
+                                    <option value="all">Semua Marketplace</option>
+                                    @foreach($marketplaceOptions as $optMarketplace)
+                                    <option value="{{ $optMarketplace }}" {{ ($marketplace ?? '') == $optMarketplace ? 'selected' : '' }}>
+                                        {{ $optMarketplace }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary flex-fill">
+                                        <i class="fas fa-filter me-1"></i> Filter
+                                    </button>
+                                    <a href="{{ route('monthly-finances.index') }}" class="btn btn-outline-secondary flex-fill" title="Reset Filter">
+                                        <i class="fas fa-undo me-1"></i> Reset
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+
+                        @if(($periode && $periode !== 'all') || ($tokoId && $tokoId !== 'all') || ($marketplace && $marketplace !== 'all'))
+                        <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div>
+                                <i class="fas fa-info-circle me-1"></i> <strong>Filter Aktif:</strong>
+                                @if($periode && $periode !== 'all')
+                                    <span class="badge bg-primary me-1">Periode: {{ $periode }}</span>
+                                @endif
+                                @if($tokoId && $tokoId !== 'all')
+                                    @php $selectedToko = $tokoOptions->firstWhere('id', $tokoId); @endphp
+                                    <span class="badge bg-success me-1">Toko: {{ $selectedToko ? $selectedToko->nama : $tokoId }}</span>
+                                @endif
+                                @if($marketplace && $marketplace !== 'all')
+                                    <span class="badge bg-warning text-dark me-1">Marketplace: {{ $marketplace }}</span>
+                                @endif
+                            </div>
+                            <span class="text-muted small">Total ditemukan: <strong>{{ $monthlyFinances->count() }}</strong> data</span>
+                        </div>
+                        @endif
+
                         <div class="table-responsive">
                             <table id="res-config" class="display table table-striped table-hover dt-responsive nowrap"
                                 style="width: 100%">

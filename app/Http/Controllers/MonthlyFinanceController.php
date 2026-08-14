@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Periode;
+use App\Models\Toko;
 use Illuminate\Http\Request;
 use App\Models\MonthlyFinance;
 use Illuminate\Support\Facades\DB;
@@ -12,13 +13,51 @@ class MonthlyFinanceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $monthlyFinances = MonthlyFinance::with('periode.toko')
-            ->latest()
-            ->get();
+        $periode = $request->input('periode');
+        $tokoId = $request->input('toko_id');
+        $marketplace = $request->input('marketplace');
 
-        return view('monthly-finances.index', compact('monthlyFinances'));
+        $query = MonthlyFinance::with(['periode.toko']);
+
+        if ($periode && $periode !== 'all') {
+            $query->whereHas('periode', function ($q) use ($periode) {
+                $q->where('nama_periode', $periode);
+            });
+        }
+
+        if ($tokoId && $tokoId !== 'all') {
+            $query->whereHas('periode', function ($q) use ($tokoId) {
+                $q->where('toko_id', $tokoId);
+            });
+        }
+
+        if ($marketplace && $marketplace !== 'all') {
+            $query->whereHas('periode', function ($q) use ($marketplace) {
+                $q->where('marketplace', $marketplace);
+            });
+        }
+
+        $monthlyFinances = $query->latest()->get();
+
+        $periodeOptions = Periode::orderBy('tanggal_mulai', 'desc')
+            ->pluck('nama_periode')
+            ->unique()
+            ->values();
+
+        $tokoOptions = Toko::orderBy('nama')->get();
+        $marketplaceOptions = ['Shopee', 'Tiktok'];
+
+        return view('monthly-finances.index', compact(
+            'monthlyFinances',
+            'periodeOptions',
+            'tokoOptions',
+            'marketplaceOptions',
+            'periode',
+            'tokoId',
+            'marketplace'
+        ));
     }
 
     /**
