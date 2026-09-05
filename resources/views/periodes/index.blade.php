@@ -7,8 +7,7 @@
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Summary Bulanan</h5>
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#generateModal">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="openAddPeriodeModal()">
                                 <i class="fas fa-plus"></i> Tambah Periode
                             </button>
                             <button type="button" class="btn btn-success btn-sm" onclick="generateCurrentMonth()">
@@ -58,108 +57,48 @@
                         </script>
                         @endif
 
-                        @if($periodes->isEmpty())
-                        <div class="text-center py-4">
-                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">Belum ada periode summary.</p>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                data-bs-target="#generateModal">
-                                <i class="fas fa-plus"></i> Tambah Periode Pertama
-                            </button>
+                        <!-- Tab Navigasi Berdasarkan Toko -->
+                        <ul class="nav nav-tabs mb-4" id="tokoTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="tab-all-toko" data-bs-toggle="tab" data-bs-target="#pane-all" type="button" role="tab" aria-controls="pane-all" aria-selected="true">
+                                    <i class="fas fa-store-alt me-1"></i> Semua Toko
+                                    <span class="badge bg-primary ms-1">{{ $periodes->count() }}</span>
+                                </button>
+                            </li>
+                            @foreach($tokos as $toko)
+                            @php
+                                $tokoCount = $periodes->where('toko_id', $toko->id)->count();
+                            @endphp
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-toko-{{ $toko->id }}" data-bs-toggle="tab" data-bs-target="#pane-toko-{{ $toko->id }}" type="button" role="tab" aria-controls="pane-toko-{{ $toko->id }}" aria-selected="false" data-toko-id="{{ $toko->id }}">
+                                    <i class="fas fa-store me-1"></i> {{ $toko->nama }}
+                                    <span class="badge bg-secondary ms-1">{{ $tokoCount }}</span>
+                                </button>
+                            </li>
+                            @endforeach
+                        </ul>
+
+                        <!-- Tab Content -->
+                        <div class="tab-content" id="tokoTabsContent">
+                            <!-- Tab Semua Toko -->
+                            <div class="tab-pane fade show active" id="pane-all" role="tabpanel" aria-labelledby="tab-all-toko">
+                                @include('periodes.partials.table', [
+                                    'periodesList' => $periodes,
+                                    'tableId' => 'table-periode-all'
+                                ])
+                            </div>
+
+                            <!-- Tab per Toko -->
+                            @foreach($tokos as $toko)
+                            <div class="tab-pane fade" id="pane-toko-{{ $toko->id }}" role="tabpanel" aria-labelledby="tab-toko-{{ $toko->id }}">
+                                @include('periodes.partials.table', [
+                                    'periodesList' => $periodes->where('toko_id', $toko->id),
+                                    'tableId' => 'table-periode-' . $toko->id,
+                                    'toko' => $toko
+                                ])
+                            </div>
+                            @endforeach
                         </div>
-                        @else
-                        <div class="table-responsive">
-                            <table id="res-config" class="display table table-striped table-hover dt-responsive nowrap"
-                                style="width: 100%">
-                                <thead class="table-primary">
-                                    <tr>
-                                        <th>Periode</th>
-                                        <th>Toko</th>
-                                        <th>Marketplace</th>
-                                        <th>Penghasilan</th>
-                                        <th>HPP</th>
-                                        <th>Laba Kotor</th>
-                                        <th>Status</th>
-                                        <th width="140">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($periodes as $periode)
-                                    <tr>
-                                        <td>
-                                            <strong>{{ $periode->nama_periode }}</strong>
-                                            <br>
-                                            <small class="text-muted">
-                                                {{ \Carbon\Carbon::parse($periode->tanggal_mulai)->format('d/m/Y') }} -
-                                                {{ \Carbon\Carbon::parse($periode->tanggal_selesai)->format('d/m/Y') }}
-                                            </small>
-                                        </td>
-                                        <td>{{ $periode->toko->nama }}</td>
-                                        <td>
-                                            <span
-                                                class="badge bg-{{ $periode->marketplace == 'Shopee' ? 'warning' : 'info' }}">
-                                                {{ $periode->marketplace }}
-                                            </span>
-                                        </td>
-                                        <td class="fw-bold text-success">
-                                            Rp {{ number_format($periode->total_penghasilan, 0, ',', '.') }}
-                                        </td>
-                                        <td class="text-danger">
-                                            Rp {{ number_format($periode->total_hpp_produk, 0, ',', '.') }}
-                                        </td>
-                                        <td
-                                            class="fw-bold {{ ($periode->total_penghasilan - $periode->total_hpp_produk) >= 0 ? 'text-success' : 'text-danger' }}">
-                                            Rp {{ number_format($periode->total_penghasilan -
-                                            $periode->total_hpp_produk, 0, ',', '.') }}
-                                        </td>
-                                        <td>
-                                            @if($periode->is_generated)
-                                            <span class="badge bg-success">
-                                                <i class="fas fa-check"></i> Generated
-                                                <br>
-                                                <small>{{ \Carbon\Carbon::parse($periode->generated_at)->format('d/m/Y
-                                                    H:i') }}</small>
-                                            </span>
-                                            @else
-                                            <span class="badge bg-warning">
-                                                <i class="fas fa-clock"></i> Pending
-                                            </span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <div class="d-flex gap-1">
-                                                @if(!$periode->is_generated)
-                                                <button type="button" class="btn btn-success btn-sm"
-                                                    onclick="generatePeriode({{ $periode->id }})" title="Generate">
-                                                    <i class="fas fa-play"></i>
-                                                </button>
-                                                @else
-                                                <!-- Tombol Regenerate -->
-                                                <button type="button" class="btn btn-secondary btn-sm"
-                                                    onclick="regeneratePeriode({{ $periode->id }})" title="Update Data">
-                                                    <i class="fas fa-redo"></i>
-                                                </button>
-                                                @endif
-                                                <button type="button" class="btn btn-warning btn-sm" onclick="editPeriode({{ $periode->id }})" title="Edit">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-info btn-sm"
-                                                    onclick="showDetail({{ $periode->id }})" title="Detail">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-danger btn-sm"
-                                                    onclick="deletePeriode({{ $periode->id }}, '{{ $periode->nama_periode }}')"
-                                                    title="Hapus">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                        @endif
                     </div>
                 </div>
             </div>
@@ -636,17 +575,49 @@
         });
     }
 
-    // Inisialisasi DataTable
+    function openAddPeriodeModal(tokoId = null) {
+        const tokoSelect = document.getElementById('toko_id');
+        if (tokoId) {
+            if (tokoSelect) tokoSelect.value = tokoId;
+        } else {
+            const activeTabBtn = document.querySelector('#tokoTabs .nav-link.active');
+            if (activeTabBtn && activeTabBtn.dataset.tokoId && tokoSelect) {
+                tokoSelect.value = activeTabBtn.dataset.tokoId;
+            }
+        }
+        $('#generateModal').modal('show');
+    }
+
+    // Inisialisasi DataTable untuk setiap tabel periode
     document.addEventListener('DOMContentLoaded', function() {
-        if (document.getElementById('res-config')) {
-            $('#res-config').DataTable({
+        $('table.datatable-periode').each(function() {
+            $(this).DataTable({
                 responsive: true,
                 language: {
                     url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/id.json'
                 },
-                order: [[0, 'desc']],
+                order: [], // Mempertahankan urutan dari server (ID terbesar di paling atas)
                 pageLength: 25
             });
+        });
+
+        // Event listener saat tab diganti untuk menyesuaikan lebar kolom DataTables
+        $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+            const target = $(e.target).attr('data-bs-target');
+            if (target) {
+                localStorage.setItem('active_periode_tab', target);
+            }
+            $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust().responsive.recalc();
+        });
+
+        // Pulihkan tab aktif terakhir yang disimpan
+        const savedTab = localStorage.getItem('active_periode_tab');
+        if (savedTab) {
+            const triggerEl = document.querySelector(`button[data-bs-target="${savedTab}"]`);
+            if (triggerEl) {
+                const tab = bootstrap.Tab.getOrCreateInstance(triggerEl);
+                tab.show();
+            }
         }
     });
 

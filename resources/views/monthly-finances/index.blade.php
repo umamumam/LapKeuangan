@@ -65,9 +65,9 @@
                                 </label>
                                 <select name="marketplace" id="marketplace" class="form-select">
                                     <option value="all">Semua Marketplace</option>
-                                    @foreach($marketplaceOptions as $optMarketplace)
-                                    <option value="{{ $optMarketplace }}" {{ ($marketplace ?? '') == $optMarketplace ? 'selected' : '' }}>
-                                        {{ $optMarketplace }}
+                                    @foreach($marketplaceOptions as $opt)
+                                    <option value="{{ $opt['value'] }}" {{ ($marketplace ?? '') == $opt['value'] ? 'selected' : '' }}>
+                                        {{ $opt['label'] }}
                                     </option>
                                     @endforeach
                                 </select>
@@ -97,7 +97,15 @@
                                     <span class="badge bg-success me-1">Toko: {{ $selectedToko ? $selectedToko->nama : $tokoId }}</span>
                                 @endif
                                 @if($marketplace && $marketplace !== 'all')
-                                    <span class="badge bg-warning text-dark me-1">Marketplace: {{ $marketplace }}</span>
+                                    @php
+                                        $mpDisplay = $marketplace;
+                                        if (str_contains($marketplace, '|')) {
+                                            [$mpName, $mpTokoId] = explode('|', $marketplace);
+                                            $mpToko = $tokoOptions->firstWhere('id', $mpTokoId);
+                                            $mpDisplay = $mpName . ' (' . ($mpToko ? $mpToko->nama : '') . ')';
+                                        }
+                                    @endphp
+                                    <span class="badge bg-warning text-dark me-1">Marketplace: {{ $mpDisplay }}</span>
                                 @endif
                             </div>
                             <span class="text-muted small">Total ditemukan: <strong>{{ $monthlyFinances->count() }}</strong> data</span>

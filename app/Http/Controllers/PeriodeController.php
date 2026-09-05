@@ -16,7 +16,7 @@ class PeriodeController extends Controller
     public function index()
     {
         $periodes = Periode::with('toko')
-            ->orderBy('tanggal_mulai', 'desc')
+            ->orderBy('id', 'desc')
             ->get();
 
         $currentYear = date('Y');

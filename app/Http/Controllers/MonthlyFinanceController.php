@@ -34,9 +34,17 @@ class MonthlyFinanceController extends Controller
         }
 
         if ($marketplace && $marketplace !== 'all') {
-            $query->whereHas('periode', function ($q) use ($marketplace) {
-                $q->where('marketplace', $marketplace);
-            });
+            if (str_contains($marketplace, '|')) {
+                [$mpName, $mpTokoId] = explode('|', $marketplace);
+                $query->whereHas('periode', function ($q) use ($mpName, $mpTokoId) {
+                    $q->where('marketplace', $mpName)
+                      ->where('toko_id', $mpTokoId);
+                });
+            } else {
+                $query->whereHas('periode', function ($q) use ($marketplace) {
+                    $q->where('marketplace', $marketplace);
+                });
+            }
         }
 
         $monthlyFinances = $query->latest()->get();
@@ -47,13 +55,31 @@ class MonthlyFinanceController extends Controller
             ->values();
 
         $tokoOptions = Toko::orderBy('nama')->get();
-        $marketplaceOptions = ['Shopee', 'Tiktok'];
+
+        $baseMarketplaces = Periode::distinct()->pluck('marketplace')->filter()->values();
+        if ($baseMarketplaces->isEmpty()) {
+            $baseMarketplaces = collect(['Shopee', 'Tiktok']);
+        }
+
+        $marketplaceOptions = [];
+        foreach ($tokoOptions as $toko) {
+            foreach ($baseMarketplaces as $mp) {
+                $marketplaceOptions[] = [
+                    'value' => "{$mp}|{$toko->id}",
+                    'label' => "{$mp} ({$toko->nama})",
+                    'toko_id' => $toko->id,
+                    'toko_nama' => $toko->nama,
+                    'marketplace' => $mp,
+                ];
+            }
+        }
 
         return view('monthly-finances.index', compact(
             'monthlyFinances',
             'periodeOptions',
             'tokoOptions',
             'marketplaceOptions',
+            'baseMarketplaces',
             'periode',
             'tokoId',
             'marketplace'
