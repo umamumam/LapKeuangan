@@ -19,10 +19,8 @@
                                             class="form-control @error('periode_id') is-invalid @enderror" required>
                                             <option value="">-- Pilih Periode --</option>
                                             @foreach($periodes as $periode)
-                                            <option value="{{ $periode->id }}" {{ old('periode_id')==$periode->id ?
-                                                'selected' : '' }}>
-                                                {{ $periode->nama_periode }} - {{ $periode->toko->nama_toko }} ({{
-                                                $periode->marketplace }})
+                                            <option value="{{ $periode->id }}" {{ old('periode_id')==$periode->id ? 'selected' : '' }}>
+                                                {{ $periode->nama_periode }} - {{ $periode->toko->nama ?? 'Tanpa Toko' }} ({{ $periode->marketplace }})
                                             </option>
                                             @endforeach
                                         </select>

@@ -26,7 +26,7 @@
                                     <div class="alert alert-info">
                                         <i class="fas fa-info-circle me-2"></i>
                                         <strong>Periode:</strong> {{ $periode->nama_periode }} -
-                                        {{ $periode->toko->nama_toko }} ({{ $periode->marketplace }})
+                                        {{ $periode->toko->nama ?? 'Tanpa Toko' }} ({{ $periode->marketplace }})
                                         <br>
                                         <small class="text-muted">
                                             {{ $periode->tanggal_mulai->format('d/m/Y') }} -
